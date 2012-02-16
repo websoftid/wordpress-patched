@@ -9,6 +9,8 @@
 
 if ( is_network_admin() )
 	do_action('_network_admin_menu');
+elseif ( is_user_admin() )
+	do_action('_user_admin_menu');
 else
 	do_action('_admin_menu');
 
@@ -89,6 +91,8 @@ unset($id, $data, $subs, $first_sub, $old_parent, $new_parent);
 
 if ( is_network_admin() )
 	do_action('network_admin_menu', '');
+elseif ( is_user_admin() )
+	do_action('user_admin_menu', '');
 else
 	do_action('admin_menu', '');
 
@@ -98,6 +102,15 @@ foreach ( $menu as $id => $data ) {
 	if ( ! current_user_can($data[1]) )
 		$_wp_menu_nopriv[$data[2]] = true;
 
+	// If there is only one submenu and it is has same destination as the parent,
+	// remove the submenu.
+	if ( ! empty( $submenu[$data[2]] ) && 1 == count ( $submenu[$data[2]] ) ) {
+		$subs = $submenu[$data[2]];
+		$first_sub = array_shift($subs);
+		if ( $data[2] == $first_sub[2] )
+			unset( $submenu[$data[2]] );
+	}
+
 	// If submenu is empty...
 	if ( empty($submenu[$data[2]]) ) {
 		// And user doesn't have privs, remove menu.
@@ -106,20 +119,20 @@ foreach ( $menu as $id => $data ) {
 		}
 	}
 }
-unset($id, $data);
+unset($id, $data, $subs, $first_sub);
 
-// Remove any duplicated seperators
-$seperator_found = false;
+// Remove any duplicated separators
+$separator_found = false;
 foreach ( $menu as $id => $data ) {
 	if ( 0 == strcmp('wp-menu-separator', $data[4] ) ) {
-		if (false == $seperator_found) {
-			$seperator_found = true;
+		if (false == $separator_found) {
+			$separator_found = true;
 		} else {
 			unset($menu[$id]);
-			$seperator_found = false;
+			$separator_found = false;
 		}
 	} else {
-		$seperator_found = false;
+		$separator_found = false;
 	}
 }
 unset($id, $data);
@@ -201,11 +214,18 @@ if ( apply_filters('custom_menu_order', false) ) {
 	unset($menu_order, $default_menu_order);
 }
 
-$menu = add_menu_classes($menu);
+// Remove the last menu item if it is a separator.
+$last_menu_key = array_keys( $menu );
+$last_menu_key = array_pop( $last_menu_key );
+if ( !empty( $menu ) && 'wp-menu-separator' == $menu[ $last_menu_key ][ 4 ] )
+	unset( $menu[ $last_menu_key ] );
+unset( $last_menu_key );
 
 if ( !user_can_access_admin_page() ) {
 	do_action('admin_page_access_denied');
 	wp_die( __('You do not have sufficient permissions to access this page.') );
 }
+
+$menu = add_menu_classes($menu);
 
 ?>

@@ -53,40 +53,42 @@ add_filter( 'wp_handle_upload_prefilter', 'check_upload_size' );
  * @return void
  */
 function wpmu_delete_blog( $blog_id, $drop = false ) {
-	global $wpdb;
+	global $wpdb, $current_site;
 
 	$switch = false;
 	if ( $blog_id != $wpdb->blogid ) {
 		$switch = true;
 		switch_to_blog( $blog_id );
+		$blog = get_blog_details( $blog_id );
+	} else {
+		$blog = $GLOBALS['current_blog'];
 	}
-
-	$blog_prefix = $wpdb->get_blog_prefix( $blog_id );
 
 	do_action( 'delete_blog', $blog_id, $drop );
 
-	$users = get_users_of_blog( $blog_id );
+	$users = get_users( array( 'blog_id' => $blog_id, 'fields' => 'ids' ) );
 
 	// Remove users from this blog.
 	if ( ! empty( $users ) ) {
-		foreach ( $users as $user ) {
-			remove_user_from_blog( $user->user_id, $blog_id) ;
+		foreach ( $users as $user_id ) {
+			remove_user_from_blog( $user_id, $blog_id );
 		}
 	}
 
 	update_blog_status( $blog_id, 'deleted', 1 );
 
+	// Don't destroy the initial, main, or root blog.
+	if ( $drop && ( 1 == $blog_id || is_main_site( $blog_id ) || ( $blog->path == $current_site->path && $blog->domain == $current_site->domain ) ) )
+		$drop = false;
+
 	if ( $drop ) {
-		if ( substr( $blog_prefix, -1 ) == '_' )
-			$blog_prefix =  substr( $blog_prefix, 0, -1 ) . '\_';
 
-		$drop_tables = $wpdb->get_results( "SHOW TABLES LIKE '{$blog_prefix}%'", ARRAY_A );
-		$drop_tables = apply_filters( 'wpmu_drop_tables', $drop_tables );
+		$drop_tables = apply_filters( 'wpmu_drop_tables', $wpdb->tables( 'blog' ) );
 
-		reset( $drop_tables );
-		foreach ( (array) $drop_tables as $drop_table) {
-			$wpdb->query( "DROP TABLE IF EXISTS ". current( $drop_table ) ."" );
+		foreach ( (array) $drop_tables as $table ) {
+			$wpdb->query( "DROP TABLE IF EXISTS `$table`" );
 		}
+
 		$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->blogs WHERE blog_id = %d", $blog_id ) );
 		$dir = apply_filters( 'wpmu_delete_blog_upload_dir', WP_CONTENT_DIR . "/blogs.dir/{$blog_id}/files/", $blog_id );
 		$dir = rtrim( $dir, DIRECTORY_SEPARATOR );
@@ -120,17 +122,7 @@ function wpmu_delete_blog( $blog_id, $drop = false ) {
 		}
 	}
 
-	$wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE meta_key = '{$blog_prefix}autosave_draft_ids'" );
-	$blogs = get_site_option( 'blog_list' );
-	if ( is_array( $blogs ) ) {
-		foreach ( $blogs as $n => $blog ) {
-			if ( $blog['blog_id'] == $blog_id )
-				unset( $blogs[$n] );
-		}
-		update_site_option( 'blog_list', $blogs );
-	}
-
-	if ( $switch === true )
+	if ( $switch )
 		restore_current_blog();
 }
 
@@ -250,7 +242,7 @@ function send_confirmation_on_profile_email() {
 	if ( ! is_object($errors) )
 		$errors = new WP_Error();
 
-	if ( $current_user->id != $_POST['user_id'] )
+	if ( $current_user->ID != $_POST['user_id'] )
 		return false;
 
 	if ( $current_user->user_email != $_POST['email'] ) {
@@ -340,13 +332,16 @@ function is_upload_space_available() {
 	return true;
 }
 
-/*
+/**
  * @since 3.0.0
  *
  * @return int of upload size limit in bytes
  */
 function upload_size_limit_filter( $size ) {
 	$fileupload_maxk = 1024 * get_site_option( 'fileupload_maxk', 1500 );
+	if ( get_site_option( 'upload_space_check_disabled' ) )
+		return min( $size, $fileupload_maxk );
+
 	return min( $size, $fileupload_maxk, get_upload_space_available() );
 }
 /**
@@ -390,9 +385,11 @@ function get_upload_space_available() {
  */
 function get_space_allowed() {
 	$space_allowed = get_option( 'blog_upload_space' );
-	if ( $space_allowed == false )
+
+	if ( ! is_numeric( $space_allowed ) )
 		$space_allowed = get_site_option( 'blog_upload_space' );
-	if ( empty( $space_allowed ) || !is_numeric( $space_allowed ) )
+
+	if ( empty( $space_allowed ) || ! is_numeric( $space_allowed ) )
 		$space_allowed = 50;
 
 	return $space_allowed;
@@ -432,13 +429,15 @@ function upload_space_setting( $id ) {
 }
 add_action( 'wpmueditblogaction', 'upload_space_setting' );
 
-function update_user_status( $id, $pref, $value, $refresh = 1 ) {
+function update_user_status( $id, $pref, $value, $deprecated = null ) {
 	global $wpdb;
+
+	if ( null !== $deprecated  )
+		_deprecated_argument( __FUNCTION__, '3.1' );
 
 	$wpdb->update( $wpdb->users, array( $pref => $value ), array( 'ID' => $id ) );
 
-	if ( $refresh == 1 )
-		refresh_user_details( $id );
+	clean_user_cache( $id );
 
 	if ( $pref == 'spam' ) {
 		if ( $value == 1 )
@@ -491,43 +490,41 @@ function sync_category_tag_slugs( $term, $taxonomy ) {
 }
 add_filter( 'get_term', 'sync_category_tag_slugs', 10, 2 );
 
-function redirect_user_to_blog() {
-	$c = 0;
-	if ( isset( $_GET['c'] ) )
-		$c = (int) $_GET['c'];
+function _access_denied_splash() {
+	if ( ! is_user_logged_in() || is_network_admin() )
+		return;
 
-	if ( $c >= 5 ) {
-		wp_die( __( "You don&#8217;t have permission to view this site. Please contact the system administrator." ) );
-	}
-	$c ++;
-
-	$blog = get_active_blog_for_user( get_current_user_id() );
-	$dashboard_blog = get_dashboard_blog();
-	if ( is_object( $blog ) ) {
-		wp_redirect( get_admin_url( $blog->blog_id, '?c=' . $c ) ); // redirect and count to 5, "just in case"
-		exit;
-	}
-
-	/*
-	   If the user is a member of only 1 blog and the user's primary_blog isn't set to that blog,
-	   then update the primary_blog record to match the user's blog
-	 */
 	$blogs = get_blogs_of_user( get_current_user_id() );
 
-	if ( !empty( $blogs ) ) {
-		foreach( $blogs as $blogid => $blog ) {
-			if ( $blogid != $dashboard_blog->blog_id && get_user_meta( get_current_user_id() , 'primary_blog', true ) == $dashboard_blog->blog_id ) {
-				update_user_meta( get_current_user_id(), 'primary_blog', $blogid );
-				continue;
-			}
-		}
-		$blog = get_blog_details( get_user_meta( get_current_user_id(), 'primary_blog', true ) );
-			wp_redirect( get_admin_url( $blog->blog_id, '?c=' . $c ) );
-		exit;
+	if ( wp_list_filter( $blogs, array( 'userblog_id' => get_current_blog_id() ) ) )
+		return;
+
+	$blog_name = get_bloginfo( 'name' );
+
+	if ( empty( $blogs ) )
+		wp_die( sprintf( __( 'You attempted to access the "%1$s" dashboard, but you do not currently have privileges on this site. If you believe you should be able to access the "%1$s" dashboard, please contact your network administrator.' ), $blog_name ) );
+
+	$output = '<p>' . sprintf( __( 'You attempted to access the "%1$s" dashboard, but you do not currently have privileges on this site. If you believe you should be able to access the "%1$s" dashboard, please contact your network administrator.' ), $blog_name ) . '</p>';
+	$output .= '<p>' . __( 'If you reached this screen by accident and meant to visit one of your own sites, here are some shortcuts to help you find your way.' ) . '</p>';
+
+	$output .= '<h3>' . __('Your Sites') . '</h3>';
+	$output .= '<table>';
+
+	foreach ( $blogs as $blog ) {
+		$output .= "<tr>";
+		$output .= "<td valign='top'>";
+		$output .= "{$blog->blogname}";
+		$output .= "</td>";
+		$output .= "<td valign='top'>";
+		$output .= "<a href='" . esc_url( get_admin_url( $blog->userblog_id ) ) . "'>" . __( 'Visit Dashboard' ) . "</a> | <a href='" . esc_url( get_home_url( $blog->userblog_id ) ). "'>" . __( 'View Site' ) . "</a>" ;
+		$output .= "</td>";
+		$output .= "</tr>";
 	}
-	wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+	$output .= '</table>';
+
+	wp_die( $output );
 }
-add_action( 'admin_page_access_denied', 'redirect_user_to_blog', 99 );
+add_action( 'admin_page_access_denied', '_access_denied_splash', 99 );
 
 function check_import_new_users( $permission ) {
 	if ( !is_super_admin() )
@@ -587,38 +584,7 @@ function secret_salt_warning() {
 		echo "<div class='update-nag'>$msg</div>";
 	}
 }
-add_action( 'admin_notices', 'secret_salt_warning' );
-
-function admin_notice_feed() {
-	global $current_screen;
-	if ( $current_screen->id != 'dashboard' )
-		return;
-
-	if ( !empty( $_GET['feed_dismiss'] ) ) {
-		update_user_option( get_current_user_id(), 'admin_feed_dismiss', $_GET['feed_dismiss'], true );
-		return;
-	}
-
-	$url = get_site_option( 'admin_notice_feed' );
-	if ( empty( $url ) )
-		return;
-
-	$rss = fetch_feed( $url );
-	if ( ! is_wp_error( $rss ) && $item = $rss->get_item() ) {
-		$title = $item->get_title();
-		if ( md5( $title ) == get_user_option( 'admin_feed_dismiss' ) )
-			return;
-		$msg = "<h3>" . esc_html( $title ) . "</h3>\n";
-		$content = $item->get_description();
-		$content = $content ? wp_html_excerpt( $content, 200 ) . ' &hellip; ' : '';
-		$link = esc_url( strip_tags( $item->get_link() ) );
-		$msg .= "<p>" . $content . "<a href='$link'>" . __( 'Read More' ) . "</a> <a href='index.php?feed_dismiss=" . md5( $title ) . "'>" . __( 'Dismiss' ) . "</a></p>";
-		echo "<div class='updated'>$msg</div>";
-	} elseif ( is_super_admin() ) {
-		printf( '<div class="update-nag">' . __( 'Your feed at %s is empty.' ) . '</div>', esc_html( $url ) );
-	}
-}
-add_action( 'admin_notices', 'admin_notice_feed' );
+add_action( 'network_admin_notices', 'secret_salt_warning' );
 
 function site_admin_notice() {
 	global $wp_db_version;
@@ -628,6 +594,7 @@ function site_admin_notice() {
 		echo "<div class='update-nag'>" . sprintf( __( 'Thank you for Updating! Please visit the <a href="%s">Update Network</a> page to update all your sites.' ), esc_url( network_admin_url( 'upgrade.php' ) ) ) . "</div>";
 }
 add_action( 'admin_notices', 'site_admin_notice' );
+add_action( 'network_admin_notices', 'site_admin_notice' );
 
 function avoid_blog_page_permalink_collision( $data, $postarr ) {
 	if ( is_subdomain_install() )
@@ -706,13 +673,13 @@ function ms_deprecated_blogs_file() {
 		return;
 	echo '<div class="update-nag">' . sprintf( __( 'The <code>%1$s</code> file is deprecated. Please remove it and update your server rewrite rules to use <code>%2$s</code> instead.' ), 'wp-content/blogs.php', 'wp-includes/ms-files.php' ) . '</div>';
 }
-add_action( 'admin_notices', 'ms_deprecated_blogs_file' );
+add_action( 'network_admin_notices', 'ms_deprecated_blogs_file' );
 
 /**
  * Grants super admin privileges.
  *
  * @since 3.0.0
- * @param $user_id
+ * @param int $user_id
  */
 function grant_super_admin( $user_id ) {
 	global $super_admins;
@@ -740,7 +707,7 @@ function grant_super_admin( $user_id ) {
  * Revokes super admin privileges.
  *
  * @since 3.0.0
- * @param $user_id
+ * @param int $user_id
  */
 function revoke_super_admin( $user_id ) {
 	global $super_admins;
@@ -764,5 +731,61 @@ function revoke_super_admin( $user_id ) {
 		}
 	}
 	return false;
+}
+
+/**
+ * Whether or not we can edit this network from this page
+ *
+ * By default editing of network is restricted to the Network Admin for that site_id this allows for this to be overridden
+ *
+ * @since 3.1.0
+ * @param integer $site_id The network/site id to check.
+ */
+function can_edit_network( $site_id ) {
+	global $wpdb;
+
+	if ($site_id == $wpdb->siteid )
+		$result = true;
+	else
+		$result = false;
+
+	return apply_filters( 'can_edit_network', $result, $site_id );
+}
+
+/**
+ * Thickbox image paths for Network Admin.
+ *
+ * @since 3.1.0
+ * @access private
+ */
+function _thickbox_path_admin_subfolder() {
+?>
+<script type="text/javascript">
+//<![CDATA[
+var tb_pathToImage = "../../wp-includes/js/thickbox/loadingAnimation.gif";
+var tb_closeImage = "../../wp-includes/js/thickbox/tb-close.png";
+//]]>
+</script>
+<?php
+}
+
+/**
+ * Whether or not we have a large network.
+ *
+ * The default criteria for a large network is either more than 10,000 users or more than 10,000 sites.
+ * Plugins can alter this criteria  using the 'wp_is_large_network' filter.
+ *
+ * @since 3.3.0
+ * @param string $using 'sites or 'users'.  Default is 'sites'.
+ * @return bool True if the network meets the criteria for large. False otherwise.
+ */
+function wp_is_large_network( $using = 'sites' ) {
+	if ( 'users' == $using ) {
+		$count = get_user_count();
+		return apply_filters( 'wp_is_large_network', $count > 10000, 'users', $count );
+	}
+
+	$count = get_blog_count();
+	return apply_filters( 'wp_is_large_network', $count > 10000, 'sites', $count );
 }
 ?>

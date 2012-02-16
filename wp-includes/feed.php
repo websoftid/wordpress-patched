@@ -63,7 +63,8 @@ function bloginfo_rss($show = '') {
  * @return string Default feed, or for example 'rss2', 'atom', etc.
  */
 function get_default_feed() {
-	return apply_filters('default_feed', 'rss2');
+	$default_feed = apply_filters('default_feed', 'rss2');
+	return 'rss' == $default_feed ? 'rss2' : $default_feed;
 }
 
 /**
@@ -204,7 +205,7 @@ function comments_link_feed() {
  *
  * @package WordPress
  * @subpackage Feed
- * @since unknown
+ * @since 2.5.0
  *
  * @param int|object $comment_id Optional comment object or id. Defaults to global comment object.
  */
@@ -217,7 +218,7 @@ function comment_guid($comment_id = null) {
  *
  * @package WordPress
  * @subpackage Feed
- * @since unknown
+ * @since 2.5.0
  *
  * @param int|object $comment_id Optional comment object or id. Defaults to global comment object.
  * @return bool|string false on failure or guid for comment on success.

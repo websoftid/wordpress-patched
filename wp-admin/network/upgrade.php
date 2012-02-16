@@ -7,9 +7,10 @@
  * @since 3.0.0
  */
 
-require_once('./admin.php');
+/** Load WordPress Administration Bootstrap */
+require_once( './admin.php' );
 
-if ( !is_multisite() )
+if ( ! is_multisite() )
 	wp_die( __( 'Multisite support is not enabled.' ) );
 
 require_once( ABSPATH . WPINC . '/http.php' );
@@ -17,12 +18,18 @@ require_once( ABSPATH . WPINC . '/http.php' );
 $title = __( 'Update Network' );
 $parent_file = 'upgrade.php';
 
-add_contextual_help($current_screen,
-	'<p>' . __('Only use this screen once you have updated to a new version of WordPress through Dashboard > Updates. Clicking the Update Network button will step through each site in the network, five at a time, and make sure any database upgrades are applied.') . '</p>' .
-	'<p>' . __('If a version update to core has not happened, clicking this button won&#8217;t affect anything.') . '</p>' .
-	'<p>' . __('If this process fails for any reason, users logging in to their sites will force the same update.') . '</p>' .
+get_current_screen()->add_help_tab( array(
+	'id'      => 'overview',
+	'title'   => __('Overview'),
+	'content' =>
+		'<p>' . __('Only use this screen once you have updated to a new version of WordPress through Updates/Available Updates (via the Network Administration navigation menu or the Toolbar). Clicking the Update Network button will step through each site in the network, five at a time, and make sure any database updates are applied.') . '</p>' .
+		'<p>' . __('If a version update to core has not happened, clicking this button won&#8217;t affect anything.') . '</p>' .
+		'<p>' . __('If this process fails for any reason, users logging in to their sites will force the same update.') . '</p>'
+) );
+
+get_current_screen()->set_help_sidebar(
 	'<p><strong>' . __('For more information:') . '</strong></p>' .
-	'<p>' . __('<a href="http://codex.wordpress.org/Super_Admin_Update_SubPanel" target="_blank">Update Network Documentation</a>') . '</p>' .
+	'<p>' . __('<a href="http://codex.wordpress.org/Network_Admin_Updates_Screen" target="_blank">Documentation on Update Network</a>') . '</p>' .
 	'<p>' . __('<a href="http://wordpress.org/support/" target="_blank">Support Forums</a>') . '</p>'
 );
 
@@ -32,7 +39,7 @@ if ( ! current_user_can( 'manage_network' ) )
 	wp_die( __( 'You do not have permission to access this page.' ) );
 
 echo '<div class="wrap">';
-screen_icon();
+screen_icon('tools');
 echo '<h2>' . __( 'Update Network' ) . '</h2>';
 
 $action = isset($_GET['action']) ? $_GET['action'] : 'show';

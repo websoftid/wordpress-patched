@@ -19,56 +19,12 @@ $theme_field_defaults = array( 'description' => true, 'sections' => false, 'test
 	'tags' => true, 'num_ratings' => true
 );
 
-
-/**
- * Retrieve theme installer pages from WordPress Themes API.
- *
- * It is possible for a theme to override the Themes API result with three
- * filters. Assume this is for themes, which can extend on the Theme Info to
- * offer more choices. This is very powerful and must be used with care, when
- * overridding the filters.
- *
- * The first filter, 'themes_api_args', is for the args and gives the action as
- * the second parameter. The hook for 'themes_api_args' must ensure that an
- * object is returned.
- *
- * The second filter, 'themes_api', is the result that would be returned.
- *
- * @since 2.8.0
- *
- * @param string $action
- * @param array|object $args Optional. Arguments to serialize for the Theme Info API.
- * @return mixed
- */
-function themes_api($action, $args = null) {
-
-	if ( is_array($args) )
-		$args = (object)$args;
-
-	if ( !isset($args->per_page) )
-		$args->per_page = 24;
-
-	$args = apply_filters('themes_api_args', $args, $action); //NOTE: Ensure that an object is returned via this filter.
-	$res = apply_filters('themes_api', false, $action, $args); //NOTE: Allows a theme to completely override the builtin WordPress.org API.
-
-	if ( ! $res ) {
-		$request = wp_remote_post('http://api.wordpress.org/themes/info/1.0/', array( 'body' => array('action' => $action, 'request' => serialize($args))) );
-		if ( is_wp_error($request) ) {
-			$res = new WP_Error('themes_api_failed', __('An Unexpected HTTP Error occured during the API request.</p> <p><a href="?" onclick="document.location.reload(); return false;">Try again</a>'), $request->get_error_message() );
-		} else {
-			$res = unserialize($request['body']);
-			if ( ! $res )
-			$res = new WP_Error('themes_api_failed', __('An unknown error occured'), $request['body']);
-		}
-	}
-	//var_dump(array($args, $res));
-	return apply_filters('themes_api_result', $res, $action, $args);
-}
-
 /**
  * Retrieve list of WordPress theme features (aka theme tags)
  *
  * @since 2.8.0
+ *
+ * @deprecated since 3.1.0  Use get_theme_feature_list() instead.
  *
  * @return array
  */
@@ -107,7 +63,7 @@ function install_theme_search_form() {
 	<option value="tag" <?php selected('tag', $type) ?>><?php _ex('Tag', 'Theme Installer'); ?></option>
 	</select>
 	<input type="text" name="s" size="30" value="<?php echo esc_attr($term) ?>" />
-	<input type="submit" name="search" value="<?php esc_attr_e('Search'); ?>" class="button" />
+	<?php submit_button( __( 'Search' ), 'button', 'search', false ); ?>
 </form>
 <?php
 }
@@ -121,33 +77,18 @@ function install_themes_dashboard() {
 	install_theme_search_form();
 ?>
 <h4><?php _e('Feature Filter') ?></h4>
-<form method="post" action="<?php echo admin_url( 'theme-install.php?tab=search' ); ?>">
+<form method="post" action="<?php echo self_admin_url( 'theme-install.php?tab=search' ); ?>">
 <p class="install-help"><?php _e('Find a theme based on specific features') ?></p>
 	<?php
-	$feature_list = install_themes_feature_list( );
+	$feature_list = get_theme_feature_list( );
 	echo '<div class="feature-filter">';
-	$trans = array ('Colors' => __('Colors'), 'black' => __('Black'), 'blue' => __('Blue'), 'brown' => __('Brown'),
-		'green' => __('Green'), 'orange' => __('Orange'), 'pink' => __('Pink'), 'purple' => __('Purple'), 'red' => __('Red'),
-		'silver' => __('Silver'), 'tan' => __('Tan'), 'white' => __('White'), 'yellow' => __('Yellow'), 'dark' => __('Dark'),
-		'light' => __('Light'), 'Columns' => __('Columns'), 'one-column' => __('One Column'), 'two-columns' => __('Two Columns'),
-		'three-columns' => __('Three Columns'), 'four-columns' => __('Four Columns'), 'left-sidebar' => __('Left Sidebar'),
-		'right-sidebar' => __('Right Sidebar'), 'Width' => __('Width'), 'fixed-width' => __('Fixed Width'), 'flexible-width' => __('Flexible Width'),
-		'Features' => __('Features'), 'custom-colors' => __('Custom Colors'), 'custom-header' => __('Custom Header'), 'theme-options' => __('Theme Options'),
-		'threaded-comments' => __('Threaded Comments'), 'sticky-post' => __('Sticky Post'), 'microformats' => __('Microformats'),
-		'Subject' => __('Subject'), 'holiday' => __('Holiday'), 'photoblogging' => __('Photoblogging'), 'seasonal' => __('Seasonal'),
-	);
 
 	foreach ( (array) $feature_list as $feature_name => $features ) {
-		if ( isset($trans[$feature_name]) )
-			 $feature_name = $trans[$feature_name];
 		$feature_name = esc_html( $feature_name );
 		echo '<div class="feature-name">' . $feature_name . '</div>';
 
-		echo '<ol style="float: left; width: 725px;" class="feature-group">';
-		foreach ( $features as $feature ) {
-			$feature_name = $feature;
-			if ( isset($trans[$feature]) )
-				$feature_name = $trans[$feature];
+		echo '<ol class="feature-group">';
+		foreach ( $features as $feature => $feature_name ) {
 			$feature_name = esc_html( $feature_name );
 			$feature = esc_attr($feature);
 ?>
@@ -165,7 +106,7 @@ function install_themes_dashboard() {
 
 </div>
 <br class="clear" />
-<p><input type="submit" name="search" value="<?php esc_attr_e('Find Themes'); ?>" class="button" /></p>
+<?php submit_button( __( 'Find Themes' ), 'button', 'search' ); ?>
 </form>
 <?php
 }
@@ -175,11 +116,10 @@ function install_themes_upload($page = 1) {
 ?>
 <h4><?php _e('Install a theme in .zip format') ?></h4>
 <p class="install-help"><?php _e('If you have a theme in a .zip format, you may install it by uploading it here.') ?></p>
-<form method="post" enctype="multipart/form-data" action="<?php echo admin_url('update.php?action=upload-theme') ?>">
+<form method="post" enctype="multipart/form-data" action="<?php echo self_admin_url('update.php?action=upload-theme') ?>">
 	<?php wp_nonce_field( 'theme-upload') ?>
 	<input type="file" name="themezip" />
-	<input type="submit"
-	class="button" value="<?php esc_attr_e('Install Now') ?>" />
+	<?php submit_button( __( 'Install Now' ), 'button', 'install-theme-submit', false ); ?>
 </form>
 	<?php
 }
@@ -199,9 +139,10 @@ function display_theme($theme, $actions = null, $show_details = true) {
 	$preview_link = $theme->preview_url . '?TB_iframe=true&amp;width=600&amp;height=400';
 	if ( !is_array($actions) ) {
 		$actions = array();
-		$actions[] = '<a href="' . admin_url('theme-install.php?tab=theme-information&amp;theme=' . $theme->slug .
+		$actions[] = '<a href="' . self_admin_url('theme-install.php?tab=theme-information&amp;theme=' . $theme->slug .
 										'&amp;TB_iframe=true&amp;tbWidth=500&amp;tbHeight=385') . '" class="thickbox thickbox-preview onclick" title="' . esc_attr(sprintf(__('Install &#8220;%s&#8221;'), $name)) . '">' . __('Install') . '</a>';
-		$actions[] = '<a href="' . $preview_link . '" class="thickbox thickbox-preview onclick previewlink" title="' . esc_attr(sprintf(__('Preview &#8220;%s&#8221;'), $name)) . '">' . __('Preview') . '</a>';
+		if ( !is_network_admin() )
+			$actions[] = '<a href="' . $preview_link . '" class="thickbox thickbox-preview onclick previewlink" title="' . esc_attr(sprintf(__('Preview &#8220;%s&#8221;'), $name)) . '">' . __('Preview') . '</a>';
 		$actions = apply_filters('theme_install_action_links', $actions, $theme);
 	}
 
@@ -231,11 +172,11 @@ function display_theme($theme, $actions = null, $show_details = true) {
 <?php endif; ?>
 <div class="star-holder" title="<?php printf(_n('(based on %s rating)', '(based on %s ratings)', $theme->num_ratings), number_format_i18n($theme->num_ratings)) ?>">
 	<div class="star star-rating" style="width: <?php echo esc_attr($theme->rating) ?>px"></div>
-	<div class="star star5"><img src="<?php echo admin_url('images/star.gif'); ?>" alt="<?php _e('5 stars') ?>" /></div>
-	<div class="star star4"><img src="<?php echo admin_url('images/star.gif'); ?>" alt="<?php _e('4 stars') ?>" /></div>
-	<div class="star star3"><img src="<?php echo admin_url('images/star.gif'); ?>" alt="<?php _e('3 stars') ?>" /></div>
-	<div class="star star2"><img src="<?php echo admin_url('images/star.gif'); ?>" alt="<?php _e('2 stars') ?>" /></div>
-	<div class="star star1"><img src="<?php echo admin_url('images/star.gif'); ?>" alt="<?php _e('1 star') ?>" /></div>
+	<div class="star star5"><img src="<?php echo admin_url('images/star.png?v=20110615'); ?>" alt="<?php esc_attr_e('5 stars') ?>" /></div>
+	<div class="star star4"><img src="<?php echo admin_url('images/star.png?v=20110615'); ?>" alt="<?php esc_attr_e('4 stars') ?>" /></div>
+	<div class="star star3"><img src="<?php echo admin_url('images/star.png?v=20110615'); ?>" alt="<?php esc_attr_e('3 stars') ?>" /></div>
+	<div class="star star2"><img src="<?php echo admin_url('images/star.png?v=20110615'); ?>" alt="<?php esc_attr_e('2 stars') ?>" /></div>
+	<div class="star star1"><img src="<?php echo admin_url('images/star.png?v=20110615'); ?>" alt="<?php esc_attr_e('1 star') ?>" /></div>
 </div>
 </div>
 <?php }
@@ -296,7 +237,7 @@ function install_theme_information() {
 	iframe_header( __('Theme Install') );
 
 	if ( empty($api->download_link) ) {
-		echo '<div id="message" class="error"><p>' . __('<strong>Error:</strong> This theme is currently not available. Please try again later.') . '</p></div>';
+		echo '<div id="message" class="error"><p>' . __('<strong>ERROR:</strong> This theme is currently not available. Please try again later.') . '</p></div>';
 		iframe_footer();
 		exit;
 	}
@@ -321,7 +262,7 @@ function install_theme_information() {
 	}
 
 	$themes = get_themes();
-	foreach ( $themes as $this_theme ) {
+	foreach ( (array) $themes as $this_theme ) {
 		if ( is_array($this_theme) && $this_theme['Stylesheet'] == $api->slug ) {
 			if ( $this_theme['Version'] == $api->version ) {
 				$type = 'latest_installed';
@@ -347,12 +288,12 @@ switch ( $type ) {
 default:
 case 'install':
 	if ( current_user_can('install_themes') ) :
-	$buttons .= '<a class="button-primary" id="install" href="' . wp_nonce_url(admin_url('update.php?action=install-theme&theme=' . $api->slug), 'install-theme_' . $api->slug) . '" target="_parent">' . __('Install Now') . '</a>';
+	$buttons .= '<a class="button-primary" id="install" href="' . wp_nonce_url(self_admin_url('update.php?action=install-theme&theme=' . $api->slug), 'install-theme_' . $api->slug) . '" target="_parent">' . __('Install Now') . '</a>';
 	endif;
 	break;
 case 'update_available':
 	if ( current_user_can('update_themes') ) :
-	$buttons .= '<a class="button-primary" id="install"	href="' . wp_nonce_url(admin_url('update.php?action=upgrade-theme&theme=' . $update_file), 'upgrade-theme_' . $update_file) . '" target="_parent">' . __('Install Update Now') . '</a>';
+	$buttons .= '<a class="button-primary" id="install"	href="' . wp_nonce_url(self_admin_url('update.php?action=upgrade-theme&theme=' . $update_file), 'upgrade-theme_' . $update_file) . '" target="_parent">' . __('Install Update Now') . '</a>';
 	endif;
 	break;
 case 'newer_installed':
