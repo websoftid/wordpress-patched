@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
 V 40
-/!svn/ver/19578/trunk/wp-includes/images
+/!svn/ver/20814/trunk/wp-includes/images
 END
 arrow-pointer-blue.png
 K 25
@@ -44,6 +44,12 @@ K 25
 svn:wc:ra_dav:version-url
 V 48
 /!svn/ver/19557/trunk/wp-includes/images/xit.gif
+END
+admin-bar-sprite-2x.png
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/!svn/ver/20814/trunk/wp-includes/images/admin-bar-sprite-2x.png
 END
 rss.png
 K 25

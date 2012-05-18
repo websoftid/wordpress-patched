@@ -43,38 +43,40 @@ do_action( 'customize_controls_print_scripts' );
 <body class="wp-full-overlay">
 	<form id="customize-controls" class="wrap wp-full-overlay-sidebar">
 		<?php wp_nonce_field( 'customize_controls' ); ?>
-		<div id="customize-header-actions" class="customize-section wp-full-overlay-header">
+		<div id="customize-header-actions" class="wp-full-overlay-header">
 			<a class="back" href="<?php echo esc_url( admin_url( 'themes.php' ) ); ?>">
 				<?php printf( __( '&larr; Return to %s' ), __('Manage Themes') ); ?>
 			</a>
 		</div>
 
-		<div id="customize-info" class="customize-section">
-			<div class="customize-section-title">
-				<span class="preview-notice"><?php _e('You are previewing'); ?></span>
-				<strong class="theme-name"><?php echo $this->theme->display('Name'); ?></strong>
-			</div>
-			<div class="customize-section-content">
-				<?php if ( $screenshot = $this->theme->get_screenshot() ) : ?>
-					<img class="theme-screenshot" src="<?php echo esc_url( $screenshot ); ?>" />
-				<?php endif; ?>
+		<div class="wp-full-overlay-sidebar-content">
+			<div id="customize-info" class="customize-section">
+				<div class="customize-section-title">
+					<span class="preview-notice"><?php _e('You are previewing'); ?></span>
+					<strong class="theme-name"><?php echo $this->theme->display('Name'); ?></strong>
+				</div>
+				<div class="customize-section-content">
+					<?php if ( $screenshot = $this->theme->get_screenshot() ) : ?>
+						<img class="theme-screenshot" src="<?php echo esc_url( $screenshot ); ?>" />
+					<?php endif; ?>
 
-				<?php if ( $this->theme->get('Description') ): ?>
-					<div class="theme-description"><?php echo $this->theme->display('Description'); ?></div>
-				<?php endif; ?>
+					<?php if ( $this->theme->get('Description') ): ?>
+						<div class="theme-description"><?php echo $this->theme->display('Description'); ?></div>
+					<?php endif; ?>
+				</div>
 			</div>
+
+			<div id="customize-theme-controls"><ul>
+				<?php
+				foreach ( $this->sections as $section )
+					$section->maybe_render();
+				?>
+			</ul></div>
 		</div>
 
-		<div id="customize-theme-controls"><ul>
+		<div id="customize-footer-actions" class="wp-full-overlay-footer">
 			<?php
-			foreach ( $this->sections as $section )
-				$section->maybe_render();
-			?>
-		</ul></div>
-
-		<div id="customize-footer-actions" class="customize-section wp-full-overlay-footer">
-			<?php
-			$save_text = $this->get_stylesheet() == $this->original_stylesheet ? __('Save') : __('Save and Activate');
+			$save_text = $this->is_current_theme_active() ? __('Save') : __('Save and Activate');
 			submit_button( $save_text, 'primary', 'save', false );
 			?>
 			<img src="<?php echo esc_url( admin_url( 'images/wpspin_light.gif' ) ); ?>" />
@@ -90,20 +92,23 @@ do_action( 'customize_controls_print_scripts' );
 
 	do_action( 'customize_controls_print_footer_scripts' );
 
-	// Check current scheme and load the preview with the same scheme
-	$scheme = is_ssl() ? 'https' : 'http';
 	$settings = array(
-		'theme'    => $this->get_stylesheet(),
-		'preview'  => esc_url( home_url( '/', $scheme ) ),
+		'theme'    => array(
+			'stylesheet' => $this->get_stylesheet(),
+			'active'     => $this->is_current_theme_active(),
+		),
+		'url'      => array(
+			'preview'  => esc_url( home_url( '/' ) ),
+			'parent'   => esc_url( admin_url() ),
+			'ajax'     => esc_url( admin_url( 'admin-ajax.php', 'relative' ) ),
+		),
 		'settings' => array(),
 		'controls' => array(),
-		'parent'   => esc_url( admin_url() ),
-		'ajax'     => esc_url( admin_url( 'admin-ajax.php', 'relative' ) ),
 	);
 
 	foreach ( $this->settings as $id => $setting ) {
 		$settings['settings'][ $id ] = array(
-			'value'     => $setting->value(),
+			'value'     => $setting->js_value(),
 			'transport' => $setting->transport,
 		);
 	}
@@ -115,12 +120,7 @@ do_action( 'customize_controls_print_scripts' );
 
 	?>
 	<script type="text/javascript">
-		(function() {
-			if ( typeof wp === 'undefined' || ! wp.customize )
-				return;
-
-			wp.customize.settings = <?php echo json_encode( $settings ); ?>;
-		})();
+		var _wpCustomizeSettings = <?php echo json_encode( $settings ); ?>;
 	</script>
 </body>
 </html>

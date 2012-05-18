@@ -1,25 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
 V 33
-/!svn/ver/20726/trunk/wp-includes
-END
-feed-rss2.php
-K 25
-svn:wc:ra_dav:version-url
-V 47
-/!svn/ver/19784/trunk/wp-includes/feed-rss2.php
-END
-default-filters.php
-K 25
-svn:wc:ra_dav:version-url
-V 53
-/!svn/ver/20652/trunk/wp-includes/default-filters.php
-END
-admin-bar.php
-K 25
-svn:wc:ra_dav:version-url
-V 47
-/!svn/ver/20666/trunk/wp-includes/admin-bar.php
+/!svn/ver/20825/trunk/wp-includes
 END
 class-snoopy.php
 K 25
@@ -27,17 +9,29 @@ svn:wc:ra_dav:version-url
 V 50
 /!svn/ver/16005/trunk/wp-includes/class-snoopy.php
 END
+admin-bar.php
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/!svn/ver/20666/trunk/wp-includes/admin-bar.php
+END
+default-filters.php
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/!svn/ver/20652/trunk/wp-includes/default-filters.php
+END
+feed-rss2.php
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/!svn/ver/19784/trunk/wp-includes/feed-rss2.php
+END
 class-wp-atom-server.php
 K 25
 svn:wc:ra_dav:version-url
 V 58
 /!svn/ver/20715/trunk/wp-includes/class-wp-atom-server.php
-END
-plugin.php
-K 25
-svn:wc:ra_dav:version-url
-V 44
-/!svn/ver/19712/trunk/wp-includes/plugin.php
 END
 post-template.php
 K 25
@@ -45,17 +39,23 @@ svn:wc:ra_dav:version-url
 V 51
 /!svn/ver/20654/trunk/wp-includes/post-template.php
 END
-locale.php
+plugin.php
 K 25
 svn:wc:ra_dav:version-url
 V 44
-/!svn/ver/19837/trunk/wp-includes/locale.php
+/!svn/ver/19712/trunk/wp-includes/plugin.php
 END
 nav-menu-template.php
 K 25
 svn:wc:ra_dav:version-url
 V 55
 /!svn/ver/20513/trunk/wp-includes/nav-menu-template.php
+END
+locale.php
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/!svn/ver/19837/trunk/wp-includes/locale.php
 END
 feed-atom.php
 K 25
@@ -75,17 +75,17 @@ svn:wc:ra_dav:version-url
 V 56
 /!svn/ver/20461/trunk/wp-includes/ms-default-filters.php
 END
-class-wp-customize.php
-K 25
-svn:wc:ra_dav:version-url
-V 56
-/!svn/ver/20649/trunk/wp-includes/class-wp-customize.php
-END
 wlwmanifest.xml
 K 25
 svn:wc:ra_dav:version-url
 V 49
 /!svn/ver/19712/trunk/wp-includes/wlwmanifest.xml
+END
+class-wp-customize.php
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/!svn/ver/20809/trunk/wp-includes/class-wp-customize.php
 END
 class-wp-customize-section.php
 K 25
@@ -127,7 +127,7 @@ class-http.php
 K 25
 svn:wc:ra_dav:version-url
 V 48
-/!svn/ver/20399/trunk/wp-includes/class-http.php
+/!svn/ver/20767/trunk/wp-includes/class-http.php
 END
 update.php
 K 25
@@ -157,19 +157,19 @@ post.php
 K 25
 svn:wc:ra_dav:version-url
 V 42
-/!svn/ver/20726/trunk/wp-includes/post.php
+/!svn/ver/20779/trunk/wp-includes/post.php
 END
 version.php
 K 25
 svn:wc:ra_dav:version-url
 V 45
-/!svn/ver/20725/trunk/wp-includes/version.php
+/!svn/ver/20825/trunk/wp-includes/version.php
 END
 class-wp-customize-control.php
 K 25
 svn:wc:ra_dav:version-url
 V 64
-/!svn/ver/20598/trunk/wp-includes/class-wp-customize-control.php
+/!svn/ver/20777/trunk/wp-includes/class-wp-customize-control.php
 END
 default-widgets.php
 K 25
@@ -207,17 +207,17 @@ svn:wc:ra_dav:version-url
 V 58
 /!svn/ver/18514/trunk/wp-includes/pluggable-deprecated.php
 END
+theme.php
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/!svn/ver/20802/trunk/wp-includes/theme.php
+END
 comment.php
 K 25
 svn:wc:ra_dav:version-url
 V 45
 /!svn/ver/20569/trunk/wp-includes/comment.php
-END
-theme.php
-K 25
-svn:wc:ra_dav:version-url
-V 43
-/!svn/ver/20712/trunk/wp-includes/theme.php
 END
 class-IXR.php
 K 25
@@ -225,23 +225,17 @@ svn:wc:ra_dav:version-url
 V 47
 /!svn/ver/19712/trunk/wp-includes/class-IXR.php
 END
-functions.php
-K 25
-svn:wc:ra_dav:version-url
-V 47
-/!svn/ver/20715/trunk/wp-includes/functions.php
-END
 feed-rss.php
 K 25
 svn:wc:ra_dav:version-url
 V 46
 /!svn/ver/19784/trunk/wp-includes/feed-rss.php
 END
-l10n.php
+functions.php
 K 25
 svn:wc:ra_dav:version-url
-V 42
-/!svn/ver/20648/trunk/wp-includes/l10n.php
+V 47
+/!svn/ver/20715/trunk/wp-includes/functions.php
 END
 registration.php
 K 25
@@ -249,23 +243,11 @@ svn:wc:ra_dav:version-url
 V 50
 /!svn/ver/19712/trunk/wp-includes/registration.php
 END
-comment-template.php
+l10n.php
 K 25
 svn:wc:ra_dav:version-url
-V 54
-/!svn/ver/20641/trunk/wp-includes/comment-template.php
-END
-class.wp-styles.php
-K 25
-svn:wc:ra_dav:version-url
-V 53
-/!svn/ver/19712/trunk/wp-includes/class.wp-styles.php
-END
-template.php
-K 25
-svn:wc:ra_dav:version-url
-V 46
-/!svn/ver/20075/trunk/wp-includes/template.php
+V 42
+/!svn/ver/20788/trunk/wp-includes/l10n.php
 END
 vars.php
 K 25
@@ -273,17 +255,29 @@ svn:wc:ra_dav:version-url
 V 42
 /!svn/ver/20417/trunk/wp-includes/vars.php
 END
+template.php
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/!svn/ver/20075/trunk/wp-includes/template.php
+END
+class.wp-styles.php
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/!svn/ver/19712/trunk/wp-includes/class.wp-styles.php
+END
+comment-template.php
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/!svn/ver/20641/trunk/wp-includes/comment-template.php
+END
 feed-rdf.php
 K 25
 svn:wc:ra_dav:version-url
 V 46
 /!svn/ver/13113/trunk/wp-includes/feed-rdf.php
-END
-rss-functions.php
-K 25
-svn:wc:ra_dav:version-url
-V 51
-/!svn/ver/19712/trunk/wp-includes/rss-functions.php
 END
 shortcodes.php
 K 25
@@ -291,23 +285,11 @@ svn:wc:ra_dav:version-url
 V 48
 /!svn/ver/19712/trunk/wp-includes/shortcodes.php
 END
-functions.wp-styles.php
+rss-functions.php
 K 25
 svn:wc:ra_dav:version-url
-V 57
-/!svn/ver/19687/trunk/wp-includes/functions.wp-styles.php
-END
-class.wp-dependencies.php
-K 25
-svn:wc:ra_dav:version-url
-V 59
-/!svn/ver/19593/trunk/wp-includes/class.wp-dependencies.php
-END
-bookmark-template.php
-K 25
-svn:wc:ra_dav:version-url
-V 55
-/!svn/ver/19712/trunk/wp-includes/bookmark-template.php
+V 51
+/!svn/ver/19712/trunk/wp-includes/rss-functions.php
 END
 user.php
 K 25
@@ -315,23 +297,23 @@ svn:wc:ra_dav:version-url
 V 42
 /!svn/ver/20612/trunk/wp-includes/user.php
 END
-class.wp-scripts.php
+bookmark-template.php
 K 25
 svn:wc:ra_dav:version-url
-V 54
-/!svn/ver/20000/trunk/wp-includes/class.wp-scripts.php
+V 55
+/!svn/ver/19712/trunk/wp-includes/bookmark-template.php
 END
-load.php
+class.wp-dependencies.php
 K 25
 svn:wc:ra_dav:version-url
-V 42
-/!svn/ver/19862/trunk/wp-includes/load.php
+V 59
+/!svn/ver/19593/trunk/wp-includes/class.wp-dependencies.php
 END
-media.php
+functions.wp-styles.php
 K 25
 svn:wc:ra_dav:version-url
-V 43
-/!svn/ver/20701/trunk/wp-includes/media.php
+V 57
+/!svn/ver/19687/trunk/wp-includes/functions.wp-styles.php
 END
 post-thumbnail-template.php
 K 25
@@ -339,23 +321,41 @@ svn:wc:ra_dav:version-url
 V 61
 /!svn/ver/20646/trunk/wp-includes/post-thumbnail-template.php
 END
+media.php
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/!svn/ver/20701/trunk/wp-includes/media.php
+END
+load.php
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/!svn/ver/19862/trunk/wp-includes/load.php
+END
+class.wp-scripts.php
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/!svn/ver/20000/trunk/wp-includes/class.wp-scripts.php
+END
 registration-functions.php
 K 25
 svn:wc:ra_dav:version-url
 V 60
 /!svn/ver/19712/trunk/wp-includes/registration-functions.php
 END
-customize-controls.php
-K 25
-svn:wc:ra_dav:version-url
-V 56
-/!svn/ver/20645/trunk/wp-includes/customize-controls.php
-END
 ms-blogs.php
 K 25
 svn:wc:ra_dav:version-url
 V 46
 /!svn/ver/20461/trunk/wp-includes/ms-blogs.php
+END
+customize-controls.php
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/!svn/ver/20809/trunk/wp-includes/customize-controls.php
 END
 feed-atom-comments.php
 K 25
@@ -367,7 +367,7 @@ class-wp-xmlrpc-server.php
 K 25
 svn:wc:ra_dav:version-url
 V 60
-/!svn/ver/20715/trunk/wp-includes/class-wp-xmlrpc-server.php
+/!svn/ver/20807/trunk/wp-includes/class-wp-xmlrpc-server.php
 END
 class-phpass.php
 K 25
@@ -391,7 +391,7 @@ query.php
 K 25
 svn:wc:ra_dav:version-url
 V 43
-/!svn/ver/20491/trunk/wp-includes/query.php
+/!svn/ver/20756/trunk/wp-includes/query.php
 END
 class-wp-ajax-response.php
 K 25
@@ -409,7 +409,7 @@ option.php
 K 25
 svn:wc:ra_dav:version-url
 V 44
-/!svn/ver/20287/trunk/wp-includes/option.php
+/!svn/ver/20784/trunk/wp-includes/option.php
 END
 wp-db.php
 K 25
@@ -541,7 +541,7 @@ script-loader.php
 K 25
 svn:wc:ra_dav:version-url
 V 51
-/!svn/ver/20721/trunk/wp-includes/script-loader.php
+/!svn/ver/20802/trunk/wp-includes/script-loader.php
 END
 ms-default-constants.php
 K 25
@@ -571,7 +571,7 @@ http.php
 K 25
 svn:wc:ra_dav:version-url
 V 42
-/!svn/ver/19593/trunk/wp-includes/http.php
+/!svn/ver/20794/trunk/wp-includes/http.php
 END
 class-wp-error.php
 K 25
@@ -595,7 +595,7 @@ class-wp-customize-setting.php
 K 25
 svn:wc:ra_dav:version-url
 V 64
-/!svn/ver/20645/trunk/wp-includes/class-wp-customize-setting.php
+/!svn/ver/20809/trunk/wp-includes/class-wp-customize-setting.php
 END
 ms-functions.php
 K 25

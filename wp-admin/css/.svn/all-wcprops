@@ -1,19 +1,19 @@
 K 25
 svn:wc:ra_dav:version-url
 V 34
-/!svn/ver/20717/trunk/wp-admin/css
+/!svn/ver/20825/trunk/wp-admin/css
 END
 wp-admin-rtl.dev.css
 K 25
 svn:wc:ra_dav:version-url
 V 55
-/!svn/ver/20705/trunk/wp-admin/css/wp-admin-rtl.dev.css
+/!svn/ver/20824/trunk/wp-admin/css/wp-admin-rtl.dev.css
 END
 wp-admin.dev.css
 K 25
 svn:wc:ra_dav:version-url
 V 51
-/!svn/ver/20716/trunk/wp-admin/css/wp-admin.dev.css
+/!svn/ver/20818/trunk/wp-admin/css/wp-admin.dev.css
 END
 media-rtl.dev.css
 K 25
@@ -21,17 +21,23 @@ svn:wc:ra_dav:version-url
 V 52
 /!svn/ver/19360/trunk/wp-admin/css/media-rtl.dev.css
 END
+ie-rtl.css
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/!svn/ver/20273/trunk/wp-admin/css/ie-rtl.css
+END
 media.dev.css
 K 25
 svn:wc:ra_dav:version-url
 V 48
 /!svn/ver/19684/trunk/wp-admin/css/media.dev.css
 END
-ie-rtl.css
+colors-classic.dev.css
 K 25
 svn:wc:ra_dav:version-url
-V 45
-/!svn/ver/20273/trunk/wp-admin/css/ie-rtl.css
+V 57
+/!svn/ver/20754/trunk/wp-admin/css/colors-classic.dev.css
 END
 ie.css
 K 25
@@ -39,23 +45,17 @@ svn:wc:ra_dav:version-url
 V 41
 /!svn/ver/20709/trunk/wp-admin/css/ie.css
 END
-colors-classic.dev.css
+colors-fresh.css
 K 25
 svn:wc:ra_dav:version-url
-V 57
-/!svn/ver/20705/trunk/wp-admin/css/colors-classic.dev.css
+V 51
+/!svn/ver/20755/trunk/wp-admin/css/colors-fresh.css
 END
 install.css
 K 25
 svn:wc:ra_dav:version-url
 V 46
 /!svn/ver/19861/trunk/wp-admin/css/install.css
-END
-colors-fresh.css
-K 25
-svn:wc:ra_dav:version-url
-V 51
-/!svn/ver/20707/trunk/wp-admin/css/colors-fresh.css
 END
 ie-rtl.dev.css
 K 25
@@ -73,13 +73,13 @@ wp-admin-rtl.css
 K 25
 svn:wc:ra_dav:version-url
 V 51
-/!svn/ver/20707/trunk/wp-admin/css/wp-admin-rtl.css
+/!svn/ver/20825/trunk/wp-admin/css/wp-admin-rtl.css
 END
 wp-admin.css
 K 25
 svn:wc:ra_dav:version-url
 V 47
-/!svn/ver/20717/trunk/wp-admin/css/wp-admin.css
+/!svn/ver/20819/trunk/wp-admin/css/wp-admin.css
 END
 media-rtl.css
 K 25
@@ -97,7 +97,7 @@ colors-classic.css
 K 25
 svn:wc:ra_dav:version-url
 V 53
-/!svn/ver/20707/trunk/wp-admin/css/colors-classic.css
+/!svn/ver/20755/trunk/wp-admin/css/colors-classic.css
 END
 farbtastic.css
 K 25
@@ -115,5 +115,5 @@ colors-fresh.dev.css
 K 25
 svn:wc:ra_dav:version-url
 V 55
-/!svn/ver/20705/trunk/wp-admin/css/colors-fresh.dev.css
+/!svn/ver/20754/trunk/wp-admin/css/colors-fresh.dev.css
 END

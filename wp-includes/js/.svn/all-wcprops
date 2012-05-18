@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
 V 36
-/!svn/ver/20725/trunk/wp-includes/js
+/!svn/ver/20817/trunk/wp-includes/js
 END
 wp-pointer.js
 K 25
@@ -25,7 +25,7 @@ customize-base.dev.js
 K 25
 svn:wc:ra_dav:version-url
 V 58
-/!svn/ver/20645/trunk/wp-includes/js/customize-base.dev.js
+/!svn/ver/20801/trunk/wp-includes/js/customize-base.dev.js
 END
 json2.dev.js
 K 25
@@ -49,7 +49,7 @@ customize-preview.dev.js
 K 25
 svn:wc:ra_dav:version-url
 V 61
-/!svn/ver/20598/trunk/wp-includes/js/customize-preview.dev.js
+/!svn/ver/20802/trunk/wp-includes/js/customize-preview.dev.js
 END
 wplink.dev.js
 K 25
@@ -67,7 +67,7 @@ customize-controls.js
 K 25
 svn:wc:ra_dav:version-url
 V 58
-/!svn/ver/20647/trunk/wp-includes/js/customize-controls.js
+/!svn/ver/20817/trunk/wp-includes/js/customize-controls.js
 END
 swfobject.js
 K 25
@@ -79,7 +79,7 @@ customize-loader.js
 K 25
 svn:wc:ra_dav:version-url
 V 56
-/!svn/ver/20521/trunk/wp-includes/js/customize-loader.js
+/!svn/ver/20803/trunk/wp-includes/js/customize-loader.js
 END
 tw-sack.dev.js
 K 25
@@ -91,19 +91,7 @@ customize-base.js
 K 25
 svn:wc:ra_dav:version-url
 V 54
-/!svn/ver/20647/trunk/wp-includes/js/customize-base.js
-END
-json2.js
-K 25
-svn:wc:ra_dav:version-url
-V 45
-/!svn/ver/17679/trunk/wp-includes/js/json2.js
-END
-comment-reply.js
-K 25
-svn:wc:ra_dav:version-url
-V 53
-/!svn/ver/10291/trunk/wp-includes/js/comment-reply.js
+/!svn/ver/20803/trunk/wp-includes/js/customize-base.js
 END
 wp-list-revisions.dev.js
 K 25
@@ -111,23 +99,35 @@ svn:wc:ra_dav:version-url
 V 61
 /!svn/ver/12733/trunk/wp-includes/js/wp-list-revisions.dev.js
 END
+comment-reply.js
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/!svn/ver/10291/trunk/wp-includes/js/comment-reply.js
+END
+json2.js
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/!svn/ver/17679/trunk/wp-includes/js/json2.js
+END
 customize-preview.js
 K 25
 svn:wc:ra_dav:version-url
 V 57
-/!svn/ver/20603/trunk/wp-includes/js/customize-preview.js
-END
-autosave.dev.js
-K 25
-svn:wc:ra_dav:version-url
-V 52
-/!svn/ver/19593/trunk/wp-includes/js/autosave.dev.js
+/!svn/ver/20803/trunk/wp-includes/js/customize-preview.js
 END
 wplink.js
 K 25
 svn:wc:ra_dav:version-url
 V 46
 /!svn/ver/20429/trunk/wp-includes/js/wplink.js
+END
+autosave.dev.js
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/!svn/ver/19593/trunk/wp-includes/js/autosave.dev.js
 END
 admin-bar.dev.js
 K 25
@@ -205,13 +205,13 @@ customize-controls.dev.js
 K 25
 svn:wc:ra_dav:version-url
 V 62
-/!svn/ver/20645/trunk/wp-includes/js/customize-controls.dev.js
+/!svn/ver/20816/trunk/wp-includes/js/customize-controls.dev.js
 END
 customize-loader.dev.js
 K 25
 svn:wc:ra_dav:version-url
 V 60
-/!svn/ver/20517/trunk/wp-includes/js/customize-loader.dev.js
+/!svn/ver/20802/trunk/wp-includes/js/customize-loader.dev.js
 END
 wp-ajax-response.js
 K 25

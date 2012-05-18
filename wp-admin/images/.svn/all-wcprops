@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
 V 37
-/!svn/ver/20702/trunk/wp-admin/images
+/!svn/ver/20818/trunk/wp-admin/images
 END
 screen-options-toggle-vs.gif
 K 25
@@ -21,23 +21,23 @@ svn:wc:ra_dav:version-url
 V 49
 /!svn/ver/8304/trunk/wp-admin/images/required.gif
 END
-loading-publish.gif
-K 25
-svn:wc:ra_dav:version-url
-V 56
-/!svn/ver/9866/trunk/wp-admin/images/loading-publish.gif
-END
 blue-grad.png
 K 25
 svn:wc:ra_dav:version-url
 V 51
 /!svn/ver/16145/trunk/wp-admin/images/blue-grad.png
 END
-menu.png
+loading-publish.gif
 K 25
 svn:wc:ra_dav:version-url
-V 46
-/!svn/ver/19813/trunk/wp-admin/images/menu.png
+V 56
+/!svn/ver/9866/trunk/wp-admin/images/loading-publish.gif
+END
+white-grad-active.png
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/!svn/ver/9842/trunk/wp-admin/images/white-grad-active.png
 END
 menu-dark.gif
 K 25
@@ -45,11 +45,11 @@ svn:wc:ra_dav:version-url
 V 50
 /!svn/ver/9777/trunk/wp-admin/images/menu-dark.gif
 END
-white-grad-active.png
+menu.png
 K 25
 svn:wc:ra_dav:version-url
-V 58
-/!svn/ver/9842/trunk/wp-admin/images/white-grad-active.png
+V 46
+/!svn/ver/19813/trunk/wp-admin/images/menu.png
 END
 wp-logo-vs.png
 K 25
@@ -75,17 +75,17 @@ svn:wc:ra_dav:version-url
 V 55
 /!svn/ver/13970/trunk/wp-admin/images/widgets-arrow.gif
 END
-logo-ghost.png
-K 25
-svn:wc:ra_dav:version-url
-V 51
-/!svn/ver/8691/trunk/wp-admin/images/logo-ghost.png
-END
 arrows-dark-vs.png
 K 25
 svn:wc:ra_dav:version-url
 V 56
 /!svn/ver/17924/trunk/wp-admin/images/arrows-dark-vs.png
+END
+logo-ghost.png
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/!svn/ver/8691/trunk/wp-admin/images/logo-ghost.png
 END
 menu-bits.gif
 K 25
@@ -183,17 +183,17 @@ svn:wc:ra_dav:version-url
 V 56
 /!svn/ver/16773/trunk/wp-admin/images/upload-classic.png
 END
-icons32-2x.png
-K 25
-svn:wc:ra_dav:version-url
-V 52
-/!svn/ver/20356/trunk/wp-admin/images/icons32-2x.png
-END
 se.png
 K 25
 svn:wc:ra_dav:version-url
 V 43
 /!svn/ver/8720/trunk/wp-admin/images/se.png
+END
+icons32-2x.png
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/!svn/ver/20356/trunk/wp-admin/images/icons32-2x.png
 END
 menu-bits-rtl-vs.gif
 K 25
@@ -285,29 +285,29 @@ svn:wc:ra_dav:version-url
 V 44
 /!svn/ver/9240/trunk/wp-admin/images/fav.png
 END
-media-button-video.gif
-K 25
-svn:wc:ra_dav:version-url
-V 60
-/!svn/ver/14893/trunk/wp-admin/images/media-button-video.gif
-END
 gray-grad.png
 K 25
 svn:wc:ra_dav:version-url
 V 50
 /!svn/ver/9328/trunk/wp-admin/images/gray-grad.png
 END
-resize-rtl.gif
+media-button-video.gif
 K 25
 svn:wc:ra_dav:version-url
-V 52
-/!svn/ver/17941/trunk/wp-admin/images/resize-rtl.gif
+V 60
+/!svn/ver/14893/trunk/wp-admin/images/media-button-video.gif
 END
 logo.gif
 K 25
 svn:wc:ra_dav:version-url
 V 45
 /!svn/ver/8720/trunk/wp-admin/images/logo.gif
+END
+resize-rtl.gif
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/!svn/ver/17941/trunk/wp-admin/images/resize-rtl.gif
 END
 align-left.png
 K 25
@@ -333,17 +333,17 @@ svn:wc:ra_dav:version-url
 V 55
 /!svn/ver/20702/trunk/wp-admin/images/icons32-vs-2x.png
 END
-comment-grey-bubble.png
-K 25
-svn:wc:ra_dav:version-url
-V 60
-/!svn/ver/6778/trunk/wp-admin/images/comment-grey-bubble.png
-END
 button-grad-active.png
 K 25
 svn:wc:ra_dav:version-url
 V 59
 /!svn/ver/9842/trunk/wp-admin/images/button-grad-active.png
+END
+comment-grey-bubble.png
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/!svn/ver/6778/trunk/wp-admin/images/comment-grey-bubble.png
 END
 wpspin_dark.gif
 K 25
@@ -351,17 +351,17 @@ svn:wc:ra_dav:version-url
 V 53
 /!svn/ver/11203/trunk/wp-admin/images/wpspin_dark.gif
 END
-menu-dark-rtl.gif
-K 25
-svn:wc:ra_dav:version-url
-V 54
-/!svn/ver/9778/trunk/wp-admin/images/menu-dark-rtl.gif
-END
 arrows-vs.png
 K 25
 svn:wc:ra_dav:version-url
 V 51
 /!svn/ver/17924/trunk/wp-admin/images/arrows-vs.png
+END
+menu-dark-rtl.gif
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/!svn/ver/9778/trunk/wp-admin/images/menu-dark-rtl.gif
 END
 wheel.png
 K 25
@@ -399,18 +399,6 @@ svn:wc:ra_dav:version-url
 V 46
 /!svn/ver/17110/trunk/wp-admin/images/sort.gif
 END
-gray-star.png
-K 25
-svn:wc:ra_dav:version-url
-V 51
-/!svn/ver/18318/trunk/wp-admin/images/gray-star.png
-END
-star.png
-K 25
-svn:wc:ra_dav:version-url
-V 46
-/!svn/ver/18318/trunk/wp-admin/images/star.png
-END
 fade-butt.png
 K 25
 svn:wc:ra_dav:version-url
@@ -428,6 +416,12 @@ K 25
 svn:wc:ra_dav:version-url
 V 59
 /!svn/ver/20356/trunk/wp-admin/images/wordpress-logo-2x.png
+END
+wp-badge-2x.png
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/!svn/ver/20818/trunk/wp-admin/images/wp-badge-2x.png
 END
 icons32.png
 K 25
@@ -530,4 +524,10 @@ K 25
 svn:wc:ra_dav:version-url
 V 51
 /!svn/ver/9733/trunk/wp-admin/images/white-grad.png
+END
+stars-rtl.png
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/!svn/ver/20754/trunk/wp-admin/images/stars-rtl.png
 END

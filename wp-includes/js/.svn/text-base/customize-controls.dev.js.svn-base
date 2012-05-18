@@ -137,11 +137,14 @@
 
 			this.success = $.proxy( this.success, this );
 
-			this.uploader = new wp.Uploader({
-				browser:  this.container.find('.upload'),
-				dropzone: this.container.find('.upload-dropzone'),
-				success:  this.success
-			});
+			this.uploader = $.extend({
+				container: this.container,
+				browser:   this.container.find('.upload'),
+				dropzone:  this.container.find('.upload-dropzone'),
+				success:   this.success
+			}, this.uploader || {} );
+
+			this.uploader = new wp.Uploader( this.uploader );
 
 			this.remover = this.container.find('.remove');
 			this.remover.click( function( event ) {
@@ -168,6 +171,10 @@
 		ready: function() {
 			var control = this,
 				panels;
+
+			this.uploader = {};
+			if ( ! wp.Uploader.dragdrop )
+				this.uploader.browser = this.container.find( '.upload-fallback' );
 
 			api.UploadControl.prototype.ready.call( this );
 
@@ -311,6 +318,15 @@
 
 			api.Messenger.prototype.initialize.call( this, params.url );
 
+			this.scroll = 0;
+			this.bind( 'scroll', function( distance ) {
+				this.scroll = distance;
+			});
+
+			// We're dynamically generating the iframe, so the origin is set
+			// to the current window's location, not the url's.
+			this.origin.unlink( this.url ).set( window.location.href );
+
 			this.bind( 'url', function( url ) {
 				// Bail if we're navigating to the current url, to a different origin, or wp-admin.
 				if ( this.url() == url || 0 !== url.indexOf( this.origin() + '/' ) || -1 !== url.indexOf( 'wp-admin' ) )
@@ -331,10 +347,12 @@
 		loaded: function() {
 			if ( this.iframe )
 				this.iframe.remove();
+
 			this.iframe = this.loading;
 			delete this.loading;
 
 			this.targetWindow( this.iframe[0].contentWindow );
+			this.send( 'scroll', this.scroll );
 		},
 		query: function() {},
 		refresh: function() {
@@ -343,15 +361,22 @@
 			if ( this.request )
 				this.request.abort();
 
-			this.request = $.post( this.url(), this.query() || {}, function( response ) {
-				var iframe = self.loader()[0].contentWindow;
+			this.request = $.ajax( this.url(), {
+				type: 'POST',
+				data: this.query() || {},
+				success: function( response ) {
+					var iframe = self.loader()[0].contentWindow;
 
-				self.loader().one( 'load', self.loaded );
+					self.loader().one( 'load', self.loaded );
 
-				iframe.document.open();
-				iframe.document.write( response );
-				iframe.document.close();
-			});
+					iframe.document.open();
+					iframe.document.write( response );
+					iframe.document.close();
+				},
+				xhrFields: {
+					withCredentials: true
+				}
+			} );
 		}
 	});
 
@@ -366,6 +391,9 @@
 	};
 
 	$( function() {
+		api.settings = window._wpCustomizeSettings;
+		api.l10n = window._wpCustomizeControlsL10n;
+
 		if ( ! api.settings )
 			return;
 
@@ -382,12 +410,12 @@
 		previewer = new api.Previewer({
 			container: '#customize-preview',
 			form:      '#customize-controls',
-			url:       api.settings.preview
+			url:       api.settings.url.preview
 		}, {
 			query: function() {
 				return {
 					customize:  'on',
-					theme:      api.settings.theme,
+					theme:      api.settings.theme.stylesheet,
 					customized: JSON.stringify( api.get() )
 				};
 			},
@@ -399,7 +427,9 @@
 						action: 'customize_save',
 						nonce:  this.nonce
 					}),
-					request = $.post( api.settings.ajax, query );
+					request = $.post( api.settings.url.ajax, query );
+
+				api.trigger( 'save', request );
 
 				body.addClass('saving');
 				request.always( function() {
@@ -409,7 +439,7 @@
 		});
 
 		$.each( api.settings.settings, function( id, data ) {
-			api.set( id, id, data.value, {
+			api.create( id, id, data.value, {
 				transport: data.transport,
 				previewer: previewer
 			} );
@@ -446,16 +476,36 @@
 		});
 
 		// Create a potential postMessage connection with the parent frame.
-		parent = new api.Messenger( api.settings.parent );
+		parent = new api.Messenger( api.settings.url.parent );
 
 		// If we receive a 'back' event, we're inside an iframe.
 		// Send any clicks to the 'Return' link to the parent page.
 		parent.bind( 'back', function( text ) {
-			$('.back').text( text ).click( function( event ) {
+			var back = $('.back');
+
+			if ( text )
+				back.text( text );
+
+			back.on( 'click.back', function( event ) {
 				event.preventDefault();
 				parent.send( 'close' );
 			});
 		});
+
+		// If the current theme isn't active, it will be activated on save,
+		// rendering the previous page
+		api.bind( 'save', function( request ) {
+			request.done( function() {
+				parent.send( 'saved' );
+
+				if ( ! api.settings.theme.active ) {
+					parent.send( 'switched' );
+					$('#save').val( api.l10n.save );
+				}
+
+				api.settings.theme.active = true;
+			});
+		} );
 
 		// Initialize the connection with the parent frame.
 		parent.send( 'ready' );
@@ -500,7 +550,7 @@
 
 			control.element.bind( function( to ) {
 				if ( ! to )
-					last = api.get( 'header_textcolor' );
+					last = api( 'header_textcolor' ).get();
 
 				control.setting.set( to ? last : 'blank' );
 			});
@@ -509,6 +559,8 @@
 				control.element.set( 'blank' !== to );
 			});
 		});
+
+		api.trigger( 'ready' );
 	});
 
 })( wp, jQuery );

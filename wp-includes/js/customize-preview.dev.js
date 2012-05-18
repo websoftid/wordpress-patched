@@ -1,5 +1,21 @@
 (function( exports, $ ){
-	var api = wp.customize;
+	var api = wp.customize,
+		debounce;
+
+	debounce = function( fn, delay, context ) {
+		var timeout;
+		return function() {
+			var args = arguments;
+
+			context = context || this;
+
+			clearTimeout( timeout );
+			timeout = setTimeout( function() {
+				timeout = null;
+				fn.apply( context, args );
+			}, delay );
+		};
+	};
 
 	api.Preview = api.Messenger.extend({
 		/**
@@ -18,7 +34,7 @@
 			this.body = $( document.body );
 			this.body.on( 'click.preview', 'a', function( event ) {
 				event.preventDefault();
-				self.send( 'url', $(this).attr('href') );
+				self.send( 'url', $(this).prop('href') );
 			});
 
 			// You cannot submit forms.
@@ -27,23 +43,35 @@
 			this.body.on( 'submit.preview', 'form', function( event ) {
 				event.preventDefault();
 			});
+
+			this.window = $( window );
+			this.window.on( 'scroll.preview', debounce( function() {
+				self.send( 'scroll', self.window.scrollTop() );
+			}, 200 ));
+
+			this.bind( 'scroll', function( distance ) {
+				self.window.scrollTop( distance );
+			});
 		}
 	});
 
 	$( function() {
+		api.settings = window._wpCustomizeSettings;
 		if ( ! api.settings )
 			return;
 
 		var preview, body;
 
-		preview = new api.Preview( api.settings.parent );
+		preview = new api.Preview( window.location.href );
 
 		$.each( api.settings.values, function( id, value ) {
-			api.set( id, value );
+			api.create( id, value );
 		});
 
 		preview.bind( 'setting', function( args ) {
-			api.set.apply( api, args );
+			var value = api( args.shift() );
+			if ( value )
+				value.set.apply( value, args );
 		});
 
 		body = $(document.body);

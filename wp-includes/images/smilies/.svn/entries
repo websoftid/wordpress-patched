@@ -1,7 +1,7 @@
 10
 
 dir
-20728
+20826
 http://core.svn.wordpress.org/trunk/wp-includes/images/smilies
 http://core.svn.wordpress.org
 
@@ -94,40 +94,6 @@ has-props
 
 171
 
-icon_question.gif
-file
-
-
-
-
-2012-05-06T04:39:52.000000Z
-0518596a4eb94c32a2b2ed898bdc3549
-2005-08-27T19:10:56.940452Z
-2813
-matt
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-248
-
 icon_sad.gif
 file
 
@@ -161,6 +127,40 @@ has-props
 
 
 171
+
+icon_question.gif
+file
+
+
+
+
+2012-05-06T04:39:52.000000Z
+0518596a4eb94c32a2b2ed898bdc3549
+2005-08-27T19:10:56.940452Z
+2813
+matt
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+248
 
 icon_wink.gif
 file
@@ -400,40 +400,6 @@ has-props
 
 238
 
-icon_razz.gif
-file
-
-
-
-
-2012-05-06T04:39:52.000000Z
-7aec68426aa06f01e2b1ac250e5aee62
-2005-08-27T19:10:56.940452Z
-2813
-matt
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-176
-
 icon_lol.gif
 file
 
@@ -467,6 +433,40 @@ has-props
 
 
 336
+
+icon_razz.gif
+file
+
+
+
+
+2012-05-06T04:39:52.000000Z
+7aec68426aa06f01e2b1ac250e5aee62
+2005-08-27T19:10:56.940452Z
+2813
+matt
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+176
 
 icon_redface.gif
 file

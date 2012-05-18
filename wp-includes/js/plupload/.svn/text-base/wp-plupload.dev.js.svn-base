@@ -2,6 +2,8 @@ if ( typeof wp === 'undefined' )
 	var wp = {};
 
 (function( exports, $ ) {
+	var Uploader;
+
 	/*
 	 * An object that helps create a WordPress uploader using plupload.
 	 *
@@ -16,7 +18,7 @@ if ( typeof wp === 'undefined' )
 	 *
 	 * @param attributes - object - Attributes and methods for this specific instance.
 	 */
-	var Uploader = function( options ) {
+	Uploader = function( options ) {
 		var self = this,
 			elements = {
 				container: 'container',
@@ -70,6 +72,8 @@ if ( typeof wp === 'undefined' )
 
 		this.uploader.init();
 
+		this.browser.on( 'mouseenter', this.refresh );
+
 		this.uploader.bind( 'UploadProgress', this.progress );
 
 		this.uploader.bind( 'FileUploaded', function( up, file, response ) {
@@ -116,6 +120,18 @@ if ( typeof wp === 'undefined' )
 		});
 	};
 
+	Uploader.dragdrop = (function() {
+		// Thank you, Modernizr!
+		// http://modernizr.com/
+		var div = document.createElement('div');
+		return ('draggable' in div) || ('ondragstart' in div && 'ondrop' in div);
+	}());
+
+	$( function() {
+		if ( Uploader.dragdrop )
+			$( document.body ).addClass('uploader-drag-drop');
+	});
+
 	Uploader.uuid = 0;
 
 	Uploader.errorMap = {
@@ -160,7 +176,10 @@ if ( typeof wp === 'undefined' )
 		success:  function() {},
 		added:    function() {},
 		progress: function() {},
-		complete: function() {}
+		complete: function() {},
+		refresh:  function() {
+			this.uploader.refresh();
+		}
 	});
 
 	exports.Uploader = Uploader;

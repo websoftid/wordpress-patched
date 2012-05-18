@@ -1,7 +1,7 @@
 10
 
 dir
-20728
+20826
 http://core.svn.wordpress.org/trunk/wp-includes/js/jquery/ui
 http://core.svn.wordpress.org
 
@@ -740,40 +740,6 @@ has-props
 
 965
 
-jquery.ui.droppable.min.js
-file
-
-
-
-
-2012-05-06T04:39:46.000000Z
-07b2b6e067cae96848f1e017015e707e
-2012-04-30T21:53:09.424203Z
-20660
-nacin
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-5889
-
 jquery.ui.draggable.min.js
 file
 
@@ -807,6 +773,40 @@ has-props
 
 
 18736
+
+jquery.ui.droppable.min.js
+file
+
+
+
+
+2012-05-06T04:39:46.000000Z
+07b2b6e067cae96848f1e017015e707e
+2012-04-30T21:53:09.424203Z
+20660
+nacin
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5889
 
 jquery.effects.highlight.min.js
 file

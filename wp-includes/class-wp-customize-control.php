@@ -172,8 +172,8 @@ class WP_Customize_Control {
 			case 'checkbox':
 				?>
 				<label>
-					<span class="customize-control-title"><?php echo esc_html( $this->label ); ?></span>
 					<input type="checkbox" value="<?php echo esc_attr( $this->value() ); ?>" <?php $this->link(); checked( $this->value() ); ?> />
+					<?php echo esc_html( $this->label ); ?>
 				</label>
 				<?php
 				break;
@@ -389,6 +389,7 @@ class WP_Customize_Image_Control extends WP_Customize_Upload_Control {
 		<div class="upload-dropzone">
 			<?php _e('Drop a file here or <a href="#" class="upload">select a file</a>.'); ?>
 		</div>
+		<a class="button-secondary upload-fallback"><?php _e('Select File'); ?></a>
 		<?php
 	}
 

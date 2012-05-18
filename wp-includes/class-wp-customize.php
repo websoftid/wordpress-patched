@@ -71,6 +71,8 @@ final class WP_Customize {
 		if ( ! isset( $_REQUEST['customize'] ) || 'on' != $_REQUEST['customize'] )
 			return;
 
+		send_origin_headers();
+
 		$this->start_previewing_theme();
 		show_admin_bar( false );
 	}
@@ -143,6 +145,15 @@ final class WP_Customize {
 	}
 
 	/**
+	 * Checks if the current theme is active.
+	 *
+	 * @since 3.4.0
+	 */
+	public function is_current_theme_active() {
+		return $this->get_stylesheet() == $this->original_stylesheet;
+	}
+
+	/**
 	 * Register styles/scripts and initialize the preview of each setting
 	 *
 	 * @since 3.4.0
@@ -198,23 +209,16 @@ final class WP_Customize {
 	 */
 	public function customize_preview_settings() {
 		$settings = array(
-			// @todo: Perhaps grab the URL via $_POST?
-			'parent' => esc_url( admin_url( 'themes.php' ) ),
 			'values' => array(),
 		);
 
 		foreach ( $this->settings as $id => $setting ) {
-			$settings['values'][ $id ] = $setting->value();
+			$settings['values'][ $id ] = $setting->js_value();
 		}
 
 		?>
 		<script type="text/javascript">
-			(function() {
-				if ( typeof wp === 'undefined' || ! wp.customize )
-					return;
-
-				wp.customize.settings = <?php echo json_encode( $settings ); ?>;
-			})();
+			var _wpCustomizeSettings = <?php echo json_encode( $settings ); ?>;
 		</script>
 		<?php
 	}
