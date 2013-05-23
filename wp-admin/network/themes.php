@@ -13,11 +13,6 @@ require_once( './admin.php' );
 if ( ! is_multisite() )
 	wp_die( __( 'Multisite support is not enabled.' ) );
 
-$menu_perms = get_site_option( 'menu_items', array() );
-
-if ( empty( $menu_perms['themes'] ) && ! is_super_admin() )
-	wp_die( __( 'Cheatin&#8217; uh?' ) );
-
 if ( !current_user_can('manage_network_themes') )
 	wp_die( __( 'You do not have sufficient permissions to manage network themes.' ) );
 
@@ -40,7 +35,10 @@ if ( $action ) {
 			check_admin_referer('enable-theme_' . $_GET['theme']);
 			$allowed_themes[ $_GET['theme'] ] = true;
 			update_site_option( 'allowedthemes', $allowed_themes );
-			wp_safe_redirect( add_query_arg( 'enabled', 1, $referer ) );
+			if ( false === strpos( $referer, '/network/themes.php' ) )
+				wp_redirect( network_admin_url( 'themes.php?enabled=1' ) );
+			else
+				wp_safe_redirect( add_query_arg( 'enabled', 1, $referer ) );
 			exit;
 			break;
 		case 'disable':
@@ -178,10 +176,21 @@ if ( $action ) {
 				exit;
 			} // Endif verify-delete
 
-			foreach ( $themes as $theme )
-				$delete_result = delete_theme( $theme, esc_url( add_query_arg( array('verify-delete' => 1), $_SERVER['REQUEST_URI'] ) ) );
+			foreach ( $themes as $theme ) {
+				$delete_result = delete_theme( $theme, esc_url( add_query_arg( array(
+					'verify-delete' => 1,
+					'action' => 'delete-selected',
+					'checked' => $_REQUEST['checked'],
+					'_wpnonce' => $_REQUEST['_wpnonce']
+				), network_admin_url( 'themes.php' ) ) ) );
+			}
+			
 			$paged = ( $_REQUEST['paged'] ) ? $_REQUEST['paged'] : 1;
-			wp_redirect( network_admin_url( "themes.php?deleted=".count( $themes )."&paged=$paged&s=$s" ) );
+			wp_redirect( add_query_arg( array(
+				'deleted' => count( $themes ),
+				'paged' => $paged,
+				's' => $s
+			), network_admin_url( 'themes.php' ) ) );
 			exit;
 			break;
 	}

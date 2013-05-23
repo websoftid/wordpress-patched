@@ -97,14 +97,24 @@ function twentyeleven_setup() {
 	// Add support for a variety of post formats
 	add_theme_support( 'post-formats', array( 'aside', 'link', 'gallery', 'status', 'quote', 'image' ) );
 
+	$theme_options = twentyeleven_get_theme_options();
+	if ( 'dark' == $theme_options['color_scheme'] )
+		$default_background_color = '1d1d1d';
+	else
+		$default_background_color = 'e2e2e2';
+
 	// Add support for custom backgrounds.
-	add_theme_support( 'custom-background' );
+	add_theme_support( 'custom-background', array(
+		// Let WordPress know what our default background color is.
+		// This is dependent on our current color scheme.
+		'default-color' => $default_background_color,
+	) );
 
 	// This theme uses Featured Images (also known as post thumbnails) for per-post/per-page Custom Header images
 	add_theme_support( 'post-thumbnails' );
 
 	// Add support for custom headers.
-	add_theme_support( 'custom-header', array(
+	$custom_header_support = array(
 		// The default header text color.
 		'default-text-color' => '000',
 		// The height and width of our custom header.
@@ -120,16 +130,28 @@ function twentyeleven_setup() {
 		'admin-head-callback' => 'twentyeleven_admin_header_style',
 		// Callback used to display the header preview in the admin.
 		'admin-preview-callback' => 'twentyeleven_admin_header_image',
-	) );
+	);
+
+	add_theme_support( 'custom-header', $custom_header_support );
+
+	if ( ! function_exists( 'get_custom_header' ) ) {
+		// This is all for compatibility with versions of WordPress prior to 3.4.
+		define( 'HEADER_TEXTCOLOR', $custom_header_support['default-text-color'] );
+		define( 'HEADER_IMAGE', '' );
+		define( 'HEADER_IMAGE_WIDTH', $custom_header_support['width'] );
+		define( 'HEADER_IMAGE_HEIGHT', $custom_header_support['height'] );
+		add_custom_image_header( $custom_header_support['wp-head-callback'], $custom_header_support['admin-head-callback'], $custom_header_support['admin-preview-callback'] );
+		add_custom_background();
+	}
 
 	// We'll be using post thumbnails for custom header images on posts and pages.
 	// We want them to be the size of the header image that we just defined
 	// Larger images will be auto-cropped to fit, smaller ones will be ignored. See header.php.
-	set_post_thumbnail_size( get_theme_support( 'custom-header', 'width' ), get_theme_support( 'custom-header', 'height' ), true );
+	set_post_thumbnail_size( $custom_header_support['width'], $custom_header_support['height'], true );
 
 	// Add Twenty Eleven's custom image sizes.
 	// Used for large feature (header) images.
-	add_image_size( 'large-feature', get_theme_support( 'custom-header', 'width' ), get_theme_support( 'custom-header', 'height' ), true );
+	add_image_size( 'large-feature', $custom_header_support['width'], $custom_header_support['height'], true );
 	// Used for featured posts if a large-feature doesn't exist.
 	add_image_size( 'small-feature', 500, 300 );
 
@@ -197,8 +219,9 @@ function twentyeleven_header_style() {
 	$text_color = get_header_textcolor();
 
 	// If no custom options for text are set, let's bail.
-	if ( $text_color == get_theme_support( 'custom-header', 'default-text-color' ) )
+	if ( $text_color == HEADER_TEXTCOLOR )
 		return;
+
 	// If we get this far, we have custom styles. Let's do this.
 	?>
 	<style type="text/css">
@@ -259,7 +282,7 @@ function twentyeleven_admin_header_style() {
 	}
 	<?php
 		// If the user has set a custom color for the text use that
-		if ( get_header_textcolor() != get_theme_support( 'custom-header', 'default-text-color' ) ) :
+		if ( get_header_textcolor() != HEADER_TEXTCOLOR ) :
 	?>
 		#site-title a,
 		#site-description {
@@ -314,12 +337,14 @@ function twentyeleven_excerpt_length( $length ) {
 }
 add_filter( 'excerpt_length', 'twentyeleven_excerpt_length' );
 
+if ( ! function_exists( 'twentyeleven_continue_reading_link' ) ) :
 /**
  * Returns a "Continue Reading" link for excerpts
  */
 function twentyeleven_continue_reading_link() {
 	return ' <a href="'. esc_url( get_permalink() ) . '">' . __( 'Continue reading <span class="meta-nav">&rarr;</span>', 'twentyeleven' ) . '</a>';
 }
+endif; // twentyeleven_continue_reading_link
 
 /**
  * Replaces "[...]" (appended to automatically generated excerpts) with an ellipsis and twentyeleven_continue_reading_link().
@@ -350,7 +375,8 @@ add_filter( 'get_the_excerpt', 'twentyeleven_custom_excerpt_more' );
  * Get our wp_nav_menu() fallback, wp_page_menu(), to show a home link.
  */
 function twentyeleven_page_menu_args( $args ) {
-	$args['show_home'] = true;
+	if ( ! isset( $args['show_home'] ) )
+		$args['show_home'] = true;
 	return $args;
 }
 add_filter( 'wp_page_menu_args', 'twentyeleven_page_menu_args' );
@@ -419,11 +445,11 @@ if ( ! function_exists( 'twentyeleven_content_nav' ) ) :
 /**
  * Display navigation to next/previous pages when applicable
  */
-function twentyeleven_content_nav( $nav_id ) {
+function twentyeleven_content_nav( $html_id ) {
 	global $wp_query;
 
 	if ( $wp_query->max_num_pages > 1 ) : ?>
-		<nav id="<?php echo $nav_id; ?>">
+		<nav id="<?php echo esc_attr( $html_id ); ?>">
 			<h3 class="assistive-text"><?php _e( 'Post navigation', 'twentyeleven' ); ?></h3>
 			<div class="nav-previous"><?php next_posts_link( __( '<span class="meta-nav">&larr;</span> Older posts', 'twentyeleven' ) ); ?></div>
 			<div class="nav-next"><?php previous_posts_link( __( 'Newer posts <span class="meta-nav">&rarr;</span>', 'twentyeleven' ) ); ?></div>
@@ -515,7 +541,7 @@ function twentyeleven_comment( $comment, $args, $depth ) {
 						/* translators: 1: comment author, 2: date and time */
 						printf( __( '%1$s on %2$s <span class="says">said:</span>', 'twentyeleven' ),
 							sprintf( '<span class="fn">%s</span>', get_comment_author_link() ),
-							sprintf( '<a href="%1$s"><time pubdate datetime="%2$s">%3$s</time></a>',
+							sprintf( '<a href="%1$s"><time datetime="%2$s">%3$s</time></a>',
 								esc_url( get_comment_link( $comment->comment_ID ) ),
 								get_comment_time( 'c' ),
 								/* translators: 1: date, 2: time */
@@ -555,7 +581,7 @@ if ( ! function_exists( 'twentyeleven_posted_on' ) ) :
  * @since Twenty Eleven 1.0
  */
 function twentyeleven_posted_on() {
-	printf( __( '<span class="sep">Posted on </span><a href="%1$s" title="%2$s" rel="bookmark"><time class="entry-date" datetime="%3$s" pubdate>%4$s</time></a><span class="by-author"> <span class="sep"> by </span> <span class="author vcard"><a class="url fn n" href="%5$s" title="%6$s" rel="author">%7$s</a></span></span>', 'twentyeleven' ),
+	printf( __( '<span class="sep">Posted on </span><a href="%1$s" title="%2$s" rel="bookmark"><time class="entry-date" datetime="%3$s">%4$s</time></a><span class="by-author"> <span class="sep"> by </span> <span class="author vcard"><a class="url fn n" href="%5$s" title="%6$s" rel="author">%7$s</a></span></span>', 'twentyeleven' ),
 		esc_url( get_permalink() ),
 		esc_attr( get_the_time() ),
 		esc_attr( get_the_date( 'c' ) ),

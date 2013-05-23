@@ -29,7 +29,6 @@ get_current_screen()->add_help_tab( array(
 			'<p>' . __('Registration settings can disable/enable public signups. If you let others sign up for a site, install spam plugins. Spaces, not commas, should separate names banned as sites for this network.') . '</p>' .
 			'<p>' . __('New site settings are defaults applied when a new site is created in the network. These include welcome email for when a new site or user account is registered, and what&#8127;s put in the first post, page, comment, comment author, and comment URL.') . '</p>' .
 			'<p>' . __('Upload settings control the size of the uploaded files and the amount of available upload space for each site. You can change the default value for specific sites when you edit a particular site. Allowed file types are also listed (space separated only).') . '</p>' .
-			'<p>' . __('Checkboxes for media upload buttons set which are shown in the visual editor. If unchecked, a generic upload button is still visible; other media types can still be uploaded if on the allowed file types list.') . '</p>' .
 			'<p>' . __('Menu setting enables/disables the plugin menus from appearing for non super admins, so that only super admins, not site admins, have access to activate plugins.') . '</p>' .
 			'<p>' . __('Super admins can no longer be added on the Options screen. You must now go to the list of existing users on Network Admin > Users and click on Username or the Edit action link below that name. This goes to an Edit User page where you can check a box to grant super admin privileges.') . '</p>'
 ) );
@@ -45,53 +44,20 @@ if ( $_POST ) {
 
 	check_admin_referer( 'siteoptions' );
 
-	if ( isset( $_POST['WPLANG'] ) && ( '' === $_POST['WPLANG'] || in_array( $_POST['WPLANG'], get_available_languages() ) ) )
-		update_site_option( 'WPLANG', $_POST['WPLANG'] );
-
-	if ( is_email( $_POST['admin_email'] ) )
-		update_site_option( 'admin_email', $_POST['admin_email'] );
-
-	$illegal_names = explode( ' ', $_POST['illegal_names'] );
-	foreach ( (array) $illegal_names as $name ) {
-		$name = trim( $name );
-		if ( $name != '' )
-			$names[] = trim( $name );
-	}
-	update_site_option( 'illegal_names', $names );
-
-	if ( $_POST['limited_email_domains'] != '' ) {
-		$limited_email_domains = str_replace( ' ', "\n", $_POST['limited_email_domains'] );
-		$limited_email_domains = explode( "\n", stripslashes( $limited_email_domains ) );
-		$limited_email = array();
-		foreach ( (array) $limited_email_domains as $domain ) {
-			$domain = trim( $domain );
-			if ( ! preg_match( '/(--|\.\.)/', $domain ) && preg_match( '|^([a-zA-Z0-9-\.])+$|', $domain ) )
-				$limited_email[] = trim( $domain );
-		}
-		update_site_option( 'limited_email_domains', $limited_email );
-	} else {
-		update_site_option( 'limited_email_domains', '' );
-	}
-
-	if ( $_POST['banned_email_domains'] != '' ) {
-		$banned_email_domains = explode( "\n", stripslashes( $_POST['banned_email_domains'] ) );
-		$banned = array();
-		foreach ( (array) $banned_email_domains as $domain ) {
-			$domain = trim( $domain );
-			if ( ! preg_match( '/(--|\.\.)/', $domain ) && preg_match( '|^([a-zA-Z0-9-\.])+$|', $domain ) )
-				$banned[] = trim( $domain );
-		}
-		update_site_option( 'banned_email_domains', $banned );
-	} else {
-		update_site_option( 'banned_email_domains', '' );
-	}
-
-	$options = array( 'registrationnotification', 'registration', 'add_new_users', 'menu_items', 'upload_space_check_disabled', 'blog_upload_space', 'upload_filetypes', 'site_name', 'first_post', 'first_page', 'first_comment', 'first_comment_url', 'first_comment_author', 'welcome_email', 'welcome_user_email', 'fileupload_maxk', 'global_terms_enabled' );
 	$checked_options = array( 'menu_items' => array(), 'registrationnotification' => 'no', 'upload_space_check_disabled' => 1, 'add_new_users' => 0 );
 	foreach ( $checked_options as $option_name => $option_unchecked_value ) {
 		if ( ! isset( $_POST[$option_name] ) )
 			$_POST[$option_name] = $option_unchecked_value;
 	}
+
+	$options = array(
+		'registrationnotification', 'registration', 'add_new_users', 'menu_items',
+		'upload_space_check_disabled', 'blog_upload_space', 'upload_filetypes', 'site_name',
+		'first_post', 'first_page', 'first_comment', 'first_comment_url', 'first_comment_author',
+		'welcome_email', 'welcome_user_email', 'fileupload_maxk', 'global_terms_enabled',
+		'illegal_names', 'limited_email_domains', 'banned_email_domains', 'WPLANG', 'admin_email',
+	);
+
 	foreach ( $options as $option_name ) {
 		if ( ! isset($_POST[$option_name]) )
 			continue;

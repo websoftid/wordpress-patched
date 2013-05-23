@@ -134,7 +134,6 @@ class WP_Theme_Install_List_Table extends WP_Themes_List_Table {
 				<?php do_action( 'install_themes_table_header' ); ?>
 			</div>
 			<?php $this->pagination( 'top' ); ?>
-			<img src="<?php echo esc_url( admin_url( 'images/wpspin_light.gif' ) ); ?>" class="ajax-loading list-ajax-loading" alt="" />
 			<br class="clear" />
 		</div>
 
@@ -237,7 +236,7 @@ class WP_Theme_Install_List_Table extends WP_Themes_List_Table {
 				<?php foreach ( $actions as $action ): ?>
 					<li><?php echo $action; ?></li>
 				<?php endforeach; ?>
-				<li class="hide-if-no-js"><a href="#" class="theme-detail" tabindex='4'><?php _e('Details') ?></a></li>
+				<li class="hide-if-no-js"><a href="#" class="theme-detail"><?php _e('Details') ?></a></li>
 			</ul>
 		</div>
 
@@ -250,18 +249,20 @@ class WP_Theme_Install_List_Table extends WP_Themes_List_Table {
 	 */
 	function theme_installer() {
 		?>
-		<div id="theme-installer" class="wp-full-overlay">
-			<a href="#" class="close-full-overlay"><?php printf( __( '&larr; Return to %s' ), get_admin_page_title() ); ?></a>
-			<a href="#" class="collapse-sidebar button-secondary" title="<?php esc_attr_e('Collapse Sidebar'); ?>">
-				<span class="collapse-sidebar-label"><?php _e('Collapse'); ?></span>
-				<span class="collapse-sidebar-arrow"></span>
-			</a>
+		<div id="theme-installer" class="wp-full-overlay expanded">
 			<div class="wp-full-overlay-sidebar">
-				<div class="wp-full-overlay-header"></div>
+				<div class="wp-full-overlay-header">
+					<a href="#" class="close-full-overlay"><?php _e( '&larr; Close' ); ?></a>
+				</div>
 				<div class="wp-full-overlay-sidebar-content">
 					<div class="install-theme-info"></div>
 				</div>
-				<div class="wp-full-overlay-footer"></div>
+				<div class="wp-full-overlay-footer">
+					<a href="#" class="collapse-sidebar button-secondary" title="<?php esc_attr_e('Collapse Sidebar'); ?>">
+						<span class="collapse-sidebar-label"><?php _e('Collapse'); ?></span>
+						<span class="collapse-sidebar-arrow"></span>
+					</a>
+				</div>
 			</div>
 			<div class="wp-full-overlay-main"></div>
 		</div>
