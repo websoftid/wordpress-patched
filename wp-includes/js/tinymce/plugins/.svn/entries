@@ -1,67 +1,0 @@
-10
-
-dir
-20826
-http://core.svn.wordpress.org/trunk/wp-includes/js/tinymce/plugins
-http://core.svn.wordpress.org
-
-
-
-2012-05-16T07:58:24.962823Z
-20805
-bumpbot
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1a063a9b-81f0-0310-95a4-ce76da25c4cd
-
-media
-dir
-
-wpeditimage
-dir
-
-fullscreen
-dir
-
-directionality
-dir
-
-spellchecker
-dir
-
-wplink
-dir
-
-inlinepopups
-dir
-
-tabfocus
-dir
-
-wpgallery
-dir
-
-wordpress
-dir
-
-wpdialogs
-dir
-
-wpfullscreen
-dir
-
-paste
-dir
-
