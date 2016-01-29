@@ -1,0 +1,18 @@
+--- wp-admin/admin-ajax.php	2015-08-18 04:39:25.000000000 +0700
++++ wp-admin/admin-ajax.php	2015-11-05 04:49:26.000000000 +0700
+@@ -56,13 +56,13 @@
+ 	'hidden-columns', 'update-welcome-panel', 'menu-get-metabox', 'wp-link-ajax',
+ 	'menu-locations-save', 'menu-quick-search', 'meta-box-order', 'get-permalink',
+ 	'sample-permalink', 'inline-save', 'inline-save-tax', 'find_posts', 'widgets-order',
+-	'save-widget', 'set-post-thumbnail', 'date_format', 'time_format',
++	'save-widget', 'delete-inactive-widgets', 'set-post-thumbnail', 'date_format', 'time_format',
+ 	'wp-remove-post-lock', 'dismiss-wp-pointer', 'upload-attachment', 'get-attachment',
+ 	'query-attachments', 'save-attachment', 'save-attachment-compat', 'send-link-to-editor',
+ 	'send-attachment-to-editor', 'save-attachment-order', 'heartbeat', 'get-revision-diffs',
+ 	'save-user-color-scheme', 'update-widget', 'query-themes', 'parse-embed', 'set-attachment-thumbnail',
+ 	'parse-media-shortcode', 'destroy-sessions', 'install-plugin', 'update-plugin', 'press-this-save-post',
+-	'press-this-add-category', 'crop-image',
++	'press-this-add-category', 'crop-image', 'generate-password', 'save-wporg-username',
+ );
+ 
+ // Deprecated

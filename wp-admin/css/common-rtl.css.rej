@@ -1,0 +1,17 @@
+--- wp-admin/css/common-rtl.css	2015-04-08 10:19:28.000000000 +0700
++++ wp-admin/css/common-rtl.css	2015-07-24 23:51:27.000000000 +0700
+@@ -2055,6 +2046,14 @@
+ 	margin-top: 0;
+ }
+ 
++.edit-comment-author {
++	font-size: 14px;
++	line-height: 1.4;
++	font-weight: 600;
++	color: #222;
++	margin: 2px 9px 0 0;
++}
++
+ #namediv h3 label {
+ 	vertical-align: baseline;
+ }
