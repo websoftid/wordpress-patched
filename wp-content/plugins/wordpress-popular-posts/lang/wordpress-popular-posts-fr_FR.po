@@ -2,11 +2,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Wordpress Popular Posts\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-01-14 14:07-0430\n"
+"POT-Creation-Date: 2016-01-14 14:26-0430\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Héctor Cabrera <hcabrerab@gmail.com>\n"
-"Language-Team: Héctor Cabrera <hcabrerab@gmail.com>\n"
-"Language: es_ES\n"
+"Language-Team: Mathieu Chartier <mathieu.chartier@internet-formation.fr>\n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -14,18 +14,18 @@ msgstr ""
 "X-Poedit-KeywordsList: __;_e;_n:1,2\n"
 "X-Poedit-Basepath: .\n"
 "X-Generator: Poedit 1.8.6\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=(n!= 1);\n"
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPath-1: ..\n"
 
 #: ../views/admin.php:28 ../views/admin.php:43 ../views/admin.php:63
 #: ../views/admin.php:99
 msgid "Settings saved."
-msgstr "Configuraci&oacute;n guardada."
+msgstr "Réglages enregistrés."
 
 #: ../views/admin.php:54
 msgid "Please provide the name of your custom field."
-msgstr "Por favor indica el nombre de tu custom field."
+msgstr "Veuillez fournir le nom de votre champ personnalisé."
 
 #: ../views/admin.php:107
 msgid ""
@@ -34,10 +34,10 @@ msgid ""
 "file (located at wp-content/plugins/wordpress-popular-posts/style) into your "
 "theme's directory"
 msgstr ""
-"Cualquier cambio hecho a la hoja de estilos por defecto de WPP se "
-"perder&aacute; cada vez que el plugin se actualize. Para evitar esto, por "
-"favor copia el archivo wpp.css (ubicado en wp-content/plugins/wordpress-"
-"popular-posts/style) en la carpeta de tu tema actual."
+"Les modifications apportées à la feuille de style par défaut de WPP seront "
+"perdues après chaque mise à jour du plugin. Afin d'éviter cel , veuillez "
+"copier le fichier wpp.css (situé dans wp-content/plugins/wordpress-popular-"
+"post/style) dans le répertoire de votre thème"
 
 #. translators: Special characters (such as accents) must be replaced with Javascript Octal codes (eg. \341 is the Octal code for small a with acute accent)
 #: ../views/admin.php:122
@@ -45,29 +45,29 @@ msgid ""
 "This operation will delete all entries from WordPress Popular Posts' cache "
 "table and cannot be undone."
 msgstr ""
-"Esta operaci\\363n borrar\\341 todas las entradas en el cach\\351 de "
-"WordPress Popular Posts y no se puede deshacer."
+"Cette opération va supprimer tout le cache de la table de l'extension et ne "
+"peut être annulée."
 
 #. translators: Special characters (such as accents) must be replaced with Javascript Octal codes (eg. \341 is the Octal code for small a with acute accent)
 #: ../views/admin.php:122 ../views/admin.php:154 ../views/admin.php:186
 msgid "Do you want to continue?"
-msgstr "\\277Deseas continuar?"
+msgstr "Voulez-vous continuer ?"
 
 #. translators: Special characters (such as accents) must be replaced with Javascript Octal codes (eg. \341 is the Octal code for small a with acute accent)
 #: ../views/admin.php:128
 msgid "Success! The cache table has been cleared!"
-msgstr "&iexcl;&Eacute;xito! &iexcl;La tabla cach&eacute; ha sido borrada!"
+msgstr "La table de cache a été vidée avec succès !"
 
 #. translators: Special characters (such as accents) must be replaced with Javascript Octal codes (eg. \341 is the Octal code for small a with acute accent)
 #: ../views/admin.php:132
 msgid "Error: cache table does not exist."
-msgstr "Error: la tabla cach&eacute; no existe."
+msgstr "Erreur : la table de cache n'existe pas."
 
 #. translators: Special characters (such as accents) must be replaced with Javascript Octal codes (eg. \341 is the Octal code for small a with acute accent)
 #: ../views/admin.php:136 ../views/admin.php:144 ../views/admin.php:168
 #: ../views/admin.php:176 ../views/admin.php:200 ../views/admin.php:208
 msgid "Invalid action."
-msgstr "Acci\\277n inv\\341lida."
+msgstr "Action invalide."
 
 #. translators: Special characters (such as accents) must be replaced with Javascript Octal codes (eg. \341 is the Octal code for small a with acute accent)
 #: ../views/admin.php:140 ../views/admin.php:172 ../views/admin.php:204
@@ -75,8 +75,9 @@ msgid ""
 "Sorry, you do not have enough permissions to do this. Please contact the "
 "site administrator for support."
 msgstr ""
-"Lo lamento, no tienes permisos suficientes para hacer esto. Por favor "
-"contacta al administrador del sitio."
+"Désolé, vous ne devez pas avoir les autorisations suffisantes pour faire "
+"fonctionner l'extension. Veuillez contactez l'administrateur du site pour "
+"l'installation."
 
 #. translators: Special characters (such as accents) must be replaced with Javascript Octal codes (eg. \341 is the Octal code for small a with acute accent)
 #: ../views/admin.php:154
@@ -84,51 +85,51 @@ msgid ""
 "This operation will delete all stored info from WordPress Popular Posts' "
 "data tables and cannot be undone."
 msgstr ""
-"Esta operaci\\363n borrar\\341 toda la informaci\\363n guardada en las "
-"tablas de WordPress Popular Posts y no se puede deshacer."
+"Cette opération va supprimer toutes les informations stockées à partir des "
+"tables de l'extension et ne peut être annulée."
 
 #. translators: Special characters (such as accents) must be replaced with Javascript Octal codes (eg. \341 is the Octal code for small a with acute accent)
 #: ../views/admin.php:160
 msgid "Success! All data have been cleared!"
-msgstr "&iexcl;&Eacute;xito! &iexcl;Toda la data ha sido borrada!"
+msgstr "Toutes les données ont été effacées avec succès !"
 
 #. translators: Special characters (such as accents) must be replaced with Javascript Octal codes (eg. \341 is the Octal code for small a with acute accent)
 #: ../views/admin.php:164
 msgid "Error: one or both data tables are missing."
-msgstr "Error: una o ambas tablas de datos no existen."
+msgstr "Erreur : une ou deux tables de données sont manquantes."
 
 #. translators: Special characters (such as accents) must be replaced with Javascript Octal codes (eg. \341 is the Octal code for small a with acute accent)
 #: ../views/admin.php:186
 msgid "This operation will delete all cached thumbnails and cannot be undone."
 msgstr ""
-"Esta operaci\\363n borrar\\341 todas las miniaturas en el cach\\351 y no se "
-"puede deshacer."
+"Cette opération va supprimer toutes les miniatures en cache et ne peut être "
+"annulée."
 
 #. translators: Special characters (such as accents) must be replaced with Javascript Octal codes (eg. \341 is the Octal code for small a with acute accent)
 #: ../views/admin.php:192
 msgid "Success! All files have been deleted!"
-msgstr "\\241\\311xito! \\241Todos los archivos han sido borrados!"
+msgstr "Tous les fichiers ont été supprimés avec succès !"
 
 #. translators: Special characters (such as accents) must be replaced with Javascript Octal codes (eg. \341 is the Octal code for small a with acute accent)
 #: ../views/admin.php:196
 msgid "The thumbnail cache is already empty!"
-msgstr "\\241El cach\\351 de miniaturas ya est\\341 vac\\355o!"
+msgstr "Le cache des miniatures est déjà vide !"
 
 #: ../views/admin.php:244
 msgid "Stats"
-msgstr "Estad&iacute;sticas"
+msgstr "Statistiques"
 
 #: ../views/admin.php:245
 msgid "Tools"
-msgstr "Herramientas"
+msgstr "Outils"
 
 #: ../views/admin.php:246
 msgid "Parameters"
-msgstr "Par&aacute;metros"
+msgstr "Paramètres"
 
 #: ../views/admin.php:247
 msgid "About"
-msgstr "Acerca de"
+msgstr "À propos de"
 
 #: ../views/admin.php:258
 msgid ""
@@ -136,265 +137,263 @@ msgid ""
 "the last 24 hours, this week, last 30 days or all time since WordPress "
 "Popular Posts was installed."
 msgstr ""
-"Haz clic en cada pesta&ntilde;a para ver las entradas m&aacute;s populares "
-"de tu blog en las &uacute;ltimas 24 horas, esta semana, los &uacute;ltimos "
-"30 d&iacute;as o de todos los tiempos desde que WordPress Popular Posts fue "
-"instalado."
+"Cliquez sur chaque onglet pour voir quelles sont les publications les plus "
+"populaires sur votre blog dans les dernières 24 heures, la semaine, les 30 "
+"derniers jours ou sur toute la durée depuis que le plugin a été installé."
 
 #: ../views/admin.php:264
 msgid "Order by comments"
-msgstr "Ordenar por comentarios"
+msgstr "Ordonner par commentaires"
 
 #: ../views/admin.php:265
 msgid "Order by views"
-msgstr "Ordenar por vistas"
+msgstr "Ordonner par vues"
 
 #: ../views/admin.php:266
 msgid "Order by avg. daily views"
-msgstr "Ordenar por average de vistas diarias"
+msgstr "Ordonner par moyenne de vues par jour"
 
 #: ../views/admin.php:268
 msgid "Post type"
-msgstr "Post type"
+msgstr "Type de publications "
 
 #: ../views/admin.php:269
 msgid "Limit"
-msgstr "L&iacute;mite"
+msgstr "Limite "
 
 #: ../views/admin.php:271 ../views/admin.php:379 ../views/admin.php:483
 #: ../views/admin.php:522
 msgid "Apply"
-msgstr "Aplicar"
+msgstr "Appliquer"
 
 #: ../views/admin.php:274 ../views/form.php:32
 msgid "Display only posts published within the selected Time Range"
 msgstr ""
-"Mostrar s&oacute;lo entradas publicadas en el Rango de Tiempo seleccionado"
+"Afficher uniquement les articles publiés dans l'intervalle de temps "
+"sélectionné"
 
 #: ../views/admin.php:283 ../views/form.php:26
 msgid "Last 24 hours"
-msgstr "&Uacute;ltimas 24 horas"
+msgstr "Dernières 24 heures"
 
 #: ../views/admin.php:284 ../views/form.php:27
 msgid "Last 7 days"
-msgstr "&Uacute;ltimos 7 d&iacute;as"
+msgstr "7 derniers jours"
 
 #: ../views/admin.php:285 ../views/form.php:28
 msgid "Last 30 days"
-msgstr "&Uacute;ltimos 30 d&iacute;as"
+msgstr "30 derniers jours"
 
 #: ../views/admin.php:286 ../views/form.php:29
 msgid "All-time"
-msgstr "Todos los tiempos"
+msgstr "Sans limite"
 
 #: ../views/admin.php:308
 msgid "Thumbnails"
-msgstr "Miniaturas"
+msgstr "Miniatures"
 
 #: ../views/admin.php:313
 msgid "Default thumbnail"
-msgstr "Miniatura por defecto"
+msgstr "Miniature par défaut"
 
 #: ../views/admin.php:318
 msgid "Upload thumbnail"
-msgstr "Subir miniatura"
+msgstr "Charger une miniature"
 
 #: ../views/admin.php:320
 msgid ""
 "How-to: upload (or select) an image, set Size to Full and click on Upload. "
 "After it's done, hit on Apply to save changes"
 msgstr ""
-"Tutorial: sube (o selecciona) una imagen, selecciona Tama&ntilde;o Completo "
-"y haz clic en Subir. Cuando termine, dale a Aplicar para guardar los cambios"
+"Comment faire ? Télécharger (ou sélectionnez) une image, réglez la taille "
+"sur \"Taille originale\" et cliquez sur Ajouter. Ensuite, appuyez sur "
+"Appliquer pour enregistrer les modifications"
 
 #: ../views/admin.php:324
 msgid "Pick image from"
-msgstr "Seleccionar imagen desde"
+msgstr "Choisissez l'image de"
 
 #: ../views/admin.php:327
 msgid "Featured image"
-msgstr "Imagen destacada"
+msgstr "Image sélectionnée"
 
 #: ../views/admin.php:328
 msgid "First image on post"
-msgstr "Primera imagen de la entrada"
+msgstr "Première image de la publication"
 
 #: ../views/admin.php:329
 msgid "First attachment"
-msgstr "Primer archivo adjuntado"
+msgstr "Première ressource attachée"
 
 #: ../views/admin.php:330
 msgid "Custom field"
-msgstr "Custom field"
+msgstr "Champ personnalisé"
 
 #: ../views/admin.php:333
 msgid "Tell WordPress Popular Posts where it should get thumbnails from"
-msgstr ""
-"Dile a WordPress Popular Posts de d&oacute;nde debe obtener las miniaturas"
+msgstr "Indiquez à partir d'où WPP doit récupérer des vignettes"
 
 #: ../views/admin.php:337
 msgid "Custom field name"
-msgstr "Nombre del custom field"
+msgstr "Nom du champ personnalisé"
 
 #: ../views/admin.php:343
 msgid "Resize image from Custom field?"
-msgstr "&iexcl;Ajustar la imagen del Custom field?"
+msgstr "Retailler l'image du champ personnalisé ?"
 
 #: ../views/admin.php:346
 msgid "No, I will upload my own thumbnail"
-msgstr "No, subir&eacute; mi propia miniatura"
+msgstr "Non, je souhaite ajouter ma propre miniature"
 
 #: ../views/admin.php:347
 msgid "Yes"
-msgstr "S&iacute;"
+msgstr "Oui"
 
 #: ../views/admin.php:352
 msgid "Responsive support"
-msgstr "Soporte Responsive"
+msgstr "Responsive design"
 
 #: ../views/admin.php:355 ../views/admin.php:425 ../views/admin.php:465
 #: ../views/admin.php:512
 msgid "Enabled"
-msgstr "Habilitado"
+msgstr "Activé"
 
 #: ../views/admin.php:356 ../views/admin.php:409 ../views/admin.php:424
 #: ../views/admin.php:464 ../views/admin.php:513
 msgid "Disabled"
-msgstr "Deshabilitado"
+msgstr "Désactivé"
 
 #: ../views/admin.php:359
 msgid ""
 "If enabled, WordPress Popular Posts will strip height and width attributes "
 "out of thumbnails' image tags"
 msgstr ""
-"Si se activa, WordPress Popular Posts quitar&aacute; los atributos height y "
-"width de las etiquetas image de las miniaturas"
+"Si l'option est activée, le plugin retire les attributs height et width des "
+"balises d'image des miniatures"
 
 #: ../views/admin.php:369
 msgid "Empty image cache"
-msgstr "Vaciar el cach&eacute; de im&aacute;genes"
+msgstr "Vider le cache des images"
 
 #: ../views/admin.php:370
 msgid "Use this button to clear WPP's thumbnails cache"
-msgstr ""
-"Utiliza este bot&oacute;n para vaciar el cach&eacute; de miniaturas de WPP"
+msgstr "Utilisez ce bouton pour effacer le cache de miniatures"
 
 #: ../views/admin.php:390
 msgid "Data"
-msgstr "Datos"
+msgstr "Données"
 
 #: ../views/admin.php:395
 msgid "Log views from"
-msgstr "Registrar vistas de"
+msgstr "Journal des vues à partir de"
 
 #: ../views/admin.php:398
 msgid "Visitors only"
-msgstr "S&oacute;lo visitantes"
+msgstr "Visiteurs seulement"
 
 #: ../views/admin.php:399
 msgid "Logged-in users only"
-msgstr "S&oacute;lo usuarios conectados"
+msgstr "Utilisateurs connectés seulement"
 
 #: ../views/admin.php:400
 msgid "Everyone"
-msgstr "Todos"
+msgstr "Tout le monde"
 
 #: ../views/admin.php:406
 msgid "Log limit"
-msgstr "L&iacute;mite del registro"
+msgstr "Limite du journal"
 
 #: ../views/admin.php:410
 msgid "Keep data for"
-msgstr "Guardar datos por"
+msgstr "Conserver les données pour"
 
 #: ../views/admin.php:413
 msgid "day(s)"
-msgstr "d&iacute;a(s)"
+msgstr "jour(s)"
 
 #: ../views/admin.php:415
 msgid ""
 "Data from entries that haven't been viewed within the specified time frame "
 "will be automatically discarded"
 msgstr ""
-"Los datos de aquellas entradas que no han sido vistas en el tiempo "
-"especificado ser&aacute;n autom&aacute;ticamente descartados"
+"Les données provenant des publications qui ne sont pas vues dans le laps de "
+"temps spécifié seront rejetées automatiquement"
 
 #: ../views/admin.php:421
 msgid "Ajaxify widget"
-msgstr "Usar Ajax con el widget"
+msgstr "Utiliser Ajax pour le widget"
 
 #: ../views/admin.php:429
 msgid ""
 "If you are using a caching plugin such as WP Super Cache, enabling this "
 "feature will keep the popular list from being cached by it"
 msgstr ""
-"Si est&aacute;s utilizando un plugin de cacheo como WP Super Cache, "
-"habilitar esta caracter&iacute;stica evitar&aacute; que la lista de entradas "
-"populares sea guardada en cach&eacute;"
+"Si vous utilisez une extension de mise en cache comme WP Super Cache, "
+"l'activation de cette fonctionnalité permet de conserver la mise en cache "
+"propre pour les publications populaires"
 
 #: ../views/admin.php:433
 msgid "WPP Cache Expiry Policy"
-msgstr "WPP Pol&iacute;tica de Expiraci&oacute;n del Cache"
+msgstr "Politique de gestion du cache Expires de WPP"
 
 #: ../views/admin.php:433 ../views/admin.php:461 ../views/form.php:2
 #: ../views/form.php:34 ../views/form.php:40 ../views/form.php:43
 #: ../views/form.php:52 ../views/form.php:125
 msgid "What is this?"
-msgstr "&iquest;Qu&eacute; es esto?"
+msgstr "Qu'est-ce que c'est ?"
 
 #: ../views/admin.php:436
 msgid "Never cache"
-msgstr "Nunca almacenar en cach&eacute;"
+msgstr "Ne jamais mettre en cache"
 
 #: ../views/admin.php:437
 msgid "Enable caching"
-msgstr "Habilitar cach&eacute;"
+msgstr "Cache activé"
 
 #: ../views/admin.php:441
 msgid ""
 "Sets WPP's cache expiration time. WPP can cache the popular list for a "
 "specified amount of time. Recommended for large / high traffic sites"
 msgstr ""
-"Configura lel tiempo de expiraci&oacute;n del cache de WPP. WPP puede "
-"almacenar en cach&eacute; el listado de entradas populares por una cantidad "
-"de tiempo especificada. Recomendado para sitios web grandes / de alto "
-"tr&aacute;fico"
+"Définit le temps d'expiration du cache de WPP. WPP peut mettre en cache la "
+"liste populaire pour un laps de temps spécifié. Recommandé pour les grands "
+"sites à fort trafic"
 
 #: ../views/admin.php:445
 msgid "Refresh cache every"
-msgstr "Refrescar el cach&eacute; cada"
+msgstr "Rafraîchir le cache chaque"
 
 #: ../views/admin.php:449
 msgid "Minute(s)"
-msgstr "Minuto(s)"
+msgstr "Minute(s)"
 
 #: ../views/admin.php:450
 msgid "Hour(s)"
-msgstr "Hora(s)"
+msgstr "Heure(s)"
 
 #: ../views/admin.php:451
 msgid "Day(s)"
-msgstr "D&iacute;a(s)"
+msgstr "Jour(s)"
 
 #: ../views/admin.php:452
 msgid "Week(s)"
-msgstr "Semana(s)"
+msgstr "Semaine(s)"
 
 #: ../views/admin.php:453
 msgid "Month(s)"
-msgstr "Mes(es)"
+msgstr "Mois"
 
 #: ../views/admin.php:454
 msgid "Year(s)"
-msgstr "A&ntilde;o(s)"
+msgstr "Année(s)"
 
 #: ../views/admin.php:457
 msgid "Really? That long?"
-msgstr "&iquest;En serio? &iquest;Tanto tiempo?"
+msgstr "Vraiment ? C'est long ?"
 
 #: ../views/admin.php:461
 msgid "Data Sampling"
-msgstr "Sampleo de Datos"
+msgstr "Échantillonnage des données"
 
 #: ../views/admin.php:469
 #, php-format
@@ -407,19 +406,19 @@ msgid ""
 "traffic and report on the tendencies detected in that sample set (for more, "
 "<a href=\"%2$s\" target=\"_blank\">please read here</a>)"
 msgstr ""
-"Por defecto, WordPress Popular Posts almacena en la base de datos todas y "
-"cada una de las visitas que recibe tu sitio. Para sitios peque&ntilde;os / "
-"medianos esto generalmente est&aacute; bien, pero en sitios grandes / de "
-"mucho tr&aacute;fico la escritura constante en la base de datos pudiese "
-"causar un impacto en su rendimiento. Con <a href=\"%1$s\" target=\"_blank"
-"\">data sampling</a>, WordPress Popular Posts almacenar&aacute; s&oacute;lo "
-"un subconjunto de tu tr&aacute;fico y reportar&aacute; sobre las tendencias "
-"detectadas en ese conjunto de muestras (para m&aacute;s, <a href=\"%2$s\" "
-"target=\"_blank\">por favor leer ac&aacute;</a>)"
+"Par défaut, WordPress Popular Posts enregistre dans chaque base de données "
+"unique les visites que votre site reçoit. Pour les petits/moyens sites, "
+"c'est généralement bon, mais sur les grands sites à trafic élevé, l'écriture "
+"constante dans la base de données peut impacter les performances globale. "
+"Avec <a href=\"%1$s\" target=\"_blank\">l'échantillonnage des données</a>, "
+"WordPress Popular Posts stockera uniquement un sous-ensemble de votre trafic "
+"et dressera un rapport sur les tendances détectées dans l'échantillon "
+"récupéré (pour plus d'informations, <a href=\"%2$s\" target=\"_blank\">lire "
+"ici</a>)"
 
 #: ../views/admin.php:473
 msgid "Sample Rate"
-msgstr "Rata de Sampleo"
+msgstr "Taux d'échantillonnage"
 
 #: ../views/admin.php:477
 #, php-format
@@ -427,29 +426,28 @@ msgid ""
 "A sampling rate of %d is recommended for large / high traffic sites. For "
 "lower traffic sites, you should lower the value"
 msgstr ""
-"Se recomienda una rata de sampleo de %d para sitios grandes / de alto "
-"tr&aacute;fico. Para sitios con menos tr&aacute;fico, deber&iacute;as "
-"disminuir el valor"
+"Un taux de %d est recommandé pour les grands sites à fort trafic. Pour les "
+"sites de trafic plus faibles, vous devriez baisser la valeur"
 
 #: ../views/admin.php:494
 msgid "Miscellaneous"
-msgstr "Miscel&aacute;neos"
+msgstr "Divers"
 
 #: ../views/admin.php:499
 msgid "Open links in"
-msgstr "Abrir links en"
+msgstr "Ouvrir les liens dans"
 
 #: ../views/admin.php:502
 msgid "Current window"
-msgstr "Ventana actual"
+msgstr "La fenêtre courante"
 
 #: ../views/admin.php:503
 msgid "New tab/window"
-msgstr "Nueva pesta&ntilde;a/ventana"
+msgstr "Un nouvel onglet"
 
 #: ../views/admin.php:509
 msgid "Use plugin's stylesheet"
-msgstr "Utilizar la hoja de estilos del plugin"
+msgstr "Utiliser le CSS de l'extension"
 
 #: ../views/admin.php:516
 msgid ""
@@ -458,10 +456,10 @@ msgid ""
 "stylesheet or do not want it to have it included in the header section of "
 "your site, use this."
 msgstr ""
-"Por defecto, el plugin incluye una hoja de estilos llamada wpp.css que "
-"puedes utilizar para darle estilos a tu listado de entradas populares. Si "
-"deseas utilizar tu propia hoja de estilos, o no quieres que wpp.css se "
-"incluya en el header de tu sitio web, utiliza esto."
+"Par défaut, l'extension contient une feuille de style appelée wpp.css que "
+"vous pouvez utiliser pour styliser le rendu. Si vous souhaitez utiliser "
+"votre propre feuille de style ou si vous ne voulez pas l'inclure dans le "
+"<head> de votre site, cochez cette case."
 
 #: ../views/admin.php:535
 msgid ""
@@ -471,32 +469,33 @@ msgid ""
 "or just \"data\"). If for some reason you need to clear the cache table, or "
 "even both historical and cache tables, please use the buttons below to do so."
 msgstr ""
-"WordPress Popular Posts mantiene la data en dos tablas separadas: una para "
-"guardar diariamente las entradas m&aacute;s populares (\"cach&eacute;\", de "
-"aqu&iacute; en adelante), y otra tabla para almacenar la data de Todos los "
-"tiempos (\"data hist&oacute;rica\" o simplemente \"data\"). Si por alguna "
-"raz&oacute;n necesitas vaciar la tabla cach&eacute;, o inclusive las dos "
-"tablas hist&oacute;ricas y de cach&eacute;, por favor utiliza los botones de "
-"abajo."
+"WordPress Popular Posts conserve les données dans deux tableaux distincts, "
+"un pour stocker les publications les plus populaires sur une base "
+"quotidienne (à partir de maintenant, en \"cache\"), et une autre conserve "
+"les données de tout temps (à partir de maintenant : \"données historiques\" "
+"ou tout simplement \"données\"). Si pour une raison quelconque vous devez "
+"effacer la table de cache, ou même les deux tableaux historiques et cache, "
+"s'il vous plaît utiliser les boutons ci-dessous pour le faire."
 
 #: ../views/admin.php:536
 msgid "Empty cache"
-msgstr "Vaciar el cach&eacute;"
+msgstr "Vider le cache"
 
 #: ../views/admin.php:536
 msgid "Use this button to manually clear entries from WPP cache only"
 msgstr ""
-"Utiliza este bot&oacute;n para vaciar manualmente s&oacute;lo las entradas "
-"del cach&eacute; de WPP"
+"Utilisez ce bouton pour effacer manuellement les données mises en cache par "
+"WPP"
 
 #: ../views/admin.php:537
 msgid "Clear all data"
-msgstr "Eliminar toda la data"
+msgstr "Effacer toutes les données"
 
 #: ../views/admin.php:537
 msgid "Use this button to manually clear entries from all WPP data tables"
 msgstr ""
-"Utiliza este bot&oacute;n para limpiar manualmente las tablas de datos de WPP"
+"Utilisez ce bouton pour effacer manuellement les données des tables de "
+"l'extension"
 
 #: ../views/admin.php:544
 #, php-format
@@ -505,99 +504,99 @@ msgid ""
 "using either the <a href=\"%1$s\">wpp_get_mostpopular() template tag</a> or "
 "the <a href=\"%2$s\">[wpp] shortcode</a>."
 msgstr ""
-"Con los siguientes par&aacute;metros puedes personalizar el listado de "
-"entradas populares cuando utilices el <a href=\"%1$s\">template tag "
-"wpp_get_mostpopular()</a> o el <a href=\"%2$s\">shortcode [wpp]</a>"
+"Avec les paramètres suivants, vous pouvez personnaliser la liste des "
+"publications populaires en utilisant soit la balise <a href=\"%1$s"
+"\">wpp_get_mostpopular() du thème</a> ou le <a href=\"%2$s\">shortcode "
+"[wpp]</a>."
 
 #: ../views/admin.php:552
 msgid "Parameter"
-msgstr "Par&aacute;metro"
+msgstr "Paramètre"
 
 #: ../views/admin.php:553
 msgid "What it does "
-msgstr "Qu&eacute; hace"
+msgstr "Ce qu'il fait "
 
 #: ../views/admin.php:554
 msgid "Possible values"
-msgstr "Valores posibles"
+msgstr "Valeurs possibles"
 
 #: ../views/admin.php:555
 msgid "Defaults to"
-msgstr "Por defecto"
+msgstr "Par défaut"
 
 #: ../views/admin.php:556
 msgid "Example"
-msgstr "Ejemplo"
+msgstr "Exemple"
 
 #: ../views/admin.php:562
 msgid "Sets a heading for the list"
-msgstr "Configura el encabezado de la lista"
+msgstr "Configurez un entête de liste"
 
 #: ../views/admin.php:563 ../views/admin.php:570 ../views/admin.php:577
 #: ../views/admin.php:612 ../views/admin.php:619 ../views/admin.php:626
 #: ../views/admin.php:633 ../views/admin.php:724 ../views/admin.php:738
 #: ../views/admin.php:745
 msgid "Text string"
-msgstr "Texto"
+msgstr "Texte"
 
 #: ../views/admin.php:564 ../views/admin.php:620 ../views/admin.php:627
 #: ../views/admin.php:634
 msgid "None"
-msgstr "Ninguno"
+msgstr "Aucun"
 
 #: ../views/admin.php:569
 msgid "Set the opening tag for the heading of the list"
-msgstr "Configura la etiqueta de apertura para el encabezado de la lista"
+msgstr "Définissez la balise d'ouverture de l'entête de liste"
 
 #: ../views/admin.php:576
 msgid "Set the closing tag for the heading of the list"
-msgstr "Configura la etiqueta de cierre para el encabezado de la lista"
+msgstr "Définissez la balise de fermeture de l'entête de liste"
 
 #: ../views/admin.php:583
 msgid "Sets the maximum number of popular posts to be shown on the listing"
-msgstr ""
-"Configura el m&aacute;ximo de entradas populares a ser mostradas en la lista"
+msgstr "Définissez le nombre maximum de publications à afficher dans la liste"
 
 #: ../views/admin.php:584 ../views/admin.php:640 ../views/admin.php:654
 #: ../views/admin.php:675 ../views/admin.php:682
 msgid "Positive integer"
-msgstr "Entero positivo"
+msgstr "Entier positif"
 
 #: ../views/admin.php:590
 msgid ""
 "Tells WordPress Popular Posts to retrieve the most popular entries within "
 "the time range specified by you"
 msgstr ""
-"Le indica a WordPress Popular Posts que debe listar aquellas entradas que "
-"hayan sido populares dentro del rango de tiempo especificado por ti"
+"Précise à WordPress Popular Posts de récupérer les publications les plus "
+"populaires au sein de l'intervalle de temps spécifié"
 
 #: ../views/admin.php:597
 msgid ""
 "Tells WordPress Popular Posts to retrieve the most popular entries published "
 "within the time range specified by you"
 msgstr ""
-"Le indica a WordPress Popular Posts que debe listar aquellas entradas "
-"populares publicadas dentro del rango de tiempo especificado por ti"
+"Indique à WordPress Popular Posts de récupérer les publications les plus "
+"populaires publiées dans l'intervalle de temps spécifié"
 
 #: ../views/admin.php:604
 msgid "Sets the sorting option of the popular posts"
-msgstr "Configura el ordenado de las entradas populares"
+msgstr "Indiquez l'option de tri des publications populaires"
 
 #: ../views/admin.php:605
 msgid "(for average views per day)"
-msgstr "(para el porcentaje de vistas por d&iacute;a)"
+msgstr "(pour les vues en moyenne par jour)"
 
 #: ../views/admin.php:611
 msgid "Defines the type of posts to show on the listing"
-msgstr "Define el tipo de entrada a mostrar en el listado"
+msgstr "Définit le type de messages à afficher sur la fiche"
 
 #: ../views/admin.php:618
 msgid ""
 "If set, WordPress Popular Posts will exclude the specified post(s) ID(s) "
 "form the listing."
 msgstr ""
-"Si se configura, WordPress Popular Posts excluir&aacute; todos los IDs de "
-"las entradas especificadas."
+"Si configuré, l'extension exclura les publications dont les IDs composent la "
+"liste."
 
 #: ../views/admin.php:625
 msgid ""
@@ -605,59 +604,58 @@ msgid ""
 "specified category(ies) ID(s). If a minus sign is used, the category(ies) "
 "will be excluded instead."
 msgstr ""
-"Si se configura, WordPress Popular Posts mostrar&aacute; todas las entradas "
-"que pertenecen a la(s) categor&iacute;a(s) especificada(s). Si se usa un "
-"signo negativo, la(s) categor&iacute;a(s) ser&aacute;(n) exclu&iacute;da(s)."
+"Si coché, WordPress Popular Posts récupèrera toutes les publications qui "
+"appartiennent aux IDs de catégories spécifiés. Si un signe \"-\" est "
+"utilisé, les catégories seront exclues."
 
 #: ../views/admin.php:632
 msgid ""
 "If set, WordPress Popular Posts will retrieve all entries created by "
 "specified author(s) ID(s)."
 msgstr ""
-"Si se configura, WordPress Popular Posts traer&aacute; todas las entradas "
-"creadas por el (los) ID(s) de autor(es) especificado(s)."
+"Si l'option est activée, WPP récupèrera toutes les publications "
+"correspondant aux IDs d'auteurs spécifiés"
 
 #: ../views/admin.php:639
 msgid ""
 "If set, WordPress Popular Posts will shorten each post title to \"n\" "
 "characters whenever possible"
 msgstr ""
-"Si se configura, WordPress Popular Posts acortar&aacute; cada titulo en \"n"
-"\" caracteres cuando sea posible"
+"Si coché, WordPress Popular Posts raccourcira chaque titre à \"n\" "
+"caractères (tant que possible)"
 
 #: ../views/admin.php:646
 msgid ""
 "If set to 1, WordPress Popular Posts will shorten each post title to \"n\" "
 "words instead of characters"
 msgstr ""
-"Si se pasa el valor 1, WordPress Popular Posts acortar&aacute; cada titulo "
-"en \"n\" palabras en vez de caracteres"
+"Si l'option est mise à 1, WordPress Popular Posts raccourcira chaque titre à "
+"\"n\" mots plutôt que \"n\" caractères\""
 
 #: ../views/admin.php:653
 msgid ""
 "If set, WordPress Popular Posts will build and include an excerpt of \"n\" "
 "characters long from the content of each post listed as popular"
 msgstr ""
-"Si se configura, WordPress Popular Posts construir&aacute; e incluir&aacute; "
-"un extracto de \"n\" caracteres del contenido de cada entrada listada como "
-"popular"
+"Si l'option est cochée, WPP construira des extraits de \"n\" caractères de "
+"long pour chaque publication considérée comme populaire"
 
 #: ../views/admin.php:660
 msgid ""
 "If set, WordPress Popular Posts will maintaing all styling tags (strong, "
 "italic, etc) and hyperlinks found in the excerpt"
 msgstr ""
-"Si se configura, WordPress Popular Posts mantendr&aacute; todas las "
-"etiquetas de estilo (strong, italic, etc) y los hiperv&iacute;nculos "
-"encontrados en el extracto"
+"Si coché, WordPress Popular Posts maintiendra toutes les balises de mise en "
+"forme (strong, italic, bold...) et les liens hypertextes présents dans "
+"l'extrait"
 
 #: ../views/admin.php:667
 msgid ""
 "If set to 1, WordPress Popular Posts will shorten the excerpt to \"n\" words "
 "instead of characters"
 msgstr ""
-"Si se configura, WordPress Popular Posts acortar&aacute; el resumen en \"n\" "
-"palabras en vez de caracteres"
+"Si l'option est sur 1, WordPress Popular Posts raccourcira l'extrait à \"n\" "
+"mots au lieu de \"n\" caractères."
 
 #: ../views/admin.php:674
 msgid ""
@@ -665,9 +663,9 @@ msgid ""
 "to display thumbnails of your posts. This attribute sets the width for "
 "thumbnails"
 msgstr ""
-"Si se configura, y si la configuraci&oacute;n actual de tu servidor lo "
-"permite, podr&aacute;s mostrar miniaturas de tus entradas. Este atributo "
-"configura el ancho de tus miniaturas"
+"Si l'option est cochée, et si votre serveur le permet, vous pourrez afficher "
+"les vignettes de vos publications. Cette option paramètre la largeur des "
+"vignettes."
 
 #: ../views/admin.php:681
 msgid ""
@@ -675,9 +673,9 @@ msgid ""
 "to display thumbnails of your posts. This attribute sets the height for "
 "thumbnails"
 msgstr ""
-"Si se configura, y si la configuraci&oacute;n actual de tu servidor lo "
-"permite, podr&aacute;s mostrar miniaturas de tus entradas. Este atributo "
-"configura el alto de tus miniaturas"
+"Si l'option est cochée, et si votre serveur le permet, vous pourrez afficher "
+"les vignettes de vos publications. Cette option paramètre la hauteur des "
+"vignettes."
 
 #: ../views/admin.php:688
 msgid ""
@@ -685,183 +683,175 @@ msgid ""
 "blog, WordPress Popular Posts will show how your visitors are rating your "
 "entries"
 msgstr ""
-"Si se configura, y si el plugin WP-PostRatings est&aacute; instalado y "
-"habilitado en tu blog, WordPress Popular Posts mostrar&aacute; como tus "
-"visitantes han calificado a tus entradas"
+"Si l'option est configurée, et si le plugin WP-PostRatings est installé et "
+"activé, WPP affichera les notes attribuées par vos visiteurs sur vos "
+"publications"
 
 #: ../views/admin.php:695
 msgid ""
 "If set, WordPress Popular Posts will show how many comments each popular "
 "post has got until now"
 msgstr ""
-"Si se configura, WordPress Popular Posts mostrar&aacute; cu&aacute;ntos "
-"comentarios ha obtenido cada entrada popular hasta ahora"
+"Si l'option est activée, WordPress Popular Posts affichera le nombre de "
+"commentaires obtenus jusqu'à maintenant pour chaque publication"
 
 #: ../views/admin.php:702
 msgid ""
 "If set, WordPress Popular Posts will show how many views each popular post "
 "has got since it was installed"
 msgstr ""
-"Si se configura, WordPress Popular Posts mostrar&aacute; cu&aacute;ntas "
-"vistas ha obtenido cada entrada popular desde que el plugin fue instalado"
+"Si coché, WPP affichera le nombre de vues de chaque publication depuis que "
+"l'extension a été installée"
 
 #: ../views/admin.php:709
 msgid ""
 "If set, WordPress Popular Posts will show who published each popular post on "
 "the list"
-msgstr ""
-"Si se configura, WordPress Popular Posts mostrar&aacute; qui&eacute;n "
-"public&oacute; cada entrada popular de la lista"
+msgstr "Si coché, WPP affichera l'auteur de chaque publication de la liste"
 
 #: ../views/admin.php:716
 msgid ""
 "If set, WordPress Popular Posts will display the date when each popular post "
 "on the list was published"
 msgstr ""
-"Si se tilda, WordPress Popular Posts mostrar&aacute; la fecha en la que fue "
-"publicada cada entrada popular"
+"Si coché, WordPress Popular Posts affichera la date à laquelle chaque "
+"publication populaire de la liste a été publiée"
 
 #: ../views/admin.php:723
 msgid "Sets the date format"
-msgstr "Configura el formato de la fecha"
+msgstr "Définissez le format des dates"
 
 #: ../views/admin.php:730
 msgid "If set, WordPress Popular Posts will display the category"
-msgstr ""
-"Si se tilda, WordPress Popular Posts mostrar&aacute; la categor&iacute;a"
+msgstr "Si configuré, l'extension affiche la catégorie des articles"
 
 #: ../views/admin.php:737
 msgid "Sets the opening tag for the listing"
-msgstr "Configura la etiqueta de apertura del listado"
+msgstr "Configurez la balise d'ouverture de liste"
 
 #: ../views/admin.php:744
 msgid "Sets the closing tag for the listing"
-msgstr "Configura la etiqueta de cierre del listado"
+msgstr "Configurez la balise de fermeture de liste"
 
 #: ../views/admin.php:751
 msgid "Sets the HTML structure of each post"
-msgstr "Configura la estructura HTML de cada entrada"
+msgstr "Configurez la structure HTML de chaque publication"
 
 #: ../views/admin.php:752
 msgid "Text string, custom HTML"
-msgstr "Texto, HTML personalizado"
+msgstr "HTML personnalisé pour les textes"
 
 #: ../views/admin.php:752
 msgid "Available Content Tags"
-msgstr "Content Tags disponibles"
+msgstr "Balises de contenu autorisées"
 
 #: ../views/admin.php:752
 msgid ""
 "displays thumbnail linked to post/page, requires thumbnail_width & "
 "thumbnail_height"
 msgstr ""
-"muestra la miniatura con un link hacia la entrada/p&aacute;gina, requiere "
-"thumbnail_width & thumbnail_height"
+"Affiche la miniature liée à l'article ou la page. Nécessite thumbnail_width "
+"(largeur de la vignette) & thumbnail_height (hauteur de la vignette)"
 
 #: ../views/admin.php:752
 msgid ""
 "displays thumbnail image without linking to post/page, requires "
 "thumbnail_width & thumbnail_height"
 msgstr ""
-"muestra la miniatura sin link hacia la entrada/p&aacute;gina, requiere "
-"thumbnail_width & thumbnail_height"
+"Affiche la miniature sans lien vers l'article ou la page. Nécessite "
+"thumbnail_width (largeur de la vignette) & thumbnail_height (hauteur de la "
+"vignette)"
 
 #: ../views/admin.php:752
 msgid "displays linked post/page title"
-msgstr ""
-"muestra el t&iacute;tulo de la entrada/p&aacute;gina con v&iacute;nculo"
+msgstr "Afficher le titre lié à la publication"
 
 #: ../views/admin.php:752
 msgid ""
 "displays post/page excerpt, and requires excerpt_length to be greater than 0"
 msgstr ""
-"muestra el resumen de la entrada/p&aacute;gina, requiere que excerpt_length "
-"sea mayor a 0"
+"Afficher les extraits (la taille de l'extrait doit être supérieure à 0)"
 
 #: ../views/admin.php:752
 msgid "displays the default stats tags"
-msgstr "muestra el stats tag por defecto"
+msgstr "Afficher les balises de statistiques par défaut"
 
 #: ../views/admin.php:752
 msgid ""
 "displays post/page current rating, requires WP-PostRatings installed and "
 "enabled"
 msgstr ""
-"muestra el rating actual de la entrada/p&aacute;gina, requiere que WP-"
-"PostRatings est&eacute; instalado y activo"
+"Afficher la note des publications (nécessaire l'installation et l'activation "
+"de WP-PostRatings)"
 
 #: ../views/admin.php:752
 msgid ""
 "displays post/page current rating as an integer, requires WP-PostRatings "
 "installed and enabled"
 msgstr ""
-"muestra el rating actual de la entrada/p&aacute;gina como un entero, "
-"requiere que WP-PostRatings est&eacute; instalado y activo"
+"Afficher la note (sous forme d'entier) des publications (nécessaire "
+"l'installation et l'activation de WP-PostRatings)"
 
 #: ../views/admin.php:752
 msgid "outputs the URL of the post/page"
-msgstr "muestra la URL de la entrada/p&aacute;gina"
+msgstr "renvoie l'URL de la publication"
 
 #: ../views/admin.php:752
 msgid "displays post/page title, no link"
-msgstr ""
-"muestra el t&iacute;tulo de la entrada/p&aacute;gina, sin v&iacute;nculo"
+msgstr "Afficher le titre des publications sans lien hypertexte"
 
 #: ../views/admin.php:752
 msgid "displays linked author name, requires stats_author=1"
-msgstr ""
-"muestra el nombre del autor con v&iacute;nculo, requiere stats_author=1"
+msgstr "Afficher le nom de l'auteur lié (nécessaire stats_author=1)"
 
 #: ../views/admin.php:752
 msgid "displays linked category name, requires stats_category=1"
-msgstr ""
-"muestra el nombre de la categor&iacute;a vinculado, requiere stats_category=1"
+msgstr "Afficher le nom de la catégorie (nécessite stats_category=1)"
 
 #: ../views/admin.php:752
 msgid "displays views count only, no text"
-msgstr "muestra el n&uacute;mero de vistas, sin texto adicional"
+msgstr "Afficher uniquement le nombre de vues, pas de texte supplémentaire"
 
 #: ../views/admin.php:752
 msgid "displays comments count only, no text, requires stats_comments=1"
 msgstr ""
-"muestra el n&uacute;mero de comentarios, sin texto adicional, requiere "
-"stats_comments=1"
+"Afficher uniquement le nombre de commentaires, pas de texte (nécessite "
+"stats_comments=1)"
 
 #: ../views/admin.php:752
 msgid "displays post/page date, requires stats_date=1"
-msgstr "muestra la fecha de la entrada/p&aacute;gina, requiere stats_date=1"
+msgstr "Afficher la date des publications (nécessaire stats_date=1)"
 
 #: ../views/admin.php:765
 #, php-format
 msgid "About WordPress Popular Posts %s"
-msgstr "Acerca de WordPress Popular Posts %s"
+msgstr "À propos de WordPress Popular Posts %s"
 
 #: ../views/admin.php:766
 msgid "This version includes the following changes"
-msgstr "Esta versi&oacute;n incluye los siguientes cambios"
+msgstr "Cette version contient les modifications suivantes"
 
 #: ../views/admin.php:778
 msgid "Do you like this plugin?"
-msgstr "&iquest;Te gusta este plugin?"
+msgstr "Aimez-vous cette extension ?"
 
 #: ../views/admin.php:785
 msgid ""
 "Each donation motivates me to keep releasing free stuff for the WordPress "
 "community!"
 msgstr ""
-"&iexcl;Cada donaci&oacute;n me motiva a seguir publicando cosas gratuitas "
-"para la comunidad de WordPress!"
+"Chaque contribution me motive à continuer de développer des outils gratuits "
+"pour la communauté WordPress !"
 
 #: ../views/admin.php:786
 #, php-format
 msgid "You can <a href=\"%s\" target=\"_blank\">leave a review</a>, too!"
 msgstr ""
-"&iexcl;Puedes <a href=\"%s\" target=\"_blank\">dejar una rese&ntilde;a</a> "
-"tambi&eacute;n!"
+"Vous pouvez <a href=\"%s\" target=\"_blank\">déposer un avis</a> également !"
 
 #: ../views/admin.php:792
 msgid "Need help?"
-msgstr "&iquest;Necesitas ayuda?"
+msgstr "Besoin d'aide ?"
 
 #: ../views/admin.php:793
 #, php-format
@@ -869,176 +859,176 @@ msgid ""
 "Visit <a href=\"%s\" target=\"_blank\">the forum</a> for support, questions "
 "and feedback."
 msgstr ""
-"Visita <a href=\"%s\" target=\"_blank\">el foro</a> para obtener soporte, "
-"hacer preguntas y dejar tu feedback."
+"Visitez <a href=\"%s\" target=\"_blank\">le forum</a> pour obtenir un "
+"support, des réponses aux questions voire des retours d'expérience."
 
 #: ../views/admin.php:794
 msgid "Let's make this plugin even better!"
-msgstr "&iexcl;Hagamos a este plugin inclusive mejor!"
+msgstr "Rendons cette extension encore meilleure !"
 
 #: ../views/form.php:2
 msgid "Title"
-msgstr "T&iacute;tulo"
+msgstr "Titre"
 
 #: ../views/form.php:7
 msgid "Show up to"
-msgstr "Mostrar hasta"
+msgstr "Afficher jusqu'à"
 
 #: ../views/form.php:8
 msgid "posts"
-msgstr "entradas"
+msgstr "publications"
 
 #: ../views/form.php:12
 msgid "Sort posts by"
-msgstr "Ordenar entradas por"
+msgstr "Classer les publications par "
 
 #: ../views/form.php:14
 msgid "Comments"
-msgstr "Comentarios"
+msgstr "Commentaires"
 
 #: ../views/form.php:15
 msgid "Total views"
-msgstr "Total de vistas"
+msgstr "Total des vues"
 
 #: ../views/form.php:16
 msgid "Avg. daily views"
-msgstr "Porcentaje de vistas diarias"
+msgstr "Moyenne des vues par jour"
 
 #: ../views/form.php:22
 msgid "Filters"
-msgstr "Filtros"
+msgstr "Filtres"
 
 #: ../views/form.php:24
 msgid "Time Range"
-msgstr "Rango de Tiempo"
+msgstr "Intervalle de temps "
 
 #: ../views/form.php:34
 msgid "Post type(s)"
-msgstr "Post type(s)"
+msgstr "Type(s) de publications "
 
 #: ../views/form.php:37
 msgid "Post(s) ID(s) to exclude"
-msgstr "ID(s) de Entrada(s) a excluir"
+msgstr "ID(s) des publications à exclure "
 
 #: ../views/form.php:40
 msgid "Category(ies) ID(s)"
-msgstr "ID(s) de Categor&iacute;a(s)"
+msgstr "ID(s) des catégories "
 
 #: ../views/form.php:43
 msgid "Author(s) ID(s)"
-msgstr "ID(s) de Autor(es)"
+msgstr "ID(s) des auteurs "
 
 #: ../views/form.php:48
 msgid "Posts settings"
-msgstr "Configuraci&oacute;n de las entradas"
+msgstr "Configuration des publications"
 
 #: ../views/form.php:52
 msgid "Display post rating"
-msgstr "Mostrar rating de la entrada"
+msgstr "Afficher la note des publications"
 
 #: ../views/form.php:55
 msgid "Shorten title"
-msgstr "Acortar t&iacute;tulo"
+msgstr "Titre raccourci"
 
 #: ../views/form.php:58
 msgid "Shorten title to"
-msgstr "Acortar t&iacute;tulo en"
+msgstr "Titre raccourci à "
 
 #: ../views/form.php:59 ../views/form.php:69
 msgid "characters"
-msgstr "caracteres"
+msgstr "signes"
 
 #: ../views/form.php:60 ../views/form.php:70
 msgid "words"
-msgstr "palabras"
+msgstr "mots"
 
 #: ../views/form.php:63
 msgid "Display post excerpt"
-msgstr "Mostrar resumen de la entrada"
+msgstr "Afficher les extraits"
 
 #: ../views/form.php:66
 msgid "Keep text format and links"
-msgstr "Mantener formato de texto y links"
+msgstr "Conserver le format des textes et des liens"
 
 #: ../views/form.php:67
 msgid "Excerpt length"
-msgstr "Largo del resumen"
+msgstr "Longueur des extraits"
 
 #: ../views/form.php:73
 msgid "Display post thumbnail"
-msgstr "Mostrar miniatura"
+msgstr "Afficher les miniatures"
 
 #: ../views/form.php:76
 msgid "Use predefined size"
-msgstr "Utilizar un tama&ntilde;o predefinido"
+msgstr "Utiliser la taille prédéfinie"
 
 #: ../views/form.php:88
 msgid "Set size manually"
-msgstr "Configurar el tama&ntilde;o manualmente"
+msgstr "Paramétrer la taille manuellement"
 
 #: ../views/form.php:90
 msgid "Width"
-msgstr "Ancho"
+msgstr "Largeur"
 
 #: ../views/form.php:93
 msgid "Height"
-msgstr "Alto"
+msgstr "Hauteur"
 
 #: ../views/form.php:99
 msgid "Stats Tag settings"
-msgstr "Configuraci&oacute;n del Stats Tag"
+msgstr "Paramètres des statistiques"
 
 #: ../views/form.php:101
 msgid "Display comment count"
-msgstr "Mostrar cantidad de comentarios"
+msgstr "Afficher le nombre de commentaires"
 
 #: ../views/form.php:103
 msgid "Display views"
-msgstr "Mostrar vistas"
+msgstr "Afficher le nombre de vues"
 
 #: ../views/form.php:105
 msgid "Display author"
-msgstr "Mostrar autor"
+msgstr "Afficher le nom de l'auteur"
 
 #: ../views/form.php:107
 msgid "Display date"
-msgstr "Mostrar fecha"
+msgstr "Afficher la date"
 
 #: ../views/form.php:110
 msgid "Date Format"
-msgstr "Formato de la fecha"
+msgstr "Format des dates"
 
 #: ../views/form.php:112
 msgid "WordPress Date Format"
-msgstr "Formato de fecha de WordPress"
+msgstr "Format des dates de WordPress"
 
 #: ../views/form.php:119
 msgid "Display category"
-msgstr "Mostrar categor&iacute;a"
+msgstr "Afficher la catégorie"
 
 #: ../views/form.php:123
 msgid "HTML Markup settings"
-msgstr "Configuraci&oacute;n del Markup HTML"
+msgstr "Configuration des balises HTML"
 
 #: ../views/form.php:125
 msgid "Use custom HTML Markup"
-msgstr "Utilizar Markup HTML personalizado"
+msgstr "Utilisez une balise personnalisée"
 
 #: ../views/form.php:128
 msgid "Before / after title"
-msgstr "Antes / despu&eacute;s del t&iacute;tulo"
+msgstr "Avant / après le titre"
 
 #: ../views/form.php:131
 msgid "Before / after Popular Posts"
-msgstr "Antes / despu&eacute;s de las entradas populares"
+msgstr "Avant / après les publications populaires"
 
 #: ../views/form.php:134
 msgid "Post HTML Markup"
-msgstr "Markup HTML de la Entrada"
+msgstr "Balise HTML des publications"
 
 #: ../wordpress-popular-posts.php:304
 msgid "The most Popular Posts on your blog."
-msgstr "Las entradas m&aacute;s populares en tu blog."
+msgstr "Les publications les plus populaires sur votre blog."
 
 #: ../wordpress-popular-posts.php:482
 msgid ""
@@ -1047,14 +1037,15 @@ msgid ""
 "wordpress.org/Function_Reference/register_sidebar\" target=\"_blank\" rel="
 "\"nofollow\">register_sidebar</a> for more)."
 msgstr ""
-"Error: no es posible ajaxificar WordPress Popular Posts en este tema. Falta "
-"el atributo <em>id</em> en before_widget (ver <a href=\"http://codex."
-"wordpress.org/Function_Reference/register_sidebar\" target=\"_blank\" rel="
-"\"nofollow\">register_sidebar</a> para m&aacute;s informaci&oacute;n)."
+"Erreur : impossible d'utiliser Ajax pour WordPress Popular Posts sur votre "
+"thème. Il manque l'attribut <em>id</em> sur before_widget (voir <a target="
+"\"_blank\" href=\"http://codex.wordpress.org/Function_Reference/"
+"register_sidebar\" rel=\"nofollow\">register_sidebar</a> pour en savoir "
+"plus)."
 
 #: ../wordpress-popular-posts.php:726
 msgid "Upload"
-msgstr "Subir"
+msgstr "Charger"
 
 #: ../wordpress-popular-posts.php:1099
 #, php-format
@@ -1063,10 +1054,10 @@ msgid ""
 "PHP version %1$s to function correctly. Please contact your hosting provider "
 "and ask them to upgrade PHP to %1$s or higher."
 msgstr ""
-"Tu versi&oacute;n de PHP es muy antigua. El plugin WordPress Popular Posts "
-"requiere al menos PHP version %1$s para funcionar correctamente. Por favor "
-"contacta a tu proveedor de hosting y solicita que se actualice PHP a %1$s o "
-"mejor."
+"Votre version de PHP est trop ancienne. WordPress Popular Posts nécessite au "
+"moins la version de PHP %1$s pour fonctionner correctement. Veuillez "
+"contacter votre fournisseur d'hébergement pour leur demander de mettre à "
+"jour PHP à %1$s ou plus."
 
 #: ../wordpress-popular-posts.php:1106
 #, php-format
@@ -1075,9 +1066,10 @@ msgid ""
 "WordPress version %1$s to function correctly. Please update your blog via "
 "Dashboard &gt; Update."
 msgstr ""
-"Tu versi&oacute;n de WordPress es muy antigua. El plugin WordPress Popular "
-"Posts requiere al menos la versi&oacute;n %1$s para funcionar correctamente. "
-"Por favor actualiza tu blog via Escritorio &gt; Actualizaciones."
+"Votre version de WordPress est trop ancienne. Wordpress Popular Posts "
+"nécessite au moins la version WordPress %1$s pour fonctionner correctement. "
+"Veuillez effectuer une mise à jour de votre WordPress pour pouvoir "
+"l'utiliser."
 
 #: ../wordpress-popular-posts.php:1131
 #, php-format
@@ -1085,76 +1077,84 @@ msgid ""
 "<div class=\"error\"><p>%1$s</p><p><i>%2$s</i> has been <strong>deactivated</"
 "strong>.</p></div>"
 msgstr ""
-"<div class=\"error\"><p>%1$s</p><p><i>%2$s</i> ha sido <strong>desactivado</"
+"<div class=\"error\"><p>%1$s</p><p><i>%2$s</i> a été <strong>désactivé</"
 "strong>.</p></div>"
 
 #: ../wordpress-popular-posts.php:1826
 msgid "Sorry. No data so far."
-msgstr "Lo lamentamos. No hay nada que mostrar a&uacute;n."
+msgstr "Désolé. Pas assez de données pour afficher des publications."
 
 #: ../wordpress-popular-posts.php:2353
 #, php-format
 msgid "1 comment"
 msgid_plural "%s comments"
-msgstr[0] "1 comentario"
-msgstr[1] "%s comentarios"
+msgstr[0] "1 commentaire"
+msgstr[1] "%s commentaires"
 
 #: ../wordpress-popular-posts.php:2365
 #, php-format
 msgid "1 view per day"
 msgid_plural "%s views per day"
-msgstr[0] "1 vista por d&iacute;a"
-msgstr[1] "%s vistas por d&iacute;a"
+msgstr[0] "1 vue par jour"
+msgstr[1] "%s vues par jour"
 
 #: ../wordpress-popular-posts.php:2371
 #, php-format
 msgid "1 view"
 msgid_plural "%s views"
-msgstr[0] "1 vista"
-msgstr[1] "%s vistas"
+msgstr[0] "1 vue"
+msgstr[1] "%s vues"
 
 #: ../wordpress-popular-posts.php:2394
 #, php-format
 msgid "by %s"
-msgstr "por %s"
+msgstr "par %s"
 
 #: ../wordpress-popular-posts.php:2400
 #, php-format
 msgid "posted on %s"
-msgstr "publicado el %s"
+msgstr "publié le %s"
 
 #: ../wordpress-popular-posts.php:2408
 #, php-format
 msgid "under %s"
-msgstr "bajo %s"
+msgstr "%s"
 
 #~ msgid "FAQ"
 #~ msgstr "FAQ"
 
+#~ msgid ""
+#~ "These FAQs are widget specific. For more general FAQs about WordPress "
+#~ "Popular Posts, please click <a href=\"%s\" target=\"_blank\">here</a>"
+#~ msgstr ""
+#~ "Cette FAQ est spécifique au widget. Pour davantage de FAQ au sujet de "
+#~ "WordPress Popular Posts, veuillez cliquer <a href=\"%s\" target=\"_blank"
+#~ "\">ici</a>"
+
 #~ msgid "What does \"Title\" do?"
-#~ msgstr "&iquest;Para qu&eacute; es \"T&iacute;tulo\"?"
+#~ msgstr "À quoi sert l'option d'affichage du titre ?"
 
 #~ msgid ""
 #~ "It allows you to show a heading for your most popular posts listing. If "
 #~ "left empty, no heading will be displayed at all."
 #~ msgstr ""
-#~ "Te permite mostrar un encabezado para tu lista de entradas populares. Si "
-#~ "se deja vac&iacute;o, no se mostrar&aacute; el encabezado."
+#~ "Il vous permet d'afficher un titre pour vos publications. Si laisser "
+#~ "vide, aucun titre ne sera affiché."
 
 #~ msgid "What is \"Post type\" for?"
-#~ msgstr "&iquest;Para qu&eacute; es el \"Post type\"?"
+#~ msgstr "À quoi sert \"Post type\" ?"
 
 #~ msgid ""
 #~ "This filter allows you to decide which post types to show on the listing. "
 #~ "By default, it will retrieve only posts and pages (which should be fine "
 #~ "for most cases)."
 #~ msgstr ""
-#~ "Este filtro te permite decidir que tipo de entradas deseas mostrar en el "
-#~ "listado. Por defecto, trater&aacute; s&oacute;lo entradas y p&aacute;"
-#~ "ginas (que es lo que se quiere, en la mayor&iacute;a de los casos)."
+#~ "Ce filtre vous permet de décider quel post-type doit être affiché dans la "
+#~ "liste des publications. Par défaut, il récupère seulement les articles et "
+#~ "les pages (ce qui devrait être bon pour la plupart des cas)."
 
 #~ msgid "What is \"Category(ies) ID(s)\" for?"
-#~ msgstr "&iquest;Para qu&eacute; es el \"ID(s) de Categor&iacute;a(s)\"?"
+#~ msgstr "Qu'est-ce que les IDs de catégories ?"
 
 #~ msgid ""
 #~ "This filter allows you to select which categories should be included or "
@@ -1162,38 +1162,37 @@ msgstr "bajo %s"
 #~ "number will exclude posts belonging to it from the list, for example. You "
 #~ "can specify more than one ID with a comma separated list."
 #~ msgstr ""
-#~ "Este filtro te permite seleccionar qu&eacute; categor&iacute;as "
-#~ "deber&iacute;an ser inclu&iacute;das o exclu&iacute;das del listado. Un "
-#~ "signo negativo enfrente del ID de la categor&iacute;a la excluir&aacute; "
-#~ "de la lista, por ejemplo. Puedes especificar m&aacute;s de un ID "
-#~ "separ&aacute;ndolos con comas."
+#~ "Ce filtre vous permet de sélectionner les catégories qui doivent être "
+#~ "incluses ou exclues de la liste. Un signe négatif devant l'ID de "
+#~ "catégorie exclut les publications appartenant à la liste par exemple. "
+#~ "Vous pouvez spécifier plus d'un ID en les séparant par des virgules."
 
 #~ msgid "What is \"Author(s) ID(s)\" for?"
-#~ msgstr "&iquest;Para qu&eacute; es el \"ID de Autor(es)\"?"
+#~ msgstr "Qu'est-ce que les IDs d'auteur ?"
 
 #~ msgid ""
 #~ "Just like the Category filter, this one lets you filter posts by author "
 #~ "ID. You can specify more than one ID with a comma separated list."
 #~ msgstr ""
-#~ "Justo como el filtro de Categor&iacute;a, &eacute;ste te permite filtrar "
-#~ "entradas por ID del autor. Puedes especificar m&aacute;s de un ID "
-#~ "separ&aacute;ndolos con comas."
+#~ "Exactement comme le filtre de catégorie, celui-ci vous permet de filtrer "
+#~ "les messages en fonction des IDs d'auteur. Vous pouvez spécifier autant "
+#~ "d'ID que désiré en les séparant par des virgules."
 
 #~ msgid "What does \"Display post rating\" do?"
-#~ msgstr "&iquest;Qu&eacute; hace \"Mostrar rating de la entrada\"?"
+#~ msgstr "Que permet l'option \"Afficher la note d'une publication\" ?"
 
 #~ msgid ""
 #~ "If checked, WordPress Popular Posts will show how your readers are rating "
 #~ "your most popular posts. This feature requires having WP-PostRatings "
 #~ "plugin installed and enabled on your blog for it to work."
 #~ msgstr ""
-#~ "Si se tilda, WordPress Popular Posts mostrar&aacute; c&oacute;mo tus "
-#~ "lectores est&aacute;n calificando tus entradas populares. Esta "
-#~ "caracter&iacute;stica requiere que el plugin WP-PostRatings est&eacute; "
-#~ "instalado y habilitado en tu blog para que funcione."
+#~ "Si elle est cochée, WordPress Popular Posts montrera comment vos lecteurs "
+#~ "ont noté vos publications les plus populaires. Cette fonction nécessite "
+#~ "d'avoir installé et activé l'extension WP-PostRatings sur votre blog pour "
+#~ "que cela fonctionne."
 
 #~ msgid "What does \"Use custom HTML Markup\" do?"
-#~ msgstr "&iquest;Qu&eacute; hace \"Utilizar Markup HTML personalizado\"?"
+#~ msgstr "À quoi sert l'option \"utiliser une balise HTML personnalisée\" ?"
 
 #~ msgid ""
 #~ "If checked, you will be able to customize the HTML markup of your popular "
@@ -1201,133 +1200,133 @@ msgstr "bajo %s"
 #~ "an unordered list, an ordered list, a div, etc. If you know xHTML/CSS, "
 #~ "this is for you!"
 #~ msgstr ""
-#~ "Si se tilda, podr&aacute;s personalizad el markup HTML de tu listado de "
-#~ "entradas populares. Por ejemplo, podr&aacute;s decidir si colocar tu "
-#~ "listado en una lista desordenada, una ordenada, dentro de un div, etc. Si "
-#~ "sabes xHTML/CSS, &iexcl;esto es para ti!"
+#~ "Si coché, vous serez en mesure de personnaliser le balisage HTML des "
+#~ "publications populaires. Par exemple, vous pouvez décider d'insérer vos "
+#~ "publications dans une liste non ordonnée, une liste ordonnée, une div, "
+#~ "etc. Si vous connaissez xHTML / CSS , cette option est pour vous !"
 
 #~ msgid "What is Time Range for?"
-#~ msgstr "&iquest;Para qu&eacute; es \"Rango de Tiempo\"?"
+#~ msgstr "À quoi sert l'intervalle de temps ?"
 
 #~ msgid ""
 #~ "It will tell WordPress Popular Posts to retrieve all posts with most "
 #~ "views / comments within the selected time range."
 #~ msgstr ""
-#~ "Le indica a WordPress Popular Posts que muestre las entradas m&aacute;s "
-#~ "vistas / comentadas en el rango de tiempo seleccionado."
+#~ "Il indique à l'extension de récupérer tous les messages avec la plupart "
+#~ "des vues / commentaires au sein de l'intervalle de temps sélectionné."
 
 #~ msgid "What is \"Sort post by\" for?"
-#~ msgstr "&iquest;Para qu&eacute; es \"Ordenar entradas por\"?"
+#~ msgstr "Que permet l'option \"Classer les publications par\" ?"
 
 #~ msgid ""
 #~ "It allows you to decide whether to order your popular posts listing by "
 #~ "total views, comments, or average views per day."
 #~ msgstr ""
-#~ "Te permite decidir si ordenar tus entradas populares por la cantidad "
-#~ "total de vistas, comentarios, o por el porcentaje diario de vistas."
+#~ "Il vous permet de décider de l'ordre des listes de publications "
+#~ "populaires par total des vues, par commentaires ou par la moyenne des "
+#~ "vues par jour ."
 
 #~ msgid "What does \"Shorten title\" do?"
-#~ msgstr "&iquest;Qu&eacute; hace \"Acortar t&iacute;tulo\"?"
+#~ msgstr "Que fait l'option \"Titre raccourci\" ?"
 
 #~ msgid ""
 #~ "If checked, all posts titles will be shortened to \"n\" characters/words. "
 #~ "A new \"Shorten title to\" option will appear so you can set it to "
 #~ "whatever you like."
 #~ msgstr ""
-#~ "Si se tilda, todos los t&iacute;tulos de las entradas se acortar&aacute;n "
-#~ "\"n\" caracteres/palabras. Una nueva opci&oacute;n \"Acortar t&iacute;"
-#~ "tulo en\" se mostrar&aacute; para que puedas configurarlo como quieras."
+#~ "Si elle est cochée, tous les titres des publications seront raccourcis à "
+#~ "\"n\" caractères/mots. Une nouvelle option \"titre raccourci à\" "
+#~ "apparaîtra afin que vous puissiez définir sa longueur comme désiré."
 
 #~ msgid "What does \"Display post excerpt\" do?"
-#~ msgstr "&iquest;Qu&eacute; hace \"Mostrar resumen de la entrada\"?"
+#~ msgstr "À quoi sert l'option \"Afficher l'extrait\" ?"
 
 #~ msgid ""
 #~ "If checked, WordPress Popular Posts will also include a small extract of "
 #~ "your posts in the list. Similarly to the previous option, you will be "
 #~ "able to decide how long the post excerpt should be."
 #~ msgstr ""
-#~ "Si se tilda, WordPress Popular Posts incluir&aacute; un peque&ntilde;o "
-#~ "extracto de tus entradas en la lista. Similar a la opci&oacute;n "
-#~ "anterior, podr&aacute;s decidir qu&eacute; tan largo debe ser el extracto."
+#~ "Si elle est cochée, WPP va inclure également un petit extrait des "
+#~ "publications dans la liste. De même que l'option précédente, vous serez "
+#~ "en mesure de décider la longueur de l'extrait affiché."
 
 #~ msgid "What does \"Keep text format and links\" do?"
-#~ msgstr "&iquest;Qu&eacute; hace \"Mantener el formato de texto y links\"?"
+#~ msgstr "Que fait l'option \"Conserver le format des textes et des liens\" ?"
 
 #~ msgid ""
 #~ "If checked, and if the Post Excerpt feature is enabled, WordPress Popular "
 #~ "Posts will keep the styling tags (eg. bold, italic, etc) that were found "
 #~ "in the excerpt. Hyperlinks will remain intact, too."
 #~ msgstr ""
-#~ "Si se tilda, y si la opci&oacute;n Mostrar Resumen est&aacute; "
-#~ "habilitada, WordPress Popular Posts mantendr&aacute; las etiquetas de "
-#~ "estilos que se encontraron en el extracto. Los hiperv&iacute;nculos "
-#~ "tambi&eacute;n se mantendr&aacute;n."
+#~ "Si elle est cochée, et si la fonction d'affichage des extraits est "
+#~ "activée, WordPress Popular Posts conservera les balises HTML de mise en "
+#~ "forme (par exemple : gras, italique, etc.) qui ont été trouvés dans "
+#~ "l'extrait, et les liens hypertextes resteront intacts également."
 
 #~ msgid "What does \"Display post thumbnail\" do?"
-#~ msgstr "&iquest;Qu&eacute; hace \"Mostrar miniatura de  la entrada\"?"
+#~ msgstr "Que fait l'option \"Afficher l'image à la Une\" ?"
 
 #~ msgid ""
 #~ "If checked, WordPress Popular Posts will attempt to retrieve the "
 #~ "thumbnail of each post. You can set up the source of the thumbnail via "
 #~ "Settings - WordPress Popular Posts - Tools."
 #~ msgstr ""
-#~ "Si se tilda, WordPress Popular Posts intentar&aacute; obtener la imagen "
-#~ "miniatura de cada entrada. Puedes configurar la fuente de la miniatura "
-#~ "via Configuraci&oacute;n - Wordpress Popular Posts - Herramientas."
+#~ "Si elle est cochée, WordPress Popular Posts tentera de récupérer la "
+#~ "vignette de chaque publication. Vous pouvez configurer la source de la "
+#~ "vignette via Réglages - WordPress Popular Posts - Outils ."
 
 #~ msgid "What does \"Display comment count\" do?"
-#~ msgstr "&iquest;Qu&eacute; hace \"Mostrar cantidad de comentarios\"?"
+#~ msgstr "Que permet l'option \"Afficher le nombre de commentaires\" ?"
 
 #~ msgid ""
 #~ "If checked, WordPress Popular Posts will display how many comments each "
 #~ "popular post has got in the selected Time Range."
 #~ msgstr ""
-#~ "Si se tilda, WordPress Popular Posts mostrar&aacute; cu&aacute;ntos "
-#~ "comentarios ha obtenido cada entrada popular dentro del Rango de Tiempo "
-#~ "seleccionado."
+#~ "Si elle est cochée, WPP affichera le nombre de commentaires que chaque "
+#~ "publication a obtenu dans l'intervalle de temps sélectionné."
 
 #~ msgid "What does \"Display views\" do?"
-#~ msgstr "&iquest;Qu&eacute; hace \"Mostrar vistas\"?"
+#~ msgstr "Que fait l'option \"Afficher le nombre de vues\" ?"
 
 #~ msgid ""
 #~ "If checked, WordPress Popular Posts will show how many pageviews a single "
 #~ "post has gotten in the selected Time Range."
 #~ msgstr ""
-#~ "Si se tilda, WordPress Popular Posts mostrar&aacute; cu&aacute;ntas "
-#~ "vistas ha obtenido cada entrada en el Rango de Tiempo seleccionado."
+#~ "Si elle est cochée, WordPress Popular Posts montrera combien de vues a "
+#~ "obtenu une publication dans l'intervalle de temps sélectionné."
 
 #~ msgid "What does \"Display author\" do?"
-#~ msgstr "&iquest;Qu&eacute; hace \"Mostrar autor\"?"
+#~ msgstr "Que fait l'option \"Afficher l'auteur\" ?"
 
 #~ msgid ""
 #~ "If checked, WordPress Popular Posts will display the name of the author "
 #~ "of each entry listed."
 #~ msgstr ""
-#~ "Si se tilda, WordPress Popular Posts mostrar&aacute; el nombre del autor "
-#~ "de cada entrada listada."
+#~ "Si elle est cochée, WPP affichera le nom de l'auteur de chaque "
+#~ "publication répertoriée."
 
 #~ msgid "What does \"Display date\" do?"
-#~ msgstr "&iquest;Qu&eacute; hace \"Mostrar fecha\"?"
+#~ msgstr "À quoi sert l'option \"afficher la date\" ?"
 
 #~ msgid ""
 #~ "If checked, WordPress Popular Posts will display the date when each "
 #~ "popular posts was published."
 #~ msgstr ""
-#~ "Si se tilda, WordPress Popular Posts mostrar&aacute; la fecha en la que "
-#~ "fue publicada cada entrada popular."
+#~ "Si l'option est cochée, WordPress Popular Posts affiche la date de "
+#~ "publication des articles (et pages)."
 
 #~ msgid "What does \"Display category\" do?"
-#~ msgstr "&iquest;Qu&eacute; hace \"Mostrar categor&iacute;a\"?"
+#~ msgstr "À quoi sert l'option \"afficher la catégorie\" ?"
 
 #~ msgid ""
 #~ "If checked, WordPress Popular Posts will display the category of each "
 #~ "post."
 #~ msgstr ""
-#~ "Si se tilda, WordPress Popular Posts mostrar&aacute; la categor&iacute;a "
-#~ "de cada entrada."
+#~ "Si elle est cochée, WordPress Popular Posts affiche la catégorie de "
+#~ "chaque article."
 
 #~ msgid "What are \"Content Tags\"?"
-#~ msgstr "&iquest;Qu&eacute; son los \"Content Tags\"?"
+#~ msgstr "Que sont les \"balises de contenu\" ?"
 
 #~ msgid ""
 #~ "Content Tags are codes to display a variety of items on your popular "
@@ -1336,39 +1335,36 @@ msgstr "bajo %s"
 #~ "the post here\". For more Content Tags, see the <a href=\"%s\" target="
 #~ "\"_blank\">Parameters</a> section."
 #~ msgstr ""
-#~ "Los Content Tags son etiquetas que sirven para mostrar una variedad de "
-#~ "items en la estructura HTML de tu lista. Por ejemplo, configurarlo como "
-#~ "\"{title}: {summary}\" (sin las comillas) mostrar&iacute;a \"T&iacute;"
-#~ "tulo de la entrada: extracto de la entrada aqu&iacute;\". Para ver otras "
-#~ "Content Tags, ver la secci&oacute;n <a href=\"%s\" target=\"_blank"
-#~ "\">Par&aacute;metros</a."
+#~ "Les mots-clés sont des codes utilisés pour afficher une variété d'items "
+#~ "dans la structure du code HTML personnalisée de vos publications "
+#~ "populaires. Par exemple, mettre \"{title} : {summary}\" (sans les "
+#~ "guillemets)affiche \"Titre de la publication : extrait\". Pour en savoir "
+#~ "plus sur les étiquettes de contenu, voir la section <a href=\"%s\" target="
+#~ "\"_blank\">Paramètres</a>."
 
 #~ msgid "What are \"Template Tags\"?"
-#~ msgstr "&iquest;Qu&eacute; son los \"Template Tags\"?"
+#~ msgstr "Que sont les « balises de thèmes » ?"
 
 #~ msgid ""
 #~ "Template Tags are simply php functions that allow you to perform certain "
 #~ "actions. For example, WordPress Popular Posts currently supports two "
 #~ "different template tags: wpp_get_mostpopular() and wpp_get_views()."
 #~ msgstr ""
-#~ "Los Template Tags son simplemente funciones php que nos permiten realizar "
-#~ "ciertas acciones. Por ejemplo, WordPress Popular Posts actualmente "
-#~ "soporta dos template tags diferentes: wpp_get_mostpopular() y "
+#~ "Les thèmes sont tout simplement des fonctions PHP qui vous permettent "
+#~ "d'effectuer certaines actions. Par exemple, WPP supporte actuellement "
+#~ "deux différentes fonctions de thèmes : wpp_get_mostpopular() et "
 #~ "wpp_get_views()."
 
 #~ msgid "What are the template tags that WordPress Popular Posts supports?"
-#~ msgstr ""
-#~ "&iquest;Cu&aacute;les son los Template Tags soportados por WordPress "
-#~ "Popular Posts?"
+#~ msgstr "Quelles sont les balises de thèmes supportées par l'extension ?"
 
 #~ msgid ""
 #~ "The following are the template tags supported by WordPress Popular Posts"
 #~ msgstr ""
-#~ "Los siguientes son los template tags soportados por WordPress Popular "
-#~ "Posts"
+#~ "Voici les balises de thèmes prises en charge par WordPress Popular Posts"
 
 #~ msgid "Template tag"
-#~ msgstr "Template tag"
+#~ msgstr "Balise du thème"
 
 #~ msgid ""
 #~ "Similar to the widget functionality, this tag retrieves the most popular "
@@ -1376,30 +1372,30 @@ msgstr "bajo %s"
 #~ "\">parameters</a> so you can customize your popular listing, but these "
 #~ "are not required."
 #~ msgstr ""
-#~ "Parecido a la funcionalidad del widget, esta etiqueta obtiene las "
-#~ "entradas m&aacute;s populares de tu blog. Esta funci&oacute;n "
-#~ "tambi&eacute;n acepta <a href=\"%1$s\">par&aacute;metros</a> para que "
-#~ "puedas personalizar el listado, pero &eacute;stos no son requeridos."
+#~ "Similaire à la fonctionnalité de widget, cette balise récupère les "
+#~ "publications les plus populaires sur votre blog. Cette fonction accepte "
+#~ "également des <a href=\"%1$s\">paramètres</a> pour que vous puissiez "
+#~ "personnaliser votre liste populaire, mais ceux-ci n'est pas obligatoire."
 
 #~ msgid ""
 #~ "Please refer to the <a href=\"%1$s\">Parameters section</a> for a "
 #~ "complete list of attributes."
 #~ msgstr ""
-#~ "Por favor ver la <a href=\"%1$s\">secci&oacute;n Par&aacute;metros</a> "
-#~ "para la lista completa de atributos."
+#~ "Veuillez vous référer à la section <a href=\"%1$s\">Paramètres</a> pour "
+#~ "consulter la liste complète des attributs."
 
 #~ msgid ""
 #~ "Displays the number of views of a single post. Post ID is required or it "
 #~ "will return false."
 #~ msgstr ""
-#~ "Muestra la cantidad de vistas de una entrada. El ID de la entrada es "
-#~ "requerido, o la funci&oacute;n devolver&aacute; false."
+#~ "Affiche le nombre de vues d'un article. L'ID de l'article est nécessaire "
+#~ "ou \"false\" est retourné."
 
 #~ msgid "Post ID"
-#~ msgstr "ID de la entrada"
+#~ msgstr "ID de la publication"
 
 #~ msgid "What are \"shortcodes\"?"
-#~ msgstr "&iquest;Qu&eacute; son los \"shortcodes\"?"
+#~ msgstr "Qu'est-ce qu'on shortcode ?"
 
 #~ msgid ""
 #~ "Shortcodes are similar to BB Codes, these allow us to call a php function "
@@ -1409,34 +1405,15 @@ msgstr "bajo %s"
 #~ "shortcodes, please visit the <a href=\"%s\" target=\"_blank\">WordPress "
 #~ "Shortcode API</a> page."
 #~ msgstr ""
-#~ "Los Shortcodes son similares a los BB Codes, &eacute;stos nos permiten "
-#~ "llamar a una funci&oacute;n php simplemente escribiendo algo como "
-#~ "[shortcode]. Con WordPress Popular Posts, el shortcode [wpp] te "
-#~ "permitir&aacute; insertar una lista de las entradas m&aacute;s populares "
-#~ "en el contenido de tus entradas y en p&aacute;ginas tambi&eacute;n. Para "
-#~ "mayor informaci&oacute;n sobre los shortcodes, por favor visita la "
-#~ "p&aacute;gina <a href=\"%s\" target=\"_blank\">WordPress Shortcode API</"
-#~ "a>."
-
-#~ msgid ""
-#~ "With the following parameters you can customize the popular posts list "
-#~ "when using either the <a href=\"%1$s\">wpp_get_most_popular() template "
-#~ "tag</a> or the <a href=\"%2$s\">[wpp] shortcode</a>."
-#~ msgstr ""
-#~ "Con los siguientes par&aacute;metros puedes personalizar la lista de "
-#~ "entradas populares al utilizar tanto el <a href=\"%1$s"
-#~ "\">wpp_get_most_popular() template tag</a> como el <a href=\"%2$s\">[wpp] "
-#~ "shortcode</a>."
+#~ "Les shortcodes sont similaires à des BB codes, ils permettent d'appeler "
+#~ "une fonction PHP en tapant simplement quelque chose comme [shortcode]. "
+#~ "Avec ce plugin, le shortcode [WPP] permet d'insérer une liste des "
+#~ "publications les plus populaires dans les contenus des articles et des "
+#~ "pages ! Pour plus d'informations sur les shortcodes, consultez la <a href="
+#~ "\"%s\" target=\"_blank\">page de l'API WordPress Shortcode</a>."
 
 #~ msgid "Popular Posts"
-#~ msgstr "Entradas Populares"
-
-#~ msgid "displays thumbnail linked to post/page"
-#~ msgstr "muestra la miniatura vinculada a la entrada/p&aacute;gina"
-
-#~ msgid "displays thumbnail image without linking to post/page"
-#~ msgstr ""
-#~ "muestra la imagen miniatura sin un link hacia la entrada/p&aacute;gina"
+#~ msgstr "Publications populaires"
 
 #~ msgid "px"
 #~ msgstr "px"
