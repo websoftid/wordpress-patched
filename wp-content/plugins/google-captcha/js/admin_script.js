@@ -86,6 +86,7 @@
         setTimeout( function(){
             if( $( '#gglcptch_test_keys_verification' ).length > 0 ) {
                 $( '#gglcptch_test_keys_verification' ).removeAttr('disabled');
+                $( '.bws_form input[type="submit"]' ).removeAttr( 'disabled' );
             }
         }, 8000 );
 		return false;

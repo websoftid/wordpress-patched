@@ -6,7 +6,7 @@ Description: Protect WordPress website forms from spam entries with Google Captc
 Author: BestWebSoft
 Text Domain: google-captcha
 Domain Path: /languages
-Version: 1.44
+Version: 1.52
 Author URI: https://bestwebsoft.com/
 License: GPLv3 or later
 */
@@ -513,10 +513,12 @@ if ( ! function_exists( 'gglcptch_is_recaptcha_required' ) ) {
 			}
 		}
 
-		$result = (
-            ! empty( $gglcptch_options[ $form_slug ] ) &&
-            ( ! $is_user_logged_in || ! gglcptch_is_hidden_for_role() )
-        );
+		$result =
+			! isset( $gglcptch_options[ $form_slug ] ) ||
+            (
+				! empty( $gglcptch_options[ $form_slug ] ) &&
+				( ! $is_user_logged_in || ! gglcptch_is_hidden_for_role() )
+			);
 
 		return $result;
 	}
@@ -554,9 +556,9 @@ if ( ! function_exists( 'gglcptch_display' ) ) {
 
 			$content .= '<div class="gglcptch gglcptch_' . $gglcptch_options['recaptcha_version'] . '">';
 
-			if ( $gglcptch_options['hide_badge'] ) {
+			if ( $gglcptch_options['hide_badge'] && 'v2' != $gglcptch_options['recaptcha_version'] ) {
 				$content .= sprintf(
-					'<div>%s<a href="https://policies.google.com/privacy">%s</a>%s<a href="https://policies.google.com/terms">%s</a>%s</div>',
+					'<div class="google-captcha-notice">%s<a href="https://policies.google.com/privacy" target="_blank">%s</a>%s<a href="https://policies.google.com/terms" target="_blank">%s</a>%s</div>',
 					__( 'This site is protected by reCAPTCHA and the Google ', 'google-captcha' ),
 					__( 'Privacy Policy', 'google-captcha' ),
 					__( ' and ', 'google-captcha' ),

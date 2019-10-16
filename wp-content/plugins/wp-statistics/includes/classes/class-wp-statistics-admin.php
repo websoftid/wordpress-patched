@@ -25,6 +25,7 @@ class WP_Statistics_Admin {
 		// If we've been removed, return without doing anything else.
 		if ( get_option( 'wp_statistics_removal' ) == 'done' ) {
 			add_action( 'admin_notices', array( $this, 'removal_admin_notice' ), 10, 2 );
+
 			return;
 		}
 
@@ -62,17 +63,20 @@ class WP_Statistics_Admin {
 
 		//Add Column in Post Type Wp_List Table
 		add_action( 'load-edit.php', array( $this, 'load_edit_init' ) );
-		if ( $WP_Statistics->get_option( 'pages' ) && ! $WP_Statistics->get_option( 'disable_column' ) ) {
+		if ( $WP_Statistics->get_option( 'pages' ) && $WP_Statistics->get_option( 'hit_post_metabox' ) ) {
 			add_action( 'post_submitbox_misc_actions', array( $this, 'post_init' ) );
 		}
 
 		//init ShortCode
 		add_action( 'admin_init', 'WP_Statistics_Shortcode::shortcake' );
 
-		// WP-Statistics welcome page hooks
-		add_action( 'admin_menu', 'WP_Statistics_Welcome::menu' );
-		add_action( 'upgrader_process_complete', 'WP_Statistics_Welcome::do_welcome', 10, 2 );
-		add_action( 'admin_init', 'WP_Statistics_Welcome::init' );
+		// Check Filter for showing welcome page.
+		if ( apply_filters( 'wp_statistics_show_welcome_page', true ) ) {
+			// WP-Statistics welcome page hooks
+			add_action( 'admin_menu', 'WP_Statistics_Welcome::menu' );
+			add_action( 'upgrader_process_complete', 'WP_Statistics_Welcome::do_welcome', 10, 2 );
+			add_action( 'admin_init', 'WP_Statistics_Welcome::init' );
+		}
 
 		// Runs some scripts at the end of the admin panel inside the body tag
 		add_action( 'admin_footer', array( $this, 'admin_footer_scripts' ) );
@@ -88,6 +92,9 @@ class WP_Statistics_Admin {
 
 		//Add Visitors Log Table
 		add_action( 'admin_init', array( $this, 'register_visitors_log_tbl' ) );
+
+		// Add Overview Ads
+		add_action( 'load-toplevel_page_' . WP_Statistics::$page['overview'], array( $this, 'overview_page_ads' ) );
 
 		//Check Require update page type in database
 		WP_Statistics_Install::_init_page_type_updater();
@@ -123,6 +130,48 @@ class WP_Statistics_Admin {
 				?></p>
         </div>
 		<?php
+	}
+
+	/**
+	 * OverView Page Ads
+	 */
+	public function overview_page_ads() {
+
+		// Check Active Ads in OverView Page
+		if ( apply_filters( 'wp_statistics_ads_overview_page_show', true ) === false ) {
+			return;
+		}
+
+		// Get Overview Ads
+		$get_overview_ads = get_option( 'wp_statistics_overview_page_ads', false );
+
+		// Check Expire or not exist
+		if ( $get_overview_ads === false || ( is_array( $get_overview_ads ) and ( current_time( 'timestamp' ) >= ( $get_overview_ads['timestamp'] + WEEK_IN_SECONDS ) ) ) ) {
+
+			// Check Exist
+			$overview_ads = ( $get_overview_ads === false ? array() : $get_overview_ads );
+
+			// Get New Ads from API
+			$request = wp_remote_get( 'https://wp-statistics.com/wp-json/ads/overview', array( 'timeout' => 30 ) );
+			if ( is_wp_error( $request ) ) {
+				return;
+			}
+
+			// Get Json Data
+			$data = json_decode( wp_remote_retrieve_body( $request ), true );
+
+			// Set new Timestamp
+			$overview_ads['timestamp'] = current_time( 'timestamp' );
+
+			// Set Ads
+			$overview_ads['ads'] = ( empty( $data ) ? array( 'status' => 'no', 'ID' => 'none' ) : $data );
+
+			// Set Last Viewed
+			$overview_ads['view'] = ( isset( $get_overview_ads['view'] ) ? $get_overview_ads['view'] : '' );
+
+			// Set Option
+			update_option( 'wp_statistics_overview_page_ads', $overview_ads, 'no' );
+		}
 	}
 
 	/**
@@ -274,9 +323,8 @@ class WP_Statistics_Admin {
 
 				$set_transient = true;
 				$alert         = '<div class="notice notice-warning is-dismissible"><p>' . sprintf( __( 'Here is an error associated with Connecting WordPress Rest API, Please Flushing rewrite rules or activate wp rest api for performance WP-Statistics Plugin Cache / Go %1$sSettings->Permalinks%2$s', 'wp-statistics' ), '<a href="' . esc_url( admin_url( 'options-permalink.php' ) ) . '">', '</a>' ) . '</div>';
-				$request       = wp_remote_post( path_join( get_rest_url(), WP_Statistics_Rest::route . '/' . WP_Statistics_Rest::func ), array(
-					'method' => 'POST',
-					'body'   => array( 'rest-api-wp-statistics' => 'wp-statistics' )
+				$request       = wp_remote_get( path_join( get_rest_url(), WP_Statistics_Rest::route . '/' . WP_Statistics_Rest::func ), array(
+					'body' => array( 'rest-api-wp-statistics' => 'wp-statistics' )
 				) );
 				if ( is_wp_error( $request ) ) {
 					echo $alert;
