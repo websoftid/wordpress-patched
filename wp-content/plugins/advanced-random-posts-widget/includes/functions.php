@@ -31,6 +31,7 @@ function arpw_get_default_args() {
 		'thumbnail_width'   => '',
 		'thumbnail_height'  => '',
 
+		'content'           => false,
 		'excerpt'           => false,
 		'excerpt_length'    => 10,
 		'date'              => false,

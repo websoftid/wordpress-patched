@@ -1,32 +1,14 @@
-<?php
-
-
-?>
-
 <script type="text/javascript">
     jQuery(document).ready(function () {
         postboxes.add_postbox_toggles(pagenow);
     });
 </script>
-<div class="wrap">
-    <h2><?php _e( 'Author Statistics', 'wp-statistics' ); ?></h2>
 
+<div class="wrap wps-wrap">
+	<?php WP_Statistics_Admin_Pages::show_page_title( __( 'Author Statistics', 'wp-statistics' ) ); ?>
 	<?php
-	$daysToDisplay = 20;
-	if ( array_key_exists( 'hitdays', $_GET ) ) {
-		$daysToDisplay = intval( $_GET['hitdays'] );
-	}
-
-	if ( array_key_exists( 'rangestart', $_GET ) ) {
-		$rangestart = $_GET['rangestart'];
-	} else {
-		$rangestart = '';
-	}
-	if ( array_key_exists( 'rangeend', $_GET ) ) {
-		$rangeend = $_GET['rangeend'];
-	} else {
-		$rangeend = '';
-	}
+	//Set Default Time Picker Option
+	list( $daysToDisplay, $rangestart, $rangeend ) = wp_statistics_prepare_range_time_picker();
 	if ( array_key_exists( 'author', $_GET ) ) {
 		$author = intval( $_GET['author'] );
 	} else {
@@ -40,22 +22,18 @@
 	$html = __( 'Select Author', 'wp-statistics' ) . ': ';
 	$html .= '<select name="author" id="author">';
 
-	$authors_list = wp_list_authors( 'html=0&style=none&echo=0&exclude_admin=0&optioncount=0&show_fullname=1&hide_empty=1&orderby=name&order=ASC' );
+	$authors_list = get_users( 'who=authors' );
 
-	$authors_array = explode( ',', $authors_list );
-
-	foreach ( $authors_array as $value ) {
-		$author_obj = get_user_by( 'slug', $value );
+	foreach ( $authors_list as $author_obj ) {
 
 		if ( $author_obj !== false ) {
-			// Check to see if this tag is the one that is currently selected.
 			if ( $author_obj->ID === $author ) {
 				$selected = ' SELECTED';
 			} else {
 				$selected = '';
 			}
 
-			$html .= '<option value="' . $author_obj->ID . '"{$selected}>' . $value . '</option>';
+			$html .= '<option value="' . $author_obj->ID . "\"{$selected}>" . ( $author_obj->display_name != "" ? $author_obj->display_name : $author_obj->user_login ) . '</option>';
 		}
 	}
 
@@ -64,9 +42,20 @@
 	$html .= ' <input type="submit" value="' . __( 'Select', 'wp-statistics' ) . '" class="button-primary">';
 	$html .= '<br>';
 
-	list( $daysToDisplay, $rangestart_utime, $rangeend_utime ) = wp_statistics_date_range_calculator( $daysToDisplay, $rangestart, $rangeend );
+	list( $daysToDisplay, $rangestart_utime, $rangeend_utime ) = wp_statistics_date_range_calculator(
+		$daysToDisplay,
+		$rangestart,
+		$rangeend
+	);
 
-	wp_statistics_date_range_selector( WP_STATISTICS_AUTHORS_PAGE, $daysToDisplay, null, null, '&preauthor=' . $author, $html );
+	wp_statistics_date_range_selector(
+		WP_Statistics::$page['authors'],
+		$daysToDisplay,
+		null,
+		null,
+		'&preauthor=' . $author,
+		$html
+	);
 
 	$args = array(
 		'author' => $author,
@@ -74,145 +63,87 @@
 
 	$posts = get_posts( $args );
 
-	?>
+	$visit_total   = 0;
+	$daysInThePast = (int) ( ( time() - $rangeend_utime ) / 86400 );
+	$posts_stats   = array();
+	$visits        = array();
 
-    <div class="postbox-container" style="width: 100%; float: left; margin-right:20px">
+	// Setup the array, otherwise PHP may throw an error.
+	foreach ( $posts as $post ) {
+		$posts_stats[ $post->ID ] = 0;
+	}
+
+	for ( $i = $daysToDisplay; $i >= 0; $i -- ) {
+		$date[] = "'" . $WP_Statistics->Real_Current_Date( 'M j', '-' . $i, $rangeend_utime ) . "'";
+
+		$stat = 0;
+		foreach ( $posts as $post ) {
+			$temp_stat                = wp_statistics_pages( '-' . (int) ( $i + $daysInThePast ), null, $post->ID );
+			$posts_stats[ $post->ID ] += $temp_stat;
+			$stat                     = $temp_stat;
+		}
+
+		$visits[]    = $stat;
+		$visit_total += $stat;
+	}
+	?>
+    <div class="postbox-container" id="last-log">
         <div class="metabox-holder">
             <div class="meta-box-sortables">
                 <div class="postbox">
-                    <?php $paneltitle = __( 'Author Statistics Chart', 'wp-statistics' ); ?>
+					<?php $paneltitle = __( 'Author Statistics Chart', 'wp-statistics' ); ?>
                     <button class="handlediv" type="button" aria-expanded="true">
-                        <span class="screen-reader-text"><?php printf( __( 'Toggle panel: %s', 'wp-statistics' ), $paneltitle ); ?></span>
+						<span class="screen-reader-text"><?php printf(
+								__( 'Toggle panel: %s', 'wp-statistics' ),
+								$paneltitle
+							); ?></span>
                         <span class="toggle-indicator" aria-hidden="true"></span>
                     </button>
                     <h2 class="hndle"><span><?php echo $paneltitle; ?></span></h2>
+
                     <div class="inside">
-                        <script type="text/javascript">
-                            var visit_chart;
-                            jQuery(document).ready(function () {
-								<?php
-								$visit_total = 0;
-								$daysInThePast = (int) ( ( time() - $rangeend_utime ) / 86400 );
-								$posts_stats = array();
-
-								// Setup the array, otherwise PHP may throw an error.
-								foreach ( $posts as $post ) {
-									$posts_stats[ $post->ID ] = 0;
-								}
-
-								echo "var visit_data_line = [";
-
-								for ( $i = $daysToDisplay; $i >= 0; $i -- ) {
-									$working_date = $WP_Statistics->Real_Current_Date( 'Y-m-d', '-' . ( $i + $daysInThePast ), $rangeend_utime );
-
-									$stat = 0;
-									foreach ( $posts as $post ) {
-										$temp_stat                = wp_statistics_pages( '-' . (int) ( $i + $daysInThePast ), null, $post->ID );
-										$posts_stats[ $post->ID ] += $temp_stat;
-										$stat                     = $temp_stat;
-									}
-
-									$visit_total += $stat;
-
-									echo "['" . $working_date . "'," . $stat . "], ";
-								}
-
-								echo "];\n";
-
-								$tickInterval = round( $daysToDisplay / 20, 0 );
-								if ( $tickInterval < 1 ) {
-									$tickInterval = 1;
-								}
-								?>
-                                visit_chart = jQuery.jqplot('visits-stats', [visit_data_line], {
-                                    title: {
-                                        text: '<b>' + <?php echo json_encode( sprintf( __( 'Hits in the last %s days', 'wp-statistics' ), $daysToDisplay ) ); ?> +'</b>',
-                                        fontSize: '12px',
-                                        fontFamily: 'Tahoma',
-                                        textColor: '#000000',
-                                    },
-                                    axes: {
-                                        xaxis: {
-                                            min: '<?php echo $WP_Statistics->Real_Current_Date( 'Y-m-d', '-' . $daysToDisplay, $rangeend_utime ); ?>',
-                                            max: '<?php echo $WP_Statistics->Real_Current_Date( 'Y-m-d', '-0', $rangeend_utime ); ?>',
-                                            tickInterval: '<?php echo $tickInterval; ?> day',
-                                            renderer: jQuery.jqplot.DateAxisRenderer,
-                                            tickRenderer: jQuery.jqplot.CanvasAxisTickRenderer,
-                                            tickOptions: {
-                                                angle: -45,
-                                                formatString: '%b %#d',
-                                                showGridline: false,
-                                            },
+                        <canvas id="hit-stats" height="80"></canvas>
+                        <script>
+                            var ctx = document.getElementById("hit-stats").getContext('2d');
+                            <?php if(is_rtl()) { ?> Chart.defaults.global.defaultFontFamily = "tahoma"; <?php } ?>
+                            var ChartJs = new Chart(ctx, {
+                                type: 'line',
+                                data: {
+                                    labels: [<?php echo implode( ', ', $date ); ?>],
+                                    datasets: [
+                                        {
+                                            label: '<?php _e( 'Visits', 'wp-statistics' ); ?>',
+                                            data: [<?php echo implode( ',', $visits ); ?>],
+                                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                            borderColor: 'rgba(54, 162, 235, 1)',
+                                            borderWidth: 1,
+                                            fill: true,
                                         },
-                                        yaxis: {
-                                            min: 0,
-                                            padMin: 1.0,
-                                            label: <?php echo json_encode( __( 'Number of visits', 'wp-statistics' ) ); ?>,
-                                            labelRenderer: jQuery.jqplot.CanvasAxisLabelRenderer,
-                                            labelOptions: {
-                                                angle: -90,
-                                                fontSize: '12px',
-                                                fontFamily: 'Tahoma',
-                                                fontWeight: 'bold',
-                                            },
-                                        }
-                                    },
+                                    ]
+                                },
+                                options: {
+                                    responsive: true,
                                     legend: {
-                                        show: true,
-                                        location: 's',
-                                        placement: 'outsideGrid',
-                                        labels: [<?php echo json_encode( __( 'Visits', 'wp-statistics' ) ); ?>],
-                                        renderer: jQuery.jqplot.EnhancedLegendRenderer,
-                                        rendererOptions: {
-                                            numberColumns: 2,
-                                            disableIEFading: false,
-                                            border: 'none',
-                                        },
+                                        position: 'bottom',
                                     },
-                                    highlighter: {
-                                        show: true,
-                                        bringSeriesToFront: true,
-                                        tooltipAxes: 'xy',
-                                        formatString: '%s:&nbsp;<b>%i</b>&nbsp;',
-                                        tooltipContentEditor: tooltipContentEditor,
+                                    title: {
+                                        display: true,
+                                        text: '<?php echo sprintf( __( 'Hits in the last %s days', 'wp-statistics' ), $daysToDisplay ); ?>'
                                     },
-                                    grid: {
-                                        drawGridlines: true,
-                                        borderColor: 'transparent',
-                                        shadow: false,
-                                        drawBorder: false,
-                                        shadowColor: 'transparent'
+                                    tooltips: {
+                                        mode: 'index',
+                                        intersect: false,
                                     },
-                                });
-
-                                function tooltipContentEditor(str, seriesIndex, pointIndex, plot) {
-                                    // display series_label, x-axis_tick, y-axis value
-                                    return plot.legend.labels[seriesIndex] + ", " + str;
-                                    ;
+                                    scales: {
+                                        yAxes: [{
+                                            ticks: {
+                                                beginAtZero: true
+                                            }
+                                        }]
+                                    }
                                 }
-
-                                jQuery(window).resize(function () {
-                                    JQPlotVisitChartLengendClickRedraw()
-                                });
-
-                                function JQPlotVisitChartLengendClickRedraw() {
-                                    visit_chart.replot({resetAxes: ['yaxis']});
-
-                                    jQuery('div[id="visits-stats"] .jqplot-table-legend').click(function () {
-                                        JQPlotVisitChartLengendClickRedraw();
-                                    });
-                                }
-
-                                jQuery('div[id="visits-stats"] .jqplot-table-legend').click(function () {
-                                    JQPlotVisitChartLengendClickRedraw()
-                                });
-
                             });
-
                         </script>
-
-                        <div id="visits-stats" style="height:500px;"></div>
-
                     </div>
                 </div>
             </div>
@@ -223,12 +154,16 @@
         <div class="metabox-holder">
             <div class="meta-box-sortables">
                 <div class="postbox">
-                    <?php $paneltitle = __( 'Author Statistics Summary', 'wp-statistics' ); ?>
+					<?php $paneltitle = __( 'Author Statistics Summary', 'wp-statistics' ); ?>
                     <button class="handlediv" type="button" aria-expanded="true">
-                        <span class="screen-reader-text"><?php printf( __( 'Toggle panel: %s', 'wp-statistics' ), $paneltitle ); ?></span>
+						<span class="screen-reader-text"><?php printf(
+								__( 'Toggle panel: %s', 'wp-statistics' ),
+								$paneltitle
+							); ?></span>
                         <span class="toggle-indicator" aria-hidden="true"></span>
                     </button>
                     <h2 class="hndle"><span><?php echo $paneltitle; ?></span></h2>
+
                     <div class="inside">
                         <table width="auto" class="widefat table-stats" id="summary-stats">
                             <tbody>
@@ -238,19 +173,19 @@
                             </tr>
 
                             <tr>
-                                <th><?php _e( 'Number of posts by author', 'wp-statistics' ); ?>:</th>
+                                <th><?php _e( 'Number of posts by author:', 'wp-statistics' ); ?></th>
                                 <th class="th-center"><span><?php echo number_format_i18n( count( $posts ) ); ?></span>
                                 </th>
                             </tr>
 
                             <tr>
-                                <th><?php _e( 'Chart Visits Total', 'wp-statistics' ); ?>:</th>
+                                <th><?php _e( 'Chart Visits Total:', 'wp-statistics' ); ?></th>
                                 <th class="th-center"><span><?php echo number_format_i18n( $visit_total ); ?></span>
                                 </th>
                             </tr>
 
                             <tr>
-                                <th><?php _e( 'All Time Visits Total', 'wp-statistics' ); ?>:</th>
+                                <th><?php _e( 'All Time Visits Total:', 'wp-statistics' ); ?></th>
                                 <th class="th-center"><span><?php
 
 										$stat = 0;
@@ -272,12 +207,16 @@
         <div class="metabox-holder">
             <div class="meta-box-sortables">
                 <div class="postbox">
-                    <?php $paneltitle = __( 'Author Posts Sorted by Hits', 'wp-statistics' ); ?>
+					<?php $paneltitle = __( 'Author Posts Sorted by Hits', 'wp-statistics' ); ?>
                     <button class="handlediv" type="button" aria-expanded="true">
-                        <span class="screen-reader-text"><?php printf( __( 'Toggle panel: %s', 'wp-statistics' ), $paneltitle ); ?></span>
+						<span class="screen-reader-text"><?php printf(
+								__( 'Toggle panel: %s', 'wp-statistics' ),
+								$paneltitle
+							); ?></span>
                         <span class="toggle-indicator" aria-hidden="true"></span>
                     </button>
                     <h2 class="hndle"><span><?php echo $paneltitle; ?></span></h2>
+
                     <div class="inside">
                         <table width="auto" class="widefat table-stats" id="post-stats">
                             <tbody>
@@ -301,7 +240,9 @@
 								?>
                                 <tr>
                                     <th>
-                                        <a href="<?php echo get_permalink( $post_obj ); ?>"><?php echo $post_obj->post_title; ?></a>
+                                        <a href="<?php echo get_permalink(
+											$post_obj
+										); ?>"><?php echo $post_obj->post_title; ?></a>
                                     </th>
                                     <th class="th-center"><span><?php echo number_format_i18n( $post_stat ); ?></span>
                                     </th>

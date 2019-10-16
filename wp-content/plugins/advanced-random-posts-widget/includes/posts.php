@@ -59,7 +59,7 @@ function arpw_get_random_posts( $args, $id ) {
 
 								$html .= '<a href="' . esc_url( get_permalink() ) . '"  rel="bookmark">';
 									if ( $args['thumbnail_custom'] ) :
-										$html .= '<img class="arpw-thumbnail align' . esc_attr( $args['thumbnail_align'] ) . '" src="' . esc_url( $image ) . '" alt="' . esc_attr( get_the_title() ) . '">';
+										$html .= '<img class="arpw-thumbnail align' . esc_attr( $args['thumbnail_align'] ) . '" src="' . esc_url( $image ) . '" alt="' . esc_attr( get_the_title() ) . '" width="' . esc_attr( $args['thumbnail_width'] ) . '" height="' . esc_attr( $args['thumbnail_height'] ) . '">';
 									else :
 										$html .= get_the_post_thumbnail( get_the_ID(), $args['thumbnail_size'], array( 'alt' => esc_attr( get_the_title() ), 'class' => 'arpw-thumbnail align' . esc_attr( $args['thumbnail_align'] ) ) );
 									endif;
@@ -107,6 +107,10 @@ function arpw_get_random_posts( $args, $id ) {
 								$date = sprintf( __( '%s ago', 'advanced-random-posts-widget' ), human_time_diff( get_the_modified_date( 'U' ), current_time( 'timestamp' ) ) );
 							endif;
 							$html .= '<time class="arpw-time modfied" datetime="' . esc_html( get_the_modified_date( 'c' ) ) . '">' . esc_html( $date ) . '</time>';
+						endif;
+
+						if ( $args['content'] ) :
+							$html .= '<div class="arpw-content">' . apply_filters( 'arpw_content', get_the_content() ) . '</div>';
 						endif;
 
 						if ( $args['excerpt'] ) :

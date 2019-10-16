@@ -1,10 +1,12 @@
 <?php
 /**
- * @package WPSEO\Admin|Google_Search_Console
+ * WPSEO plugin file.
+ *
+ * @package WPSEO\Admin\Google_Search_Console
  */
 
 /**
- * Class WPSEO_GSC_Marker
+ * Class WPSEO_GSC_Marker.
  */
 class WPSEO_GSC_Marker {
 
@@ -34,9 +36,9 @@ class WPSEO_GSC_Marker {
 	private $result;
 
 	/**
-	 * Setting up the needed API libs and return the result
+	 * Setting up the needed API libs and return the result.
 	 *
-	 * If param URL is given, the request is performed by a bulk action
+	 * If param URL is given, the request is performed by a bulk action.
 	 *
 	 * @param string $url Optional URL.
 	 */
@@ -46,7 +48,7 @@ class WPSEO_GSC_Marker {
 	}
 
 	/**
-	 * Getting the response for the AJAX request
+	 * Getting the response for the AJAX request.
 	 *
 	 * @return string
 	 */
@@ -55,7 +57,7 @@ class WPSEO_GSC_Marker {
 	}
 
 	/**
-	 * Setting the result, this method will check if current
+	 * Setting the result, this method will check if current.
 	 *
 	 * @return string
 	 */
@@ -74,7 +76,7 @@ class WPSEO_GSC_Marker {
 	}
 
 	/**
-	 * Check if request is valid by verifying the posted nonce and return the URL if this one is set
+	 * Check if request is valid by verifying the posted nonce and return the URL if this one is set.
 	 *
 	 * @return bool|string
 	 */
@@ -87,7 +89,7 @@ class WPSEO_GSC_Marker {
 	}
 
 	/**
-	 * Storing the data belonging to the current issue, this data is needed in the 'mark as fixed' flow
+	 * Storing the data belonging to the current issue, this data is needed in the 'mark as fixed' flow.
 	 *
 	 * @return bool
 	 */
@@ -115,7 +117,7 @@ class WPSEO_GSC_Marker {
 	}
 
 	/**
-	 * Delete the crawl issue from the database
+	 * Delete the crawl issue from the database.
 	 *
 	 * @return bool
 	 */
@@ -129,13 +131,13 @@ class WPSEO_GSC_Marker {
 	 * @param WPSEO_GSC_Service $service Service object instance.
 	 */
 	private function update_issue_count( WPSEO_GSC_Service $service ) {
-		$counts  = new WPSEO_GSC_Count( $service );
+		$counts = new WPSEO_GSC_Count( $service );
 
 		// Get the issues.
 		$total_issues = $counts->get_issue_count( $this->platform, $this->category );
 
 		// Lower the current count with 1.
-		$total_issues = ( $total_issues - 1 );
+		--$total_issues;
 
 		// And update the count.
 		$counts->update_issue_count( $this->platform, $this->category, $total_issues );

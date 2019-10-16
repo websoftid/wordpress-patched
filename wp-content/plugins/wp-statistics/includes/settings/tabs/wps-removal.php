@@ -15,7 +15,8 @@ if ( $wps_nonce_valid ) {
 		if ( is_super_admin() ) {
 			GLOBAL $wpdb, $WP_Statistics;
 
-			$default_options = $WP_Statistics->Default_Options();
+			$default_options   = $WP_Statistics->Default_Options();
+			$excluded_defaults = array( 'force_robot_update', 'robot_list' );
 
 			// Handle multi site implementations
 			if ( is_multisite() ) {
@@ -63,7 +64,7 @@ if ( $wps_nonce_valid ) {
 
 			// We need to reload the page after we reset the options but it's too late to do it through a HTTP redirect so do a 
 			// JavaScript redirect instead.
-			echo '<script type="text/javascript">window.location.href="' . admin_url() . 'admin.php?page=wps_settings_page";</script>';
+			echo '<script type="text/javascript">window.location.href="' . WP_Statistics_Admin_Pages::admin_url( 'settings' ) . '";</script>';
 		}
 	}
 }
@@ -77,34 +78,48 @@ if ( $wps_nonce_valid ) {
 
         <tr valign="top">
             <th scope="row" colspan="2">
-				<?php _e( 'Uninstalling WP Statistics will not remove the data and settings, you can use this option to remove the WP Statistics data from your install before uninstalling the plugin.', 'wp-statistics' ); ?>
+				<?php _e(
+					'Uninstalling WP Statistics will not remove the data and settings, you can use this option to remove the WP Statistics data from your install before uninstalling the plugin.',
+					'wp-statistics'
+				); ?>
                 <br>
                 <br>
-				<?php _e( 'Once you submit this form the settings will be deleted during the page load, however WP Statistics will still show up in your Admin menu until another page load is executed.', 'wp-statistics' ); ?>
+				<?php _e(
+					'Once you submit this form the settings will be deleted during the page load, however WP Statistics will still show up in your Admin menu until another page load is executed.',
+					'wp-statistics'
+				); ?>
             </th>
         </tr>
 
         <tr valign="top">
             <th scope="row">
-                <label for="reset-plugin"><?php _e( 'Reset options', 'wp-statistics' ); ?>:</label>
+                <label for="reset-plugin"><?php _e( 'Reset options:', 'wp-statistics' ); ?></label>
             </th>
 
             <td>
                 <input id="reset-plugin" type="checkbox" name="wps_reset_plugin">
                 <label for="reset-plugin"><?php _e( 'Reset', 'wp-statistics' ); ?></label>
-                <p class="description"><?php _e( 'Reset the plugin options to the defaults.  This will remove all user and global settings but will keep all other data.  This action cannot be undone.  Note: For multi-site installs this will reset all sites to the defaults.', 'wp-statistics' ); ?></p>
+
+                <p class="description"><?php _e(
+						'Reset the plugin options to the defaults. This will remove all user and global settings but will keep all other data. This action cannot be undone. Note: For multisite installs this will reset all sites to the defaults.',
+						'wp-statistics'
+					); ?></p>
             </td>
         </tr>
 
         <tr valign="top">
             <th scope="row">
-                <label for="remove-plugin"><?php _e( 'Remove data and settings', 'wp-statistics' ); ?>:</label>
+                <label for="remove-plugin"><?php _e( 'Remove data and settings:', 'wp-statistics' ); ?></label>
             </th>
 
             <td>
                 <input id="remove-plugin" type="checkbox" name="wps_remove_plugin">
                 <label for="remove-plugin"><?php _e( 'Remove', 'wp-statistics' ); ?></label>
-                <p class="description"><?php _e( 'Remove data and settings, this action cannot be undone.', 'wp-statistics' ); ?></p>
+
+                <p class="description"><?php _e(
+						'Remove data and settings, this action cannot be undone.',
+						'wp-statistics'
+					); ?></p>
             </td>
         </tr>
 

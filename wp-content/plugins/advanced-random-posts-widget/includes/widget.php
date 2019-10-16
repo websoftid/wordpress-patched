@@ -9,12 +9,12 @@ class Advanced_Random_Posts_Widget extends WP_Widget {
 	 *
 	 * @since 0.0.1
 	 */
-	function __construct() {
+	public function __construct() {
 
 		// Set up the widget options.
 		$widget_options = array(
 			'classname'   => 'arpw-widget-random',
-			'description' => __( 'An advanced widget that gives you total control over the output of the random posts.', 'advanced-random-posts-widget' )
+			'description' => esc_html__( 'An advanced widget that gives you total control over the output of the random posts.', 'advanced-random-posts-widget' )
 		);
 
 		$control_ops = array(
@@ -23,10 +23,10 @@ class Advanced_Random_Posts_Widget extends WP_Widget {
 
 		// Create the widget.
 		parent::__construct(
-			'arpw-widget',                                        // $this->id_base
-			__( 'Random Posts', 'advanced-random-posts-widget' ), // $this->name
-			$widget_options,                                      // $this->widget_options
-			$control_ops                                          // $this->control_options
+			'arpw-widget',                                                // $this->id_base
+			esc_html__( 'Random Posts', 'advanced-random-posts-widget' ), // $this->name
+			$widget_options,                                              // $this->widget_options
+			$control_ops                                                  // $this->control_options
 		);
 
 		// Inline default style
@@ -50,7 +50,7 @@ class Advanced_Random_Posts_Widget extends WP_Widget {
 	 *
 	 * @since  0.0.1
 	 */
-	function widget( $args, $instance ) {
+	public function widget( $args, $instance ) {
 		extract( $args );
 
 		// Get the random posts.
@@ -86,7 +86,7 @@ class Advanced_Random_Posts_Widget extends WP_Widget {
 	 *
 	 * @since  0.0.1
 	 */
-	function update( $new_instance, $old_instance ) {
+	public function update( $new_instance, $old_instance ) {
 
 		$instance = $old_instance;
 
@@ -109,6 +109,7 @@ class Advanced_Random_Posts_Widget extends WP_Widget {
 		$instance['thumbnail_width']   = (int) $new_instance['thumbnail_width'];
 		$instance['thumbnail_height']  = (int) $new_instance['thumbnail_height'];
 
+		$instance['content']           = isset( $new_instance['content'] ) ? (bool) $new_instance['content'] : false;
 		$instance['excerpt']           = isset( $new_instance['excerpt'] ) ? (bool) $new_instance['excerpt'] : false;
 		$instance['excerpt_length']    = (int) $new_instance['excerpt_length'];
 		$instance['date']              = isset( $new_instance['date'] ) ? (bool) $new_instance['date'] : false;
@@ -128,7 +129,7 @@ class Advanced_Random_Posts_Widget extends WP_Widget {
 	 *
 	 * @since  0.0.1
 	 */
-	function form( $instance ) {
+	public function form( $instance ) {
 
 		// Merge the user-selected arguments with the defaults.
 		$instance = wp_parse_args( (array) $instance, arpw_get_default_args() );

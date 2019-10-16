@@ -232,6 +232,13 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 		<div id="tab-5" class="arpw-tab-content">
 
 			<p>
+				<input class="checkbox" type="checkbox" <?php checked( $instance['content'] ); ?> id="<?php echo $this->get_field_id( 'content' ); ?>" name="<?php echo $this->get_field_name( 'content' ); ?>" />
+				<label for="<?php echo $this->get_field_id( 'content' ); ?>">
+					<?php _e( 'Display full post', 'advanced-random-posts-widget' ); ?>
+				</label>
+			</p>
+
+			<p>
 				<input class="checkbox" type="checkbox" <?php checked( $instance['excerpt'] ); ?> id="<?php echo $this->get_field_id( 'excerpt' ); ?>" name="<?php echo $this->get_field_name( 'excerpt' ); ?>" />
 				<label for="<?php echo $this->get_field_id( 'excerpt' ); ?>">
 					<?php _e( 'Display excerpt', 'advanced-random-posts-widget' ); ?>

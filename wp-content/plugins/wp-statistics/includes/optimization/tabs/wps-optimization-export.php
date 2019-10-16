@@ -1,7 +1,8 @@
-<div class="wrap">
+<div class="wrap wps-wrap">
 
     <form method="post">
         <input type="hidden" name="wps_export" value="true">
+		<?php wp_nonce_field( 'wp_statistics_export_nonce', 'wps_export_file' ); ?>
         <table class="form-table">
             <tbody>
             <tr valign="top">
@@ -10,42 +11,43 @@
 
             <tr valign="top">
                 <th scope="row">
-                    <label for="table-to-export"><?php _e( 'Export from', 'wp-statistics' ); ?>:</label>
+                    <label for="table-to-export"><?php _e( 'Export from:', 'wp-statistics' ); ?></label>
                 </th>
 
                 <td>
-                    <select id="table-to-export" name="table-to-export">
-                        <option value="0"><?php _e( 'Please select', 'wp-statistics' ); ?></option>
-                        <option value="useronline"><?php echo $wpdb->prefix . 'statistics_useronline'; ?></option>
-                        <option value="visit"><?php echo $wpdb->prefix . 'statistics_visit'; ?></option>
-                        <option value="visitor"><?php echo $wpdb->prefix . 'statistics_visitor'; ?></option>
-                        <option value="exclusions"><?php echo $wpdb->prefix . 'statistics_exclusions'; ?></option>
-                        <option value="pages"><?php echo $wpdb->prefix . 'statistics_pages'; ?></option>
-                        <option value="search"><?php echo $wpdb->prefix . 'statistics_search'; ?></option>
+                    <select dir="ltr" id="table-to-export" name="table-to-export" required>
+                        <option value=""><?php _e( 'Please select', 'wp-statistics' ); ?></option>
+						<?php
+						foreach ( wp_statistics_db_table( 'all', array( 'historical', 'visitor_relationships' ) ) as $tbl_key => $tbl_name ) {
+							echo '<option value="' . $tbl_key . '">' . $tbl_name . '</option>';
+						}
+						?>
                     </select>
+
                     <p class="description"><?php _e( 'Select the table for the output file.', 'wp-statistics' ); ?></p>
                 </td>
             </tr>
 
             <tr valign="top">
                 <th scope="row">
-                    <label for="export-file-type"><?php _e( 'Export To', 'wp-statistics' ); ?>:</label>
+                    <label for="export-file-type"><?php _e( 'Export To:', 'wp-statistics' ); ?></label>
                 </th>
 
                 <td>
-                    <select id="export-file-type" name="export-file-type">
-                        <option value="0"><?php _e( 'Please select', 'wp-statistics' ); ?></option>
+                    <select dir="ltr" id="export-file-type" name="export-file-type" required>
+                        <option value=""><?php _e( 'Please select', 'wp-statistics' ); ?></option>
                         <option value="xml">XML</option>
                         <option value="csv">CSV</option>
                         <option value="tsv">TSV</option>
                     </select>
+
                     <p class="description"><?php _e( 'Select the output file type.', 'wp-statistics' ); ?></p>
                 </td>
             </tr>
 
             <tr valign="top">
                 <th scope="row">
-                    <label for="export-headers"><?php _e( 'Include Header Row', 'wp-statistics' ); ?>:</label>
+                    <label for="export-headers"><?php _e( 'Include Header Row:', 'wp-statistics' ); ?></label>
                 </th>
 
                 <td>

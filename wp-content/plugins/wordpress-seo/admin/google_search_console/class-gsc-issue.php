@@ -1,10 +1,12 @@
 <?php
 /**
- * @package WPSEO\Admin|Google_Search_Console
+ * WPSEO plugin file.
+ *
+ * @package WPSEO\Admin\Google_Search_Console
  */
 
 /**
- * Class WPSEO_GSC_Issue
+ * Class WPSEO_GSC_Issue.
  */
 class WPSEO_GSC_Issue {
 
@@ -44,7 +46,7 @@ class WPSEO_GSC_Issue {
 	}
 
 	/**
-	 * Put the class properties in array
+	 * Put the class properties in array.
 	 *
 	 * @return array
 	 */
@@ -60,7 +62,7 @@ class WPSEO_GSC_Issue {
 	}
 
 	/**
-	 * Converting the date to a date format
+	 * Converting the date to a date format.
 	 *
 	 * @param DateTime $date_to_convert Date instance.
 	 * @param string   $format          Format string.
@@ -77,7 +79,7 @@ class WPSEO_GSC_Issue {
 	}
 
 	/**
-	 * Converting the date to a timestamp
+	 * Converting the date to a timestamp.
 	 *
 	 * @param DateTime $date_to_convert Date object instance.
 	 *

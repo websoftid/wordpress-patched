@@ -1,20 +1,4 @@
-<?php
-/* format size of file 
-* @author Mike Zriel
-* @date 7 March 2011
-* @website www.zriel.com
-*/
-function formatSize( $size ) {
-	$sizes = array( " Bytes", " KB", " MB", " GB", " TB", " PB", " EB", " ZB", " YB" );
-	if ( $size == 0 ) {
-		return ( 'n/a' );
-	} else {
-		return ( round( $size / pow( 1024, ( $i = floor( log( $size, 1024 ) ) ) ), 2 ) . $sizes[ $i ] );
-	}
-}
-
-?>
-<div class="wrap">
+<div class="wrap wps-wrap">
     <table class="form-table">
         <tbody>
         <tr valign="top">
@@ -43,89 +27,22 @@ function formatSize( $size ) {
             </td>
         </tr>
 
-        <tr valign="top">
-            <th scope="row">
-				<?php echo sprintf( __( 'Number of rows in the %s table', 'wp-statistics' ), '<code>' . $wpdb->prefix . 'statistics_' . 'useronline' . '</code>' ); ?>
-                :
-            </th>
-
-            <td>
-                <strong><?php echo number_format_i18n( $result['useronline'] ); ?></strong> <?php echo _n( 'Row', 'Rows', number_format_i18n( $result['useronline'] ), 'wp-statistics' ); ?>
-                <p class="description"><?php _e( 'Number of rows', 'wp-statistics' ); ?></p>
-            </td>
-        </tr>
-
-        <tr valign="top">
-            <th scope="row">
-				<?php echo sprintf( __( 'Number of rows in the %s table', 'wp-statistics' ), '<code>' . $wpdb->prefix . 'statistics_' . 'visit' . '</code>' ); ?>
-                :
-            </th>
-
-            <td>
-                <strong><?php echo number_format_i18n( $result['visit'] ); ?></strong> <?php echo _n( 'Row', 'Rows', number_format_i18n( $result['visit'] ), 'wp-statistics' ); ?>
-                <p class="description"><?php _e( 'Number of rows', 'wp-statistics' ); ?></p>
-            </td>
-        </tr>
-
-        <tr valign="top">
-            <th scope="row">
-				<?php echo sprintf( __( 'Number of rows in the %s table', 'wp-statistics' ), '<code>' . $wpdb->prefix . 'statistics_' . 'visitor' . '</code>' ); ?>
-                :
-            </th>
-
-            <td>
-                <strong><?php echo number_format_i18n( $result['visitor'] ); ?></strong> <?php echo _n( 'Row', 'Rows', number_format_i18n( $result['visitor'] ), 'wp-statistics' ); ?>
-                <p class="description"><?php _e( 'Number of rows', 'wp-statistics' ); ?></p>
-            </td>
-        </tr>
-
-        <tr valign="top">
-            <th scope="row">
-				<?php echo sprintf( __( 'Number of rows in the %s table', 'wp-statistics' ), '<code>' . $wpdb->prefix . 'statistics_' . 'exclusions' . '</code>' ); ?>
-                :
-            </th>
-
-            <td>
-                <strong><?php echo number_format_i18n( $result['exclusions'] ); ?></strong> <?php echo _n( 'Row', 'Rows', number_format_i18n( $result['exclusions'] ), 'wp-statistics' ); ?>
-                <p class="description"><?php _e( 'Number of rows', 'wp-statistics' ); ?></p>
-            </td>
-        </tr>
-
-        <tr valign="top">
-            <th scope="row">
-				<?php echo sprintf( __( 'Number of rows in the %s table', 'wp-statistics' ), '<code>' . $wpdb->prefix . 'statistics_' . 'pages' . '</code>' ); ?>
-                :
-            </th>
-
-            <td>
-                <strong><?php echo number_format_i18n( $result['pages'] ); ?></strong> <?php echo _n( 'Row', 'Rows', number_format_i18n( $result['pages'] ), 'wp-statistics' ); ?>
-                <p class="description"><?php _e( 'Number of rows', 'wp-statistics' ); ?></p>
-            </td>
-        </tr>
-
-        <tr valign="top">
-            <th scope="row">
-				<?php echo sprintf( __( 'Number of rows in the %s table', 'wp-statistics' ), '<code>' . $wpdb->prefix . 'statistics_' . 'historical' . '</code>' ); ?>
-                :
-            </th>
-
-            <td>
-                <strong><?php echo number_format_i18n( $result['historical'] ); ?></strong> <?php echo _n( 'Row', 'Rows', number_format_i18n( $result['historical'] ), 'wp-statistics' ); ?>
-                <p class="description"><?php _e( 'Number of rows', 'wp-statistics' ); ?></p>
-            </td>
-        </tr>
-
-        <tr valign="top">
-            <th scope="row">
-				<?php echo sprintf( __( 'Number of rows in the %s table', 'wp-statistics' ), '<code>' . $wpdb->prefix . 'statistics_' . 'search' . '</code>' ); ?>
-                :
-            </th>
-
-            <td>
-                <strong><?php echo number_format_i18n( $result['search'] ); ?></strong> <?php echo _n( 'Row', 'Rows', number_format_i18n( $result['search'] ), 'wp-statistics' ); ?>
-                <p class="description"><?php _e( 'Number of rows', 'wp-statistics' ); ?></p>
-            </td>
-        </tr>
+		<?php
+		foreach ( $result as $table_name => $number_row ) {
+			?>
+            <tr valign="top">
+                <th scope="row">
+					<?php echo sprintf( __( 'Number of rows in the %s table', 'wp-statistics' ), '<code>' . $table_name . '</code>' ); ?>
+                    :
+                </th>
+                <td>
+                    <strong><?php echo number_format_i18n( $number_row ); ?></strong> <?php echo _n( 'Row', 'Rows', number_format_i18n( $number_row ), 'wp-statistics' ); ?>
+                    <p class="description"><?php _e( 'Number of rows', 'wp-statistics' ); ?></p>
+                </td>
+            </tr>
+			<?php
+		}
+		?>
 
         <tr valign="top">
             <th scope="row" colspan="2"><h3><?php _e( 'Version Info', 'wp-statistics' ); ?></h3></th>
@@ -137,7 +54,7 @@ function formatSize( $size ) {
             </th>
 
             <td>
-                <strong><?php echo WP_STATISTICS_VERSION; ?></strong>
+                <strong><?php echo WP_Statistics::$reg['version']; ?></strong>
                 <p class="description"><?php _e( 'The WP Statistics version you are running.', 'wp-statistics' ); ?></p>
             </td>
         </tr>
@@ -164,7 +81,8 @@ function formatSize( $size ) {
 					} else {
 						_e( 'No', 'wp-statistics' );
 					} ?></strong>
-                <p class="description"><?php _e( 'Is PHP Safe Mode active.  The GeoIP code is not supported in Safe Mode.', 'wp-statistics' ); ?></p>
+
+                <p class="description"><?php _e( 'Is PHP Safe Mode active. The GeoIP code is not supported in Safe Mode.', 'wp-statistics' ); ?></p>
             </td>
         </tr>
 
@@ -179,7 +97,8 @@ function formatSize( $size ) {
 					} else {
 						_e( 'No', 'wp-statistics' );
 					} ?></strong>
-                <p class="description"><?php _e( 'Is PHP compiled with IPv6 support.  You may see warning messages in your PHP log if it is not and you receive HTTP headers with IPv6 addresses in them.', 'wp-statistics' ); ?></p>
+
+                <p class="description"><?php _e( 'Is PHP compiled with IPv6 support. You may see warning messages in your PHP log if it is not and you receive HTTP headers with IPv6 addresses in them.', 'wp-statistics' ); ?></p>
             </td>
         </tr>
 
@@ -192,6 +111,7 @@ function formatSize( $size ) {
                 <strong>
                     <script type="text/javascript">document.write(jQuery().jquery);</script>
                 </strong>
+
                 <p class="description"><?php _e( 'The jQuery version you are running.', 'wp-statistics' ); ?></p>
             </td>
         </tr>
@@ -208,7 +128,11 @@ function formatSize( $size ) {
 					} else {
 						_e( 'cURL not installed', 'wp-statistics' );
 					} ?></strong>
-                <p class="description"><?php _e( 'The PHP cURL Extension version you are running.  cURL is required for the GeoIP code, if it is not installed GeoIP will be disabled.', 'wp-statistics' ); ?></p>
+
+                <p class="description"><?php _e(
+						'The PHP cURL Extension version you are running. cURL is required for the GeoIP code, if it is not installed GeoIP will be disabled.',
+						'wp-statistics'
+					); ?></p>
             </td>
         </tr>
 
@@ -223,7 +147,8 @@ function formatSize( $size ) {
 					} else {
 						_e( 'Not installed', 'wp-statistics' );
 					} ?></strong>
-                <p class="description"><?php _e( 'If the gzopen() function is installed.  gzopen() is required for the GeoIP database to be downloaded successfully.', 'wp-statistics' ); ?></p>
+
+                <p class="description"><?php _e( 'If the gzopen() function is installed. The gzopen() function is required for the GeoIP database to be downloaded successfully.', 'wp-statistics' ); ?></p>
             </td>
         </tr>
 
@@ -238,6 +163,7 @@ function formatSize( $size ) {
 					} else {
 						_e( 'Not installed', 'wp-statistics' );
 					} ?></strong>
+
                 <p class="description"><?php _e( 'If the GMP Math PHP extension is loaded, either GMP or BCMath is required for the GeoIP database to be read successfully.', 'wp-statistics' ); ?></p>
             </td>
         </tr>
@@ -253,6 +179,7 @@ function formatSize( $size ) {
 					} else {
 						_e( 'Not installed', 'wp-statistics' );
 					} ?></strong>
+
                 <p class="description"><?php _e( 'If the BCMath PHP extension is loaded, either GMP or BCMath is required for the GeoIP database to be read successfully.', 'wp-statistics' ); ?></p>
             </td>
         </tr>
@@ -274,47 +201,10 @@ function formatSize( $size ) {
 					if ( $GeoIP_filedate === false ) {
 						_e( 'Database file does not exist.', 'wp-statistics' );
 					} else {
-						echo formatSize( @filesize( $GeoIP_filename ) ) . __( ', created on ', 'wp-statistics' ) . date_i18n( get_option( 'date_format' ) . ' @ ' . get_option( 'time_format' ), $GeoIP_filedate );
+						echo size_format( @filesize( $GeoIP_filename ), 2 ) . __( ', created on ', 'wp-statistics' ) . date_i18n( get_option( 'date_format' ) . ' @ ' . get_option( 'time_format' ), $GeoIP_filedate );
 					} ?></strong>
+
                 <p class="description"><?php _e( 'The file size and date of the GeoIP database.', 'wp-statistics' ); ?></p>
-            </td>
-        </tr>
-
-        <tr valign="top">
-            <th scope="row">
-				<?php _e( 'browscap.ini File', 'wp-statistics' ); ?>:
-            </th>
-
-            <td>
-                <strong><?php
-					$browscap_filename = $upload_dir['basedir'] . '/wp-statistics/browscap.ini';
-					$browscap_filedate = @filemtime( $browscap_filename );
-
-					if ( $browscap_filedate === false ) {
-						_e( 'browscap.ini file does not exist.', 'wp-statistics' );
-					} else {
-						echo formatSize( @filesize( $browscap_filename ) ) . __( ', created on ', 'wp-statistics' ) . date_i18n( get_option( 'date_format' ) . ' @ ' . get_option( 'time_format' ), $browscap_filedate );
-					} ?></strong>
-                <p class="description"><?php _e( 'The file size and date of the browscap.ini file.', 'wp-statistics' ); ?></p>
-            </td>
-        </tr>
-
-        <tr valign="top">
-            <th scope="row">
-				<?php _e( 'browscap Cache File', 'wp-statistics' ); ?>:
-            </th>
-
-            <td>
-                <strong><?php
-					$browscap_filename = $upload_dir['basedir'] . '/wp-statistics/cache.php';
-					$browscap_filedate = @filemtime( $browscap_filename );
-
-					if ( $browscap_filedate === false ) {
-						_e( 'browscap cache file does not exist.', 'wp-statistics' );
-					} else {
-						echo formatSize( @filesize( $browscap_filename ) ) . __( ', created on ', 'wp-statistics' ) . date_i18n( get_option( 'date_format' ) . ' @ ' . get_option( 'time_format' ), $browscap_filedate );
-					} ?></strong>
-                <p class="description"><?php _e( 'The file size and date of the browscap cache file.', 'wp-statistics' ); ?></p>
             </td>
         </tr>
 
@@ -353,6 +243,7 @@ function formatSize( $size ) {
                 <strong><?php $agent = $WP_Statistics->get_UserAgent();
 					echo $agent['browser'];
 					?></strong>
+
                 <p class="description"><?php _e( 'The detected client browser.', 'wp-statistics' ); ?></p>
             </td>
         </tr>
@@ -379,6 +270,25 @@ function formatSize( $size ) {
             </td>
         </tr>
 
+        <tr valign="top">
+            <th scope="row" colspan="2"><h3><?php _e( 'Server Info', 'wp-statistics' ); ?></h3></th>
+        </tr>
+
+		<?php
+		$list = array( 'SERVER_SOFTWARE', 'HTTP_HOST', 'REMOTE_ADDR', 'HTTP_CLIENT_IP', 'HTTP_X_FORWARDED_FOR', 'HTTP_X_FORWARDED', 'HTTP_FORWARDED_FOR', 'HTTP_FORWARDED', 'HTTP_X_REAL_IP', );
+		foreach ( $list as $server ) {
+			if ( isset( $_SERVER[ $server ] ) ) {
+				echo '<tr valign="top">
+                     <th scope="row">
+                    ' . $server . '
+                    </th>
+                    <td>
+                        <strong>' . $_SERVER[ $server ] . '</strong>
+                    </td>
+                </tr>';
+			}
+		}
+		?>
         </tbody>
     </table>
 </div>

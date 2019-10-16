@@ -1,12 +1,12 @@
 <?php
 /**
  * Plugin Name:  Advanced Random Posts Widget
- * Plugin URI:   https://wordpress.org/plugins/advanced-random-posts-widget/
+ * Plugin URI:   https://github.com/idenovasi/advanced-random-posts-widget
  * Description:  Easily to display advanced random posts via shortcode or widget.
- * Version:      2.1.0
- * Author:       Theme Junkie
- * Author URI:   http://www.theme-junkie.com/
- * Author Email: support@theme-junkie.com
+ * Version:      2.2.0
+ * Author:       Idenovasi
+ * Author URI:   https://idenovasi.com/
+ * Author Email: satrya@idenovasi.com
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU
  * General Public License as published by the Free Software Foundation; either version 2 of the License,

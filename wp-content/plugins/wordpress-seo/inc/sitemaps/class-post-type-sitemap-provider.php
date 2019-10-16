@@ -1,5 +1,7 @@
 <?php
 /**
+ * WPSEO plugin file.
+ *
  * @package WPSEO\XML_Sitemaps
  */
 
@@ -8,19 +10,39 @@
  */
 class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 
-	/** @var string $home_url Holds the home_url() value to speed up loops. */
+	/**
+	 * Holds the home_url() value.
+	 *
+	 * @var string
+	 */
 	protected static $home_url;
 
-	/** @var array $options All of plugin options. */
-	protected static $options;
-
-	/** @var WPSEO_Sitemap_Image_Parser $image_parser Holds image parser instance. */
+	/**
+	 * Holds image parser instance.
+	 *
+	 * @var WPSEO_Sitemap_Image_Parser
+	 */
 	protected static $image_parser;
 
-	/** @var int $page_on_front_id Static front page ID.  */
+	/**
+	 * Holds instance of classifier for a link.
+	 *
+	 * @var object
+	 */
+	protected static $classifier;
+
+	/**
+	 * Static front page ID.
+	 *
+	 * @var int
+	 */
 	protected static $page_on_front_id;
 
-	/** @var int $page_for_posts_id Posts page ID.  */
+	/**
+	 * Posts page ID.
+	 *
+	 * @var int
+	 */
 	protected static $page_for_posts_id;
 
 	/**
@@ -31,7 +53,7 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 	}
 
 	/**
-	 * Get front page ID
+	 * Get front page ID.
 	 *
 	 * @return int
 	 */
@@ -44,7 +66,7 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 	}
 
 	/**
-	 * Get page for posts ID
+	 * Get page for posts ID.
 	 *
 	 * @return int
 	 */
@@ -57,7 +79,7 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 	}
 
 	/**
-	 * Get the Image Parser
+	 * Get the Image Parser.
 	 *
 	 * @return WPSEO_Sitemap_Image_Parser
 	 */
@@ -70,7 +92,20 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 	}
 
 	/**
-	 * Get Home URL
+	 * Get the Classifier for a link.
+	 *
+	 * @return WPSEO_Link_Type_Classifier
+	 */
+	protected function get_classifier() {
+		if ( ! isset( self::$classifier ) ) {
+			self::$classifier = new WPSEO_Link_Type_Classifier( $this->get_home_url() );
+		}
+
+		return self::$classifier;
+	}
+
+	/**
+	 * Get Home URL.
 	 *
 	 * This has been moved from the constructor because wp_rewrite is not available on plugins_loaded in multisite.
 	 * It will now be requested on need and not on initialization.
@@ -83,19 +118,6 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 		}
 
 		return self::$home_url;
-	}
-
-	/**
-	 * Get all the options
-	 *
-	 * @return array
-	 */
-	protected function get_options() {
-		if ( ! isset( self::$options ) ) {
-			self::$options = WPSEO_Options::get_all();
-		}
-
-		return self::$options;
 	}
 
 	/**
@@ -116,10 +138,10 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 	 * @return array
 	 */
 	public function get_index_links( $max_entries ) {
-
 		global $wpdb;
 
-		$post_types          = get_post_types( array( 'public' => true ) );
+		// Consider using WPSEO_Post_Type::get_accessible_post_types() to filter out any `no-index` post-types.
+		$post_types          = WPSEO_Post_Type::get_accessible_post_types();
 		$post_types          = array_filter( $post_types, array( $this, 'is_valid_post_type' ) );
 		$last_modified_times = WPSEO_Sitemaps::get_last_modified_gmt( $post_types, true );
 		$index               = array();
@@ -128,12 +150,7 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 
 			$total_count = $this->get_post_type_count( $post_type );
 
-			if ( $total_count === 0 ) {
-				continue;
-			}
-
 			$max_pages = 1;
-
 			if ( $total_count > $max_entries ) {
 				$max_pages = (int) ceil( $total_count / $max_entries );
 			}
@@ -141,12 +158,13 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 			$all_dates = array();
 
 			if ( $max_pages > 1 ) {
+				$post_statuses = array_map( 'esc_sql', WPSEO_Sitemaps::get_post_statuses( $post_type ) );
 
-				$sql       = "
+				$sql = "
 				SELECT post_modified_gmt
 				    FROM ( SELECT @rownum:=0 ) init 
 				    JOIN {$wpdb->posts} USE INDEX( type_status_date )
-				    WHERE post_status IN ( 'publish', 'inherit' )
+				    WHERE post_status IN ('" . implode( "','", $post_statuses ) . "')
 				      AND post_type = %s
 				      AND ( @rownum:=@rownum+1 ) %% %d = 0
 				    ORDER BY post_modified_gmt ASC
@@ -187,6 +205,8 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 	 * @param int    $max_entries  Entries per sitemap.
 	 * @param int    $current_page Current page of the sitemap.
 	 *
+	 * @throws OutOfBoundsException When an invalid page is requested.
+	 *
 	 * @return array
 	 */
 	public function get_sitemap_links( $type, $max_entries, $current_page ) {
@@ -202,24 +222,26 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 		$offset = ( $current_page > 1 ) ? ( ( $current_page - 1 ) * $max_entries ) : 0;
 		$total  = ( $offset + $max_entries );
 
-		$typecount = $this->get_post_type_count( $post_type );
+		$post_type_entries = $this->get_post_type_count( $post_type );
 
-		if ( $total > $typecount ) {
-			$total = $typecount;
+		if ( $total > $post_type_entries ) {
+			$total = $post_type_entries;
 		}
 
 		if ( $current_page === 1 ) {
 			$links = array_merge( $links, $this->get_first_links( $post_type ) );
 		}
 
-		if ( $typecount === 0 ) {
+		// If total post type count is lower than the offset, an invalid page is requested.
+		if ( $post_type_entries < $offset ) {
+			throw new OutOfBoundsException( 'Invalid sitemap page requested' );
+		}
 
+		if ( $post_type_entries === 0 ) {
 			return $links;
 		}
 
-		$options = $this->get_options();
-
-		$stacked_urls = array();
+		$posts_to_exclude = $this->get_excluded_posts( $type );
 
 		while ( $total > $offset ) {
 
@@ -231,15 +253,13 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 				continue;
 			}
 
-			$posts_to_exclude = explode( ',', $options['excluded-posts'] );
-
 			foreach ( $posts as $post ) {
 
-				if ( WPSEO_Meta::get_value( 'meta-robots-noindex', $post->ID ) === '1' ) {
+				if ( in_array( $post->ID, $posts_to_exclude, true ) ) {
 					continue;
 				}
 
-				if ( in_array( $post->ID, $posts_to_exclude ) ) {
+				if ( WPSEO_Meta::get_value( 'meta-robots-noindex', $post->ID ) === '1' ) {
 					continue;
 				}
 
@@ -254,22 +274,13 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 				 *
 				 * @param array  $url  Array of URL parts.
 				 * @param string $type URL type.
-				 * @param object $user Data object for the URL.
+				 * @param object $post Data object for the URL.
 				 */
 				$url = apply_filters( 'wpseo_sitemap_entry', $url, 'post', $post );
 
-				if ( empty( $url ) ) {
-					continue;
+				if ( ! empty( $url ) ) {
+					$links[] = $url;
 				}
-
-				$stacked_urls[] = $url['loc'];
-
-				if ( (int) $post->ID === $this->get_page_for_posts_id() || (int) $post->ID === $this->get_page_on_front_id() ) {
-
-					array_unshift( $links, $url );
-					continue;
-				}
-				$links[] = $url;
 			}
 
 			unset( $post, $url );
@@ -298,14 +309,7 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 	 * @return bool
 	 */
 	public function is_valid_post_type( $post_type ) {
-
-		$options = $this->get_options();
-
-		if ( ! empty( $options[ "post_types-{$post_type}-not_in_sitemap" ] ) ) {
-			return false;
-		}
-
-		if ( ! in_array( $post_type, get_post_types( array( 'public' => true ) ) ) ) {
+		if ( ! WPSEO_Post_Type::is_post_type_accessible( $post_type ) || ! WPSEO_Post_Type::is_post_type_indexable( $post_type ) ) {
 			return false;
 		}
 
@@ -320,6 +324,39 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Retrieves a list with the excluded post ids.
+	 *
+	 * @param string $post_type Post type.
+	 *
+	 * @return array Array with post ids to exclude.
+	 */
+	protected function get_excluded_posts( $post_type ) {
+		$excluded_posts_ids = array();
+
+		if ( $post_type === 'page' && $this->get_page_for_posts_id() ) {
+			$excluded_posts_ids[] = $this->get_page_for_posts_id();
+		}
+
+		/**
+		 * Filter: 'wpseo_exclude_from_sitemap_by_post_ids' - Allow extending and modifying the posts to exclude.
+		 *
+		 * @api array $posts_to_exclude The posts to exclude.
+		 */
+		$excluded_posts_ids = apply_filters( 'wpseo_exclude_from_sitemap_by_post_ids', $excluded_posts_ids );
+		if ( ! is_array( $excluded_posts_ids ) ) {
+			$excluded_posts_ids = array();
+		}
+
+		$excluded_posts_ids = array_map( 'intval', $excluded_posts_ids );
+
+		if ( $post_type === 'page' && $this->get_page_on_front_id() ) {
+			$excluded_posts_ids[] = $this->get_page_on_front_id();
+		}
+
+		return array_unique( $excluded_posts_ids );
 	}
 
 	/**
@@ -351,7 +388,7 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 
 		$where = $this->get_sql_where_clause( $post_type );
 
-		$sql   = "
+		$sql = "
 			SELECT COUNT({$wpdb->posts}.ID)
 			FROM {$wpdb->posts}
 			{$join_filter}
@@ -371,58 +408,45 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 	 */
 	protected function get_first_links( $post_type ) {
 
-		$links = array();
+		$links       = array();
+		$archive_url = false;
 
-		$needs_archive = true;
+		if ( $post_type === 'page' ) {
 
-		if ( ! $this->get_page_on_front_id() && ( $post_type == 'post' || $post_type == 'page' ) ) {
+			if ( $this->get_page_on_front_id() ) {
+				$front_page = $this->get_url(
+					get_post( $this->get_page_on_front_id() )
+				);
+			}
 
-			$links[] = array(
-				'loc' => $this->get_home_url(),
+			if ( empty( $front_page ) ) {
+				$front_page = array(
+					'loc' => $this->get_home_url(),
+				);
+			}
 
-				// Deprecated, kept for backwards data compat. R.
-				'chf' => 'daily',
-				'pri' => 1,
+			// Deprecated, kept for backwards data compat. R.
+			$front_page['chf'] = 'daily';
+			$front_page['pri'] = 1;
+
+			$links[] = $front_page;
+		}
+		elseif ( $post_type !== 'page' ) {
+			/**
+			 * Filter the URL Yoast SEO uses in the XML sitemap for this post type archive.
+			 *
+			 * @param string $archive_url The URL of this archive
+			 * @param string $post_type   The post type this archive is for.
+			 */
+			$archive_url = apply_filters(
+				'wpseo_sitemap_post_type_archive_link',
+				$this->get_post_type_archive_link( $post_type ),
+				$post_type
 			);
-
-			$needs_archive = false;
 		}
-		elseif ( $this->get_page_on_front_id() && $post_type === 'post' && $this->get_page_for_posts_id() ) {
-
-			$page_for_posts_url = get_permalink( $this->get_page_for_posts_id() );
-
-			$links[] = array(
-				'loc' => $page_for_posts_url,
-
-				// Deprecated, kept for backwards data compat. R.
-				'chf' => 'daily',
-				'pri' => 1,
-			);
-
-			$needs_archive = false;
-		}
-
-		if ( ! $needs_archive ) {
-			return $links;
-		}
-
-		$archive_url = $this->get_post_type_archive_link( $post_type );
-
-		/**
-		 * Filter the URL Yoast SEO uses in the XML sitemap for this post type archive.
-		 *
-		 * @param string $archive_url The URL of this archive
-		 * @param string $post_type   The post type this archive is for.
-		 */
-		$archive_url = apply_filters( 'wpseo_sitemap_post_type_archive_link', $archive_url, $post_type );
 
 		if ( $archive_url ) {
-			/**
-			 * Filter the priority of the URL Yoast SEO uses in the XML sitemap.
-			 *
-			 * @param float  $priority  The priority for this URL, ranging from 0 to 1
-			 * @param string $post_type The post type this archive is for.
-			 */
+
 			$links[] = array(
 				'loc' => $archive_url,
 				'mod' => WPSEO_Sitemaps::get_last_modified_gmt( $post_type ),
@@ -447,9 +471,7 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 	 */
 	protected function get_post_type_archive_link( $post_type ) {
 
-		$options = $this->get_options();
-
-		if ( isset( $options[ 'noindex-ptarchive-' . $post_type ] ) && $options[ 'noindex-ptarchive-' . $post_type ] ) {
+		if ( WPSEO_Options::get( 'noindex-ptarchive-' . $post_type, false ) ) {
 			return false;
 		}
 
@@ -458,9 +480,23 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 			return false;
 		}
 
-		$archive_url = get_post_type_archive_link( $post_type );
+		/**
+		 * Filter the page which is dedicated to this post type archive.
+		 *
+		 * @param string $post_id   The post_id of the page.
+		 * @param string $post_type The post type this archive is for.
+		 */
+		$post_id = (int) apply_filters(
+			'wpseo_sitemap_page_for_post_type_archive',
+			( 'post' === $post_type ) ? $this->get_page_for_posts_id() : ( -1 ),
+			$post_type
+		);
 
-		return $archive_url;
+		if ( $post_id > 0 && WPSEO_Meta::get_value( 'meta-robots-noindex', $post_id ) === '1' ) {
+			return false;
+		}
+
+		return get_post_type_archive_link( $post_type );
 	}
 
 	/**
@@ -490,7 +526,7 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 				'join'  => apply_filters( 'wpseo_posts_join', false, $post_type ),
 
 				/**
-				 * Filter Where query part for the post type.
+				 * Filter WHERE query part for the post type.
 				 *
 				 * @param string $where     SQL part, defaults to false.
 				 * @param string $post_type Post type name.
@@ -503,10 +539,13 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 		$where_filter = $filters[ $post_type ]['where'];
 		$where        = $this->get_sql_where_clause( $post_type );
 
-		// Optimized query per this thread: http://wordpress.org/support/topic/plugin-wordpress-seo-by-yoast-performance-suggestion.
-		// Also see http://explainextended.com/2009/10/23/mysql-order-by-limit-performance-late-row-lookups/.
+		/*
+		 * Optimized query per this thread:
+		 * {@link http://wordpress.org/support/topic/plugin-wordpress-seo-by-yoast-performance-suggestion}.
+		 * Also see {@link http://explainextended.com/2009/10/23/mysql-order-by-limit-performance-late-row-lookups/}.
+		 */
 		$sql = "
-			SELECT l.ID, post_title, post_content, post_name, post_parent, post_author, post_modified_gmt, post_date, post_date_gmt
+			SELECT l.ID, post_title, post_content, post_name, post_parent, post_author, post_status, post_modified_gmt, post_date, post_date_gmt
 			FROM (
 				SELECT {$wpdb->posts}.ID
 				FROM {$wpdb->posts}
@@ -524,8 +563,10 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 
 		foreach ( $posts as $post ) {
 			$post->post_type   = $post_type;
-			$post->post_status = 'publish';
 			$post->filter      = 'sample';
+			$post->ID          = (int) $post->ID;
+			$post->post_parent = (int) $post->post_parent;
+			$post->post_author = (int) $post->post_author;
 			$post_ids[]        = $post->ID;
 		}
 
@@ -543,21 +584,23 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 
 		global $wpdb;
 
-		$join   = '';
-		$status = "{$wpdb->posts}.post_status = 'publish'";
+		$join          = '';
+		$post_statuses = array_map( 'esc_sql', WPSEO_Sitemaps::get_post_statuses( $post_type ) );
+		$status_where  = "{$wpdb->posts}.post_status IN ('" . implode( "','", $post_statuses ) . "')";
 
 		// Based on WP_Query->get_posts(). R.
 		if ( 'attachment' === $post_type ) {
-			$join   = " LEFT JOIN {$wpdb->posts} AS p2 ON ({$wpdb->posts}.post_parent = p2.ID) ";
-			$status = "p2.post_status = 'publish'";
+			$join            = " LEFT JOIN {$wpdb->posts} AS p2 ON ({$wpdb->posts}.post_parent = p2.ID) ";
+			$parent_statuses = array_diff( $post_statuses, array( 'inherit' ) );
+			$status_where    = "p2.post_status IN ('" . implode( "','", $parent_statuses ) . "') AND p2.post_password = ''";
 		}
 
 		$where_clause = "
-		{$join}
-		WHERE {$status}
-			AND {$wpdb->posts}.post_type = '%s'
-			AND {$wpdb->posts}.post_password = ''
-			AND {$wpdb->posts}.post_date != '0000-00-00 00:00:00'
+			{$join}
+			WHERE {$status_where}
+				AND {$wpdb->posts}.post_type = %s
+				AND {$wpdb->posts}.post_password = ''
+				AND {$wpdb->posts}.post_date != '0000-00-00 00:00:00'
 		";
 
 		return $wpdb->prepare( $where_clause, $post_type );
@@ -584,12 +627,12 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 		 */
 		$url['loc'] = apply_filters( 'wpseo_xml_sitemap_post_url', get_permalink( $post ), $post );
 
-		/**
+		/*
 		 * Do not include external URLs.
 		 *
-		 * @see https://wordpress.org/plugins/page-links-to/ can rewrite permalinks to external URLs.
+		 * {@link https://wordpress.org/plugins/page-links-to/} can rewrite permalinks to external URLs.
 		 */
-		if ( false === strpos( $url['loc'], $this->get_home_url() ) ) {
+		if ( $this->get_classifier()->classify( $url['loc'] ) === WPSEO_Link::TYPE_EXTERNAL ) {
 			return false;
 		}
 
@@ -605,18 +648,13 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 
 		if ( $canonical !== '' && $canonical !== $url['loc'] ) {
 			/*
-			Let's assume that if a canonical is set for this page and it's different from
-			   the URL of this post, that page is either already in the XML sitemap OR is on
-			   an external site, either way, we shouldn't include it here.
-			*/
+			 * Let's assume that if a canonical is set for this page and it's different from
+			 * the URL of this post, that page is either already in the XML sitemap OR is on
+			 * an external site, either way, we shouldn't include it here.
+			 */
 			return false;
 		}
 		unset( $canonical );
-
-		$options = $this->get_options();
-		if ( $options['trailingslash'] === true && $post->post_type !== 'post' ) {
-			$url['loc'] = trailingslashit( $url['loc'] );
-		}
 
 		$url['pri']    = 1; // Deprecated, kept for backwards data compat. R.
 		$url['images'] = $this->get_image_parser()->get_images( $post );
@@ -624,36 +662,15 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 		return $url;
 	}
 
+	/* ********************* DEPRECATED METHODS ********************* */
+
 	/**
-	 * Calculate the priority of the post.
+	 * Get all the options.
 	 *
-	 * @deprecated 3.5 Priority data dropped from sitemaps.
-	 *
-	 * @param WP_Post $post Post object.
-	 *
-	 * @return float|mixed
+	 * @deprecated 7.0
+	 * @codeCoverageIgnore
 	 */
-	private function calculate_priority( $post ) {
-		_deprecated_function( __METHOD__, 'WPSEO 3.5' );
-
-		$return = 0.6;
-		if ( $post->post_parent == 0 && $post->post_type == 'page' ) {
-			$return = 0.8;
-		}
-
-		if ( $post->ID === $this->get_page_on_front_id() || $post->ID === $this->get_page_for_posts_id() ) {
-			$return = 1.0;
-		}
-
-		/**
-		 * Filter the priority of the URL Yoast SEO uses in the XML sitemap.
-		 *
-		 * @param float  $priority  The priority for this URL, ranging from 0 to 1
-		 * @param string $post_type The post type this archive is for.
-		 * @param object $post      The post object.
-		 */
-		$return = apply_filters( 'wpseo_xml_sitemap_post_priority', $return, $post->post_type, $post );
-
-		return $return;
+	protected function get_options() {
+		_deprecated_function( __METHOD__, 'WPSEO 7.0', 'WPSEO_Options::get' );
 	}
 }

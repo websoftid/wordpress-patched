@@ -1,12 +1,15 @@
 <?php
 /**
+ * WPSEO plugin file.
+ *
  * @package WPSEO\Admin\ConfigurationUI
  */
 
 /**
- * Config Component interface
+ * Config Component interface.
  */
 interface WPSEO_Config_Component {
+
 	/**
 	 * @return string
 	 */
@@ -18,7 +21,7 @@ interface WPSEO_Config_Component {
 	public function get_data();
 
 	/**
-	 * Save changes
+	 * Save changes.
 	 *
 	 * @param array $data Data provided by the API.
 	 *

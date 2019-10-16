@@ -25,17 +25,23 @@ if ( $wps_admin ) {
         </tr>
 
         <tr valign="top">
-            <td scope="row" colspan="2"><?php _e( 'The following items are global to all users.', 'wp-statistics' ); ?></td>
+            <td scope="row" colspan="2"><?php _e(
+					'The following items are global to all users.',
+					'wp-statistics'
+				); ?></td>
         </tr>
 
         <tr valign="top">
             <th scope="row">
-                <label for="disable-map"><?php _e( 'Disable dashboard widgets', 'wp-statistics' ); ?>:</label>
+                <label for="disable-map"><?php _e( 'Disable dashboard widgets:', 'wp-statistics' ); ?></label>
             </th>
 
             <td>
-                <input id="disable-dashboard" type="checkbox" value="1" name="wps_disable_dashboard" <?php echo $WP_Statistics->get_option( 'disable_dashboard' ) == true ? "checked='checked'" : ''; ?>>
-                <label for="disable-dashboard"><?php _e( 'Enable', 'wp-statistics' ); ?></label>
+                <input id="disable-dashboard" type="checkbox" value="1"
+                       name="wps_disable_dashboard" <?php echo $WP_Statistics->get_option( 'disable_dashboard' ) == true
+					? "checked='checked'" : ''; ?>>
+                <label for="disable-dashboard"><?php _e( 'Disable', 'wp-statistics' ); ?></label>
+
                 <p class="description"><?php _e( 'Disable the dashboard widgets.', 'wp-statistics' ); ?></p>
             </td>
         </tr>
@@ -45,17 +51,23 @@ if ( $wps_admin ) {
         </tr>
 
         <tr valign="top">
-            <td scope="row" colspan="2"><?php _e( 'The following items are global to all users.', 'wp-statistics' ); ?></td>
+            <td scope="row" colspan="2"><?php _e(
+					'The following items are global to all users.',
+					'wp-statistics'
+				); ?></td>
         </tr>
 
         <tr valign="top">
             <th scope="row">
-                <label for="disable-map"><?php _e( 'Disable post/page editor widget', 'wp-statistics' ); ?>:</label>
+                <label for="disable-map"><?php _e( 'Disable post/page editor widget:', 'wp-statistics' ); ?></label>
             </th>
 
             <td>
-                <input id="disable-editor" type="checkbox" value="1" name="wps_disable_editor" <?php echo $WP_Statistics->get_option( 'disable_editor' ) == true ? "checked='checked'" : ''; ?>>
-                <label for="disable-editor"><?php _e( 'Enable', 'wp-statistics' ); ?></label>
+                <input id="disable-editor" type="checkbox" value="1"
+                       name="wps_disable_editor" <?php echo $WP_Statistics->get_option( 'disable_editor' ) == true
+					? "checked='checked'" : ''; ?>>
+                <label for="disable-editor"><?php _e( 'Disable', 'wp-statistics' ); ?></label>
+
                 <p class="description"><?php _e( 'Disable the page/post editor widget.', 'wp-statistics' ); ?></p>
             </td>
         </tr>
@@ -65,17 +77,23 @@ if ( $wps_admin ) {
         </tr>
 
         <tr valign="top">
-            <td scope="row" colspan="2"><?php _e( 'The following items are global to all users.', 'wp-statistics' ); ?></td>
+            <td scope="row" colspan="2"><?php _e(
+					'The following items are global to all users.',
+					'wp-statistics'
+				); ?></td>
         </tr>
 
         <tr valign="top">
             <th scope="row">
-                <label for="disable-map"><?php _e( 'Disable map', 'wp-statistics' ); ?>:</label>
+                <label for="disable-map"><?php _e( 'Disable map:', 'wp-statistics' ); ?></label>
             </th>
 
             <td>
-                <input id="disable-map" type="checkbox" value="1" name="wps_disable_map" <?php echo $WP_Statistics->get_option( 'disable_map' ) == true ? "checked='checked'" : ''; ?>>
-                <label for="disable-map"><?php _e( 'Enable', 'wp-statistics' ); ?></label>
+                <input id="disable-map" type="checkbox" value="1"
+                       name="wps_disable_map" <?php echo $WP_Statistics->get_option( 'disable_map' ) == true
+					? "checked='checked'" : ''; ?>>
+                <label for="disable-map"><?php _e( 'Disable', 'wp-statistics' ); ?></label>
+
                 <p class="description"><?php _e( 'Disable the map display', 'wp-statistics' ); ?></p>
             </td>
         </tr>
@@ -86,5 +104,3 @@ if ( $wps_admin ) {
 }
 
 submit_button( __( 'Update', 'wp-statistics' ), 'primary', 'submit' );
-
-?>

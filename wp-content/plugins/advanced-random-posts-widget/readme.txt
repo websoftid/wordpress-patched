@@ -1,18 +1,15 @@
 === Advanced Random Posts Widget ===
-Contributors: themejunkie
-Tags: random posts, thumbnail, widget, widgets, sidebar, excerpt, category, post tag, post type, taxonomy, shortcode, multiple widgets
-Requires at least: 4.0
-Tested up to: 4.3.1
-Stable tag: 2.1.0
+Contributors: idenovasi, satrya
+Tags: random posts, thumbnail, widget, widgets, sidebar, excerpt, category, post tag, post type, taxonomy, shortcode, multiple widgets, random posts widget
+Requires at least: 4.5
+Tested up to: 5.1
+Stable tag: 2.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Provides flexible and advanced random posts. Display it via shortcode or widget with thumbnails, post excerpt, and much more!
 
 == Description ==
-
-> Please see [FAQ](http://wordpress.org/plugins/advanced-random-posts-widget/faq/) page to read common questions.
-  Please see [Other Notes](http://wordpress.org/plugins/advanced-random-posts-widget/other_notes/) to read how to use shortcode.
 
 This plugin will enable a custom, flexible and advanced random posts. It allows you to display a list of random posts via shortcode or widget with thumbnail, excerpt and post date, also you can display it from all or specific or multiple taxonomy.
 
@@ -32,13 +29,12 @@ This plugin will enable a custom, flexible and advanced random posts. It allows 
 * Add custom html or text before and/or after random posts.
 * Multiple widgets.
 
-= Support =
+= Support Me =
 
-* [Forum support](http://wordpress.org/support/plugin/advanced-random-posts-widget).
-* [Rate/Review the plugin](http://wordpress.org/support/view/plugin-reviews/advanced-random-posts-widget).
-* [Contribute on Github](https://github.com/themejunkie/advanced-random-posts-widget/)
-
-> Developed by [Theme Junkie](http://www.theme-junkie.com/)
+* Purchase or download my [WordPress themes](https://wp.idenovasi.com/).
+* Purchase my [Services](https://www.fiverr.com/idenovasi).
+* Try another [WordPress plugin](https://profiles.wordpress.org/idenovasi/#content-plugins) from me.
+* Contribute on [Github](https://github.com/idenovasi/advanced-random-posts-widget).
 
 == Installation ==
 
@@ -160,14 +156,8 @@ after=""
 
 == Changelog ==
 
-> If you use cache plugin, please flush or clean the cache to see what changes in this plugin.
+= 2.2.0 - March 07, 2019 =
+* Support WordPress 5.1
+* Added: Display full post. props [Rhys Wynne](https://profiles.wordpress.org/rhyswynne/)
+* Added: `width` and `height` attribute if using custom image size
 
-= 2.1.0 - Nov 06, 2015 =
-* UI Changes!
-* Filter `arpw_query` DEPRECATED
-* Change text domain to `advanced-random-posts-widget`
-* Remove `title` attribute in the post link
-* Sanitize after and before the posts with `wp_kses_post`, security purpose
-* Introducing new hook `arpw_before_loop_WIDGETID` & `arpw_after_loop_WIDGETID`
-* Inline default style, no more load extra file from the plugin
-* Sanitize Custom CSS, better security

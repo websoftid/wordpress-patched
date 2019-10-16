@@ -51,7 +51,7 @@ function wpp_get_views($id = NULL, $range = NULL, $number_format = true) {
 
             $now = current_time('mysql');
 
-            $query = "SELECT SUM(pageviews) FROM {$table_name}summary WHERE postid = '{$id}' AND last_viewed > DATE_SUB('{$now}', INTERVAL {$interval}) LIMIT 1;";
+            $query = "SELECT SUM(pageviews) FROM {$table_name}summary WHERE postid = '{$id}' AND view_datetime > DATE_SUB('{$now}', INTERVAL {$interval}) LIMIT 1;";
         }
 
         $result = $wpdb->get_var($query);
@@ -81,6 +81,14 @@ function wpp_get_mostpopular($args = NULL) {
         if( is_array( $args ) ){
             $atts = '';
             foreach( $args as $key => $arg ){
+                if (
+                    is_array( $arg )
+                    && ( 'post_type' == $key || 'cat' == $key || 'term_id' == $key || 'pid' == $key || 'author' == $key )
+                ) {
+                    $arg = array_filter( $arg, 'is_int' );
+                    $arg = join( ',', $arg );
+                }
+
                 $atts .= ' ' . $key . '="' . htmlspecialchars($arg, ENT_QUOTES, $encoding = ini_get("default_charset"), false) . '"';
             }
         } else {
