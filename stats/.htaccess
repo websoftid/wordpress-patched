@@ -1,0 +1,7 @@
+AuthName "b2b.web.id statistics"
+AuthType Basic
+AuthUserFile /home/b2b/.stats-htpasswd
+require valid-user
+<Files .stats-htpasswd>
+deny from all
+</Files>
