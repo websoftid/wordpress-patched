@@ -3,4 +3,5 @@ wp-content/themes/kisi-kisi-hitam/*
 wp-content/themes/arras/*
 wp-content/uploads/*
 wp-content/plugins/*.zip
-latest.zip
+stats/*
+icon/*
