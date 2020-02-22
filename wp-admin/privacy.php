@@ -1,6 +1,6 @@
 <?php
 /**
- * Privacy Settings Screen.
+ * Privacy administration panel.
  *
  * @package WordPress
  * @subpackage Administration
