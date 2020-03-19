@@ -1,0 +1,3 @@
+[submodule "wp-content/themes/kisi-kisi-hitam"]
+	path = wp-content/themes/kisi-kisi-hitam
+	url = https://github.com/yht/kisi-kisi-hitam.git
