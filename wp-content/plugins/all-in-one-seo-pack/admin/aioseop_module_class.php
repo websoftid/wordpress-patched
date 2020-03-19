@@ -484,7 +484,7 @@ if ( ! class_exists( 'All_in_One_SEO_Pack_Module' ) ) {
 		 */
 		function strlen( $string ) {
 			if ( function_exists( 'mb_strlen' ) ) {
-				return mb_strlen( $string );
+				return mb_strlen( $string, 'UTF-8' );
 			}
 
 			return strlen( $string );
@@ -520,7 +520,7 @@ if ( ! class_exists( 'All_in_One_SEO_Pack_Module' ) ) {
 		 */
 		function strpos( $haystack, $needle, $offset = 0 ) {
 			if ( function_exists( 'mb_strpos' ) ) {
-				return mb_strpos( $haystack, $needle, $offset );
+				return mb_strpos( $haystack, $needle, $offset, 'UTF-8' );
 			}
 
 			return strpos( $haystack, $needle, $offset );
@@ -538,7 +538,7 @@ if ( ! class_exists( 'All_in_One_SEO_Pack_Module' ) ) {
 		 */
 		function strrpos( $haystack, $needle, $offset = 0 ) {
 			if ( function_exists( 'mb_strrpos' ) ) {
-				return mb_strrpos( $haystack, $needle, $offset );
+				return mb_strrpos( $haystack, $needle, $offset, 'UTF-8' );
 			}
 
 			return strrpos( $haystack, $needle, $offset );
@@ -1325,10 +1325,10 @@ if ( ! class_exists( 'All_in_One_SEO_Pack_Module' ) ) {
 		 */
 		function csv_to_array( $csv ) {
 			$args = array();
-			if ( ! function_exists( 'str_getcsv' ) ) {
+			if ( version_compare( PHP_VERSION, '5.3', '>=' ) ) {
 				$v = $this->str_getcsv( $csv );
 			} else {
-				$v = str_getcsv( $csv );
+				$v = str_getcsv( $csv ); // phpcs:ignore PHPCompatibility.FunctionUse.NewFunctions.str_getcsvFound
 			}
 			$size = count( $v );
 			if ( is_array( $v ) && isset( $v[0] ) && $size >= 2 ) {
@@ -2101,7 +2101,7 @@ if ( ! class_exists( 'All_in_One_SEO_Pack_Module' ) ) {
 		 * @since ?
 		 * @since 2.3.12.3 Add missing wp_enqueue_media.
 		 * @since 2.9 Switch to admin_enqueue_scripts; both the hook and function name.
-		 * @since 3.0 Add enqueue footer JS for jQuery UI Compatability. #1850
+		 * @since 3.0 Add enqueue footer JS for jQuery UI Compatibility. #1850
 		 *
 		 * @see 'admin_enqueue_scripts' hook
 		 * @link https://developer.wordpress.org/reference/hooks/admin_enqueue_scripts/
@@ -2731,7 +2731,7 @@ if ( ! class_exists( 'All_in_One_SEO_Pack_Module' ) ) {
 					wp_enqueue_script( 'jquery-ui-datepicker' );
 					// fall through.
 				default:
-					$buf .= "<input name='" . esc_attr( $name ) . "' type='" . esc_attr( $options['type'] ) . "' " . wp_kses( $attr, wp_kses_allowed_html( 'data' ) ) . " value='" . esc_attr( $value ) . "'>\n";
+					$buf .= "<input name='" . esc_attr( $name ) . "' type='" . esc_attr( $options['type'] ) . "' " . wp_kses( $attr, wp_kses_allowed_html( 'data' ) ) . " value='" . esc_attr( $value ) . "' autocomplete='aioseop-" . time() .  "'>\n";
 			}
 
 			// TODO Maybe Change/Add a function for SEO character count.
@@ -2964,7 +2964,7 @@ if ( ! class_exists( 'All_in_One_SEO_Pack_Module' ) ) {
 							if ( ! ( 'opengraph' === $location && in_array( $k, array( 'aiosp_opengraph_hometitle', 'aiosp_opengraph_description' ), true ) ) ) {
 								$this->options[ $k ] = wp_kses_post( $this->options[ $k ] );
 							}
-							$this->options[ $k ] = htmlspecialchars( $this->options[ $k ], ENT_QUOTES );
+							$this->options[ $k ] = htmlspecialchars( $this->options[ $k ], ENT_QUOTES, 'UTF-8' );
 							break;
 						case 'filename':
 							$this->options[ $k ] = sanitize_file_name( $this->options[ $k ] );

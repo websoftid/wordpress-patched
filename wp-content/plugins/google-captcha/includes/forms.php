@@ -67,7 +67,7 @@ if ( ! function_exists( 'gglcptch_get_sections' ) ) {
 	}
 }
 
-/* Add reCAPTCHA forms to the Limit Attempts plugin */
+/* Add reCaptcha forms to the Limit Attempts plugin */
 if ( ! function_exists( 'gglcptch_add_lmtttmpts_forms' ) ) {
 	function gglcptch_add_lmtttmpts_forms( $forms = array() ) {
 		if ( ! is_array( $forms ) ) {
@@ -75,7 +75,7 @@ if ( ! function_exists( 'gglcptch_add_lmtttmpts_forms' ) ) {
 		}
 
 		$forms["gglcptch"] = array(
-			'name'		=> __( 'Google Captcha Plugin', 'google-captcha' ),
+			'name'		=> __( 'reCaptcha Plugin', 'google-captcha' ),
 			'forms'		=> array(),
 		);
 
@@ -220,9 +220,6 @@ if ( ! function_exists( 'gglcptch_login_display' ) ) {
 				$from_width = 302;
 			} else {
 				$from_width = 320;
-				if ( 'clean' == $gglcptch_options['theme'] ) {
-					$from_width = 450;
-				}
 			} ?>
 			<style type="text/css" media="screen">
 				.login-action-login #loginform,

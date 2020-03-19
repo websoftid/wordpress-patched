@@ -4,10 +4,10 @@ Donate link: https://yoa.st/1up
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl.html
 Tags: SEO, XML sitemap, Content analysis, Readability
-Requires at least: 4.9
-Tested up to: 5.2.4
-Stable tag: 12.3
-Requires PHP: 5.2.4
+Requires at least: 5.2
+Tested up to: 5.4
+Stable tag: 13.3
+Requires PHP: 5.6.20
 
 Improve your WordPress SEO: Write better content and have a fully optimized WordPress site using the Yoast SEO plugin.
 
@@ -209,42 +209,42 @@ Your question has most likely been answered on our knowledge base: [kb.yoast.com
 
 == Changelog ==
 
-= 12.3.0 =
-Release Date: October 15th, 2019
+= 13.3 =
+Release Date: March 17th, 2020
 
-While some of our checks are independent of languages, Yoast SEO has special skills to adapt the various content analyses to different languages from around the world. In Yoast SEO 12.3, we’re taking the first steps to add another language to the list: Hungarian. In addition, this release features a number of enhancement and fixes. Read [our 12.3 release post](https://yoa.st/release-12-3) to find out more!
-
-Enhancements:
-
-* Adds the transition word assessment for Hungarian. Props to [@9abor](https://github.com/9abor).
-* Includes the admin bar CSS in AMP dev mode. Props to [@westonruter](https://github.com/westonruter).
-* Shows a floating `Save changes` button on Yoast SEO admin pages when the normal button is not visible in the browser window.
-* Improves user input validation feedback and suggestions for error correction.
-* Introduces a new filter `wpseo_sitemap_http_headers` which allows filtering the HTTP headers we send for XML sitemaps.
-
-Other:
-
-* Removes the notification that would be thrown if add-ons with a lower version number than the plugin were installed. The `yoast_plugin_compatibility_notification` method has been deprecated.
-
-= 12.2.0 =
-Release Date: October 1st, 2019
-
-Yoast SEO 12.2 is a release full of the regular bug fixes and enhancements, but also a new addition to meta robots. Last week, Google announced a new way to give publishers more control over what the search engine can show in the results. This change, however, seems not driven by customer demand, but rather by law. Find out what this is all about and why we chose to automatically opt sites in for this in [our 12.2 release post](https://yoa.st/release-12-2)!
+Our current string of releases focusing on improving our code is continuing with Yoast SEO 13.3. In this release, we have a Schema structured data addition and several improvements to how Yoast SEO handles URLs. Read on in [our 13.3 release post](https://yoa.st/release-13-3)!
 
 Enhancements:
 
-* Adds default robots meta settings to opt in to all snippet display features, to prevent affected websites in Europe from having snippet display issues.
-* Adds an alert to the configuration wizard and the knowledge graph settings that is shown when organization information is missing.
+* Makes sure all URL fields show an unencoded URL after saving, even when the user input was encoded.
+* Requires all URLs in URL input fields to begin with either ‘/’ or ‘http(s)’. Props to [stodorovic](https://github.com/stodorovic).
+* Adds a `potentialAction` entity to the `WebPage` and `Article` Schema pieces.
 
 Bugfixes:
 
-* Fixes a bug where the banners in the sidebar were no longer responsive.
+* Fixes a bug where social URLs containing international characters could not be saved. Props to [stodorovic](https://github.com/stodorovic).
+* Fixes a bug where encoded characters would be stripped from canonical URLs. Props to [stodorovic](https://github.com/stodorovic) and [Shahram Rahbari](https://github.com/ShahramRahbari).
 
 Other:
 
-* Changes all mentions of the Yoast SEO for WordPress training, which is now free.
-* Combines the 'Newsletter' and 'You might like' steps in the configuration wizard to a step called 'Continue learning'.
-* Removes the colon from the form labels at the settings pages.
+* Changes the cURL Health Check category from `recommended` to `critical`.
 
-= Earlier versions =
-For the changelog of earlier versions, please refer to [the changelog on yoast.com](https://yoa.st/yoast-seo-changelog).
+= 13.2 =
+Release Date: March 3rd, 2020
+
+In Yoast SEO 13.2, you’ll find a number of checks moved to the WordPress Site Health tool. Site Health was introduced in WordPress 5.2 as a way to help site owners and managers get a sense of how their site is doing, technically speaking. Find out more about these changes in [our 13.2 release post](https://yoa.st/release-13-2)!
+
+Enhancements:
+
+* Adds the capability to view Site Health to the SEO Manager role.
+* Adds a cURL minimal version check to Site Health.
+* Moves the "The postname is present in your permalink"-notification from the SEO Dashboard to Site Health.
+* Moves the "You are using the default WordPress tagline"-notification from the SEO Dashboard to Site Health.
+* Moves the "Your site is indexable"-notification and widget from the SEO dashboard to Site Health.
+* Improves the usability of the "Your site is indexable" Site Health check.
+* Adds error handling for the "Your site is indexable" status request.
+* Adds an ID to the FAQ sections in the Schema output.
+
+Bugfixes:
+
+* Removes the "Check headers"-tool from the Yoast Admin bar menu, as it is no longer available.
