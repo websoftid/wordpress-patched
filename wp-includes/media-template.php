@@ -163,40 +163,48 @@ function wp_print_media_templates() {
 	}
 
 	$alt_text_description = sprintf(
-		/* translators: 1: link to tutorial, 2: additional link attributes, 3: accessibility text */
+		/* translators: 1: Link to tutorial, 2: Additional link attributes, 3: Accessibility text. */
 		__( '<a href="%1$s" %2$s>Describe the purpose of the image%3$s</a>. Leave empty if the image is purely decorative.' ),
 		esc_url( 'https://www.w3.org/WAI/tutorials/images/decision-tree' ),
 		'target="_blank" rel="noopener noreferrer"',
 		sprintf(
 			'<span class="screen-reader-text"> %s</span>',
-			/* translators: accessibility text */
+			/* translators: Accessibility text. */
 			__( '(opens in a new tab)' )
 		)
 	);
 	?>
-	<!--[if lte IE 8]>
-	<style>
-		.attachment:focus {
-			outline: #1e8cbe solid;
-		}
-		.selected.attachment {
-			outline: #1e8cbe solid;
-		}
-	</style>
-	<![endif]-->
+
+	<?php // Template for the media frame: used both in the media grid and in the media modal. ?>
 	<script type="text/html" id="tmpl-media-frame">
+		<div class="media-frame-title" id="media-frame-title"></div>
+		<h2 class="media-frame-menu-heading"><?php _ex( 'Actions', 'media modal menu actions' ); ?></h2>
+		<button type="button" class="button button-link media-frame-menu-toggle" aria-expanded="false">
+			<?php _ex( 'Menu', 'media modal menu' ); ?>
+			<span class="dashicons dashicons-arrow-down" aria-hidden="true"></span>
+		</button>
 		<div class="media-frame-menu"></div>
-		<div class="media-frame-title"></div>
-		<div class="media-frame-router"></div>
-		<div class="media-frame-content"></div>
+		<div class="media-frame-tab-panel">
+			<div class="media-frame-router"></div>
+			<div class="media-frame-content"></div>
+		</div>
+		<h2 class="media-frame-actions-heading screen-reader-text">
+		<?php
+			/* translators: Accessibility text. */
+			_e( 'Selected media actions' );
+		?>
+		</h2>
 		<div class="media-frame-toolbar"></div>
 		<div class="media-frame-uploader"></div>
 	</script>
 
+	<?php // Template for the media modal. ?>
 	<script type="text/html" id="tmpl-media-modal">
-		<div tabindex="0" class="<?php echo $class; ?>">
-			<button type="button" class="media-modal-close"><span class="media-modal-icon"><span class="screen-reader-text"><?php _e( 'Close media panel' ); ?></span></span></button>
-			<div class="media-modal-content"></div>
+		<div tabindex="0" class="<?php echo $class; ?>" role="dialog" aria-labelledby="media-frame-title">
+			<# if ( data.hasCloseButton ) { #>
+				<button type="button" class="media-modal-close"><span class="media-modal-icon"><span class="screen-reader-text"><?php _e( 'Close dialog' ); ?></span></span></button>
+			<# } #>
+			<div class="media-modal-content" role="document"></div>
 		</div>
 		<div class="media-modal-backdrop"></div>
 	</script>
@@ -331,22 +339,27 @@ function wp_print_media_templates() {
 		<div class="upload-errors"></div>
 	</script>
 
+	<?php // Template for the uploading status errors. ?>
 	<script type="text/html" id="tmpl-uploader-status-error">
 		<span class="upload-error-filename">{{{ data.filename }}}</span>
 		<span class="upload-error-message">{{ data.message }}</span>
 	</script>
 
+	<?php // Template for the Attachment Details layout in the media browser. ?>
 	<script type="text/html" id="tmpl-edit-attachment-frame">
 		<div class="edit-media-header">
-			<button class="left dashicons <# if ( ! data.hasPrevious ) { #> disabled <# } #>"><span class="screen-reader-text"><?php _e( 'Edit previous media item' ); ?></span></button>
-			<button class="right dashicons <# if ( ! data.hasNext ) { #> disabled <# } #>"><span class="screen-reader-text"><?php _e( 'Edit next media item' ); ?></span></button>
+			<button class="left dashicons"<# if ( ! data.hasPrevious ) { #> disabled<# } #>><span class="screen-reader-text"><?php _e( 'Edit previous media item' ); ?></span></button>
+			<button class="right dashicons"<# if ( ! data.hasNext ) { #> disabled<# } #>><span class="screen-reader-text"><?php _e( 'Edit next media item' ); ?></span></button>
+			<button type="button" class="media-modal-close"><span class="media-modal-icon"><span class="screen-reader-text"><?php _e( 'Close dialog' ); ?></span></span></button>
 		</div>
 		<div class="media-frame-title"></div>
 		<div class="media-frame-content"></div>
 	</script>
 
+	<?php // Template for the Attachment Details two columns layout. ?>
 	<script type="text/html" id="tmpl-attachment-details-two-column">
 		<div class="attachment-media-view {{ data.orientation }}">
+			<h2 class="screen-reader-text"><?php _e( 'Attachment Preview' ); ?></h2>
 			<div class="thumbnail thumbnail-{{ data.type }}">
 				<# if ( data.uploading ) { #>
 					<div class="media-progress-bar"><div></div></div>
@@ -1384,9 +1397,9 @@ function wp_print_media_templates() {
 					<dl class="gallery-item">
 						<dt class="gallery-icon">
 							<# if ( attachment.thumbnail ) { #>
-								<img src="{{ attachment.thumbnail.url }}" width="{{ attachment.thumbnail.width }}" height="{{ attachment.thumbnail.height }}" alt="" />
+								<img src="{{ attachment.thumbnail.url }}" width="{{ attachment.thumbnail.width }}" height="{{ attachment.thumbnail.height }}" alt="{{ attachment.alt }}" />
 							<# } else { #>
-								<img src="{{ attachment.url }}" alt="" />
+								<img src="{{ attachment.url }}" alt="{{ attachment.alt }}" />
 							<# } #>
 						</dt>
 						<# if ( attachment.caption ) { #>

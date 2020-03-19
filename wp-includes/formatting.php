@@ -3039,55 +3039,42 @@ function _split_str_by_whitespace( $string, $goal ) {
 }
 
 /**
- * Adds rel nofollow string to all HTML A elements in content.
+ * Callback to add a rel attribute to HTML A element.
  *
- * @since 1.5.0
+ * Will remove already existing string before adding to prevent invalidating (X)HTML.
  *
- * @param string $text Content that may contain HTML A elements.
- * @return string Converted content.
+ * @since 5.3.0
+ *
+ * @param array  $matches Single match.
+ * @param string $rel     The rel attribute to add.
+ * @return string HTML A element with the added rel attribute.
  */
-function wp_rel_nofollow( $text ) {
-	// This is a pre save filter, so text is already escaped.
-	$text = stripslashes( $text );
-	$text = preg_replace_callback( '|<a (.+?)>|i', 'wp_rel_nofollow_callback', $text );
-	return wp_slash( $text );
-}
-
-/**
- * Callback to add rel=nofollow string to HTML A element.
- *
- * Will remove already existing rel="nofollow" and rel='nofollow' from the
- * string to prevent from invalidating (X)HTML.
- *
- * @since 2.3.0
- *
- * @param array $matches Single Match
- * @return string HTML A Element with rel nofollow.
- */
-function wp_rel_nofollow_callback( $matches ) {
+function wp_rel_callback( $matches, $rel ) {
 	$text = $matches[1];
-	$atts = shortcode_parse_atts( $matches[1] );
-	$rel  = 'nofollow';
+	$atts = wp_kses_hair( $matches[1], wp_allowed_protocols() );
 
 	if ( ! empty( $atts['href'] ) ) {
-		if ( in_array( strtolower( wp_parse_url( $atts['href'], PHP_URL_SCHEME ) ), array( 'http', 'https' ), true ) ) {
-			if ( strtolower( wp_parse_url( $atts['href'], PHP_URL_HOST ) ) === strtolower( wp_parse_url( home_url(), PHP_URL_HOST ) ) ) {
+		if ( in_array( strtolower( wp_parse_url( $atts['href']['value'], PHP_URL_SCHEME ) ), array( 'http', 'https' ), true ) ) {
+			if ( strtolower( wp_parse_url( $atts['href']['value'], PHP_URL_HOST ) ) === strtolower( wp_parse_url( home_url(), PHP_URL_HOST ) ) ) {
 				return "<a $text>";
 			}
 		}
 	}
 
 	if ( ! empty( $atts['rel'] ) ) {
-		$parts = array_map( 'trim', explode( ' ', $atts['rel'] ) );
-		if ( false === array_search( 'nofollow', $parts ) ) {
-			$parts[] = 'nofollow';
-		}
-		$rel = implode( ' ', $parts );
+		$parts     = array_map( 'trim', explode( ' ', $atts['rel']['value'] ) );
+		$rel_array = array_map( 'trim', explode( ' ', $rel ) );
+		$parts     = array_unique( array_merge( $parts, $rel_array ) );
+		$rel       = implode( ' ', $parts );
 		unset( $atts['rel'] );
 
 		$html = '';
 		foreach ( $atts as $name => $value ) {
-			$html .= "{$name}=\"" . esc_attr( $value ) . '" ';
+			if ( isset( $value['vless'] ) && 'y' === $value['vless'] ) {
+				$html .= $name . ' ';
+			} else {
+				$html .= "{$name}=\"" . esc_attr( $value['value'] ) . '" ';
+			}
 		}
 		$text = trim( $html );
 	}
@@ -3361,7 +3348,7 @@ function convert_smilies( $text ) {
 			$content = $textarr[ $i ];
 
 			// If we're in an ignore block, wait until we find its closing tag
-			if ( '' == $ignore_block_element && preg_match( '/^<(' . $tags_to_ignore . ')>/', $content, $matches ) ) {
+			if ( '' == $ignore_block_element && preg_match( '/^<(' . $tags_to_ignore . ')[^>]*>/', $content, $matches ) ) {
 				$ignore_block_element = $matches[1];
 			}
 

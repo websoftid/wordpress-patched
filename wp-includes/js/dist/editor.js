@@ -14225,14 +14225,12 @@ function (_Component) {
 
   Object(createClass["a" /* default */])(EditorProvider, [{
     key: "getBlockEditorSettings",
-    value: function getBlockEditorSettings(settings, meta, onMetaChange, reusableBlocks) {
-      return Object(objectSpread["a" /* default */])({}, Object(external_lodash_["pick"])(settings, ['alignWide', 'allowedBlockTypes', 'availableLegacyWidgets', 'bodyPlaceholder', 'colors', 'disableCustomColors', 'disableCustomFontSizes', 'focusMode', 'fontSizes', 'hasFixedToolbar', 'hasPermissionsToManageWidgets', 'imageSizes', 'isRTL', 'maxWidth', 'styles', 'templateLock', 'titlePlaceholder']), {
-        __experimentalMetaSource: {
-          value: meta,
-          onChange: onMetaChange
-        },
+    value: function getBlockEditorSettings(settings, reusableBlocks, hasUploadPermissions, canUserUseUnfilteredHTML) {
+      return Object(objectSpread["a" /* default */])({}, Object(external_lodash_["pick"])(settings, ['alignWide', 'allowedBlockTypes', '__experimentalPreferredStyleVariations', 'availableLegacyWidgets', 'bodyPlaceholder', 'codeEditingEnabled', 'colors', 'disableCustomColors', 'disableCustomFontSizes', 'focusMode', 'fontSizes', 'hasFixedToolbar', 'hasPermissionsToManageWidgets', 'imageSizes', 'isRTL', 'maxWidth', 'styles', 'template', 'templateLock', 'titlePlaceholder', 'onUpdateDefaultBlockStyles', '__experimentalEnableLegacyWidgetBlock', '__experimentalEnableMenuBlock', '__experimentalBlockDirectory', 'showInserterHelpPanel']), {
         __experimentalReusableBlocks: reusableBlocks,
-        __experimentalMediaUpload: media_upload
+        __experimentalMediaUpload: hasUploadPermissions ? media_upload : undefined,
+        __experimentalFetchLinkSuggestions: fetchLinkSuggestions,
+        __experimentalCanUserUseUnfilteredHTML: canUserUseUnfilteredHTML
       });
     }
   }, {

@@ -224,77 +224,102 @@ function wp_default_packages_scripts( &$scripts ) {
 	$suffix = wp_scripts_get_suffix();
 
 	$packages_versions = array(
-		'a11y'                               => '2.2.0',
-		'annotations'                        => '1.2.3',
-		'api-fetch'                          => '3.1.2',
-		'autop'                              => '2.0.0',
-		'blob'                               => '2.3.0',
-		'block-editor'                       => '2.0.2',
-		'block-library'                      => '2.4.5',
-		'block-serialization-default-parser' => '3.1.0',
-		'blocks'                             => '6.2.5',
-		'components'                         => '7.3.2',
-		'compose'                            => '3.2.0',
-		'core-data'                          => '2.2.2',
-		'data'                               => '4.4.0',
-		'date'                               => '3.2.0',
-		'deprecated'                         => '2.2.0',
-		'dom'                                => '2.2.5',
-		'dom-ready'                          => '2.2.0',
-		'edit-post'                          => '3.3.5',
-		'editor'                             => '9.2.5',
-		'element'                            => '2.3.0',
-		'escape-html'                        => '1.2.0',
-		'format-library'                     => '1.4.5',
-		'hooks'                              => '2.2.0',
-		'html-entities'                      => '2.2.0',
-		'i18n'                               => '3.3.0',
-		'is-shallow-equal'                   => '1.2.0',
-		'keycodes'                           => '2.2.0',
-		'list-reusable-blocks'               => '1.3.5',
-		'notices'                            => '1.3.0',
-		'nux'                                => '3.2.5',
-		'plugins'                            => '2.2.0',
-		'priority-queue'                     => '1.1.0',
-		'redux-routine'                      => '3.2.0',
-		'rich-text'                          => '3.2.3',
-		'shortcode'                          => '2.2.0',
-		'token-list'                         => '1.2.0',
-		'url'                                => '2.5.0',
-		'viewport'                           => '2.3.0',
-		'wordcount'                          => '2.2.0',
+		'a11y'                               => '2.5.1',
+		'annotations'                        => '1.7.2',
+		'api-fetch'                          => '3.6.4',
+		'autop'                              => '2.5.1',
+		'blob'                               => '2.5.1',
+		'block-editor'                       => '3.2.5',
+		'block-library'                      => '2.9.6',
+		'block-serialization-default-parser' => '3.4.1',
+		'blocks'                             => '6.7.2',
+		'components'                         => '8.3.2',
+		'compose'                            => '3.7.2',
+		'core-data'                          => '2.7.5',
+		'data-controls'                      => '1.3.4',
+		'data'                               => '4.9.2',
+		'date'                               => '3.5.0',
+		'deprecated'                         => '2.6.1',
+		'dom-ready'                          => '2.5.1',
+		'dom'                                => '2.5.2',
+		'edit-post'                          => '3.8.6',
+		'editor'                             => '9.7.6',
+		'element'                            => '2.8.2',
+		'escape-html'                        => '1.5.1',
+		'format-library'                     => '1.9.5',
+		'hooks'                              => '2.6.0',
+		'html-entities'                      => '2.5.0',
+		'i18n'                               => '3.6.1',
+		'is-shallow-equal'                   => '1.6.1',
+		'keycodes'                           => '2.6.2',
+		'list-reusable-blocks'               => '1.8.4',
+		'media-utils'                        => '1.2.4',
+		'notices'                            => '1.8.2',
+		'nux'                                => '3.7.2',
+		'plugins'                            => '2.7.2',
+		'priority-queue'                     => '1.3.1',
+		'redux-routine'                      => '3.6.2',
+		'rich-text'                          => '3.7.2',
+		'shortcode'                          => '2.4.1',
+		'server-side-render'                 => '1.3.4',
+		'token-list'                         => '1.6.1',
+		'url'                                => '2.8.2',
+		'viewport'                           => '2.8.2',
+		'wordcount'                          => '2.6.2',
 	);
 
 	$packages_dependencies = array(
-		'api-fetch'                          => array( 'wp-polyfill', 'wp-i18n', 'wp-url' ),
-		'a11y'                               => array( 'wp-dom-ready', 'wp-polyfill' ),
+		'a11y'                               => array(
+			'wp-dom-ready',
+			'wp-polyfill',
+		),
 		'annotations'                        => array(
+			'lodash',
 			'wp-data',
 			'wp-hooks',
 			'wp-i18n',
 			'wp-polyfill',
 			'wp-rich-text',
 		),
-		'autop'                              => array( 'wp-polyfill' ),
-		'blob'                               => array( 'wp-polyfill' ),
-		'blocks'                             => array(
-			'wp-autop',
+		'api-fetch'                          => array(
+			'wp-i18n',
+			'wp-polyfill',
+			'wp-url',
+		),
+		'autop'                              => array(
+			'wp-polyfill',
+		),
+		'blob'                               => array(
+			'wp-polyfill',
+		),
+		'block-editor'                       => array(
+			'lodash',
+			'wp-a11y',
 			'wp-blob',
-			'wp-block-serialization-default-parser',
+			'wp-blocks',
+			'wp-components',
+			'wp-compose',
 			'wp-data',
+			'wp-deprecated',
 			'wp-dom',
 			'wp-element',
 			'wp-hooks',
 			'wp-html-entities',
 			'wp-i18n',
 			'wp-is-shallow-equal',
+			'wp-keycodes',
 			'wp-polyfill',
-			'wp-shortcode',
-			'lodash',
+			'wp-rich-text',
+			'wp-token-list',
+			'wp-url',
+			'wp-viewport',
+			'wp-wordcount',
 		),
 		'block-library'                      => array(
 			'editor',
 			'lodash',
+			'moment',
+			'wp-a11y',
 			'wp-api-fetch',
 			'wp-autop',
 			'wp-blob',
@@ -963,7 +988,7 @@ function wp_default_scripts( &$scripts ) {
 		)
 	);
 
-	$scripts->add( 'wp-a11y', "/wp-includes/js/wp-a11y$suffix.js", array( 'jquery' ), false, 1 );
+	$scripts->add( 'wp-sanitize', "/wp-includes/js/wp-sanitize$suffix.js", array(), false, 1 );
 
 	$scripts->add( 'sack', "/wp-includes/js/tw-sack$suffix.js", array(), '1.6.1', 1 );
 
@@ -1263,8 +1288,6 @@ function wp_default_scripts( &$scripts ) {
 			),
 		)
 	);
-
-	$scripts->add( 'wp-sanitize', "/wp-includes/js/wp-sanitize$suffix.js", array( 'jquery' ), false, 1 );
 
 	$scripts->add( 'wp-backbone', "/wp-includes/js/wp-backbone$suffix.js", array( 'backbone', 'wp-util' ), false, 1 );
 
@@ -1573,7 +1596,7 @@ function wp_default_scripts( &$scripts ) {
 	$scripts->add( 'customize-widgets', "/wp-admin/js/customize-widgets$suffix.js", array( 'jquery', 'jquery-ui-sortable', 'jquery-ui-droppable', 'wp-backbone', 'customize-controls' ), false, 1 );
 	$scripts->add( 'customize-preview-widgets', "/wp-includes/js/customize-preview-widgets$suffix.js", array( 'jquery', 'wp-util', 'customize-preview', 'customize-selective-refresh' ), false, 1 );
 
-	$scripts->add( 'customize-nav-menus', "/wp-admin/js/customize-nav-menus$suffix.js", array( 'jquery', 'wp-backbone', 'customize-controls', 'accordion', 'nav-menu' ), false, 1 );
+	$scripts->add( 'customize-nav-menus', "/wp-admin/js/customize-nav-menus$suffix.js", array( 'jquery', 'wp-backbone', 'customize-controls', 'accordion', 'nav-menu', 'wp-sanitize' ), false, 1 );
 	$scripts->add( 'customize-preview-nav-menus', "/wp-includes/js/customize-preview-nav-menus$suffix.js", array( 'jquery', 'wp-util', 'customize-preview', 'customize-selective-refresh' ), false, 1 );
 
 	$scripts->add( 'wp-custom-header', "/wp-includes/js/wp-custom-header$suffix.js", array( 'wp-a11y' ), false, 1 );
@@ -1658,7 +1681,7 @@ function wp_default_scripts( &$scripts ) {
 			)
 		);
 
-		$scripts->add( 'post', "/wp-admin/js/post$suffix.js", array( 'suggest', 'wp-lists', 'postbox', 'tags-box', 'underscore', 'word-count', 'wp-a11y' ), false, 1 );
+		$scripts->add( 'post', "/wp-admin/js/post$suffix.js", array( 'suggest', 'wp-lists', 'postbox', 'tags-box', 'underscore', 'word-count', 'wp-a11y', 'wp-sanitize' ), false, 1 );
 		did_action( 'init' ) && $scripts->localize(
 			'post',
 			'postL10n',
@@ -1771,7 +1794,23 @@ function wp_default_scripts( &$scripts ) {
 		$scripts->add( 'site-health', "/wp-admin/js/site-health$suffix.js", array( 'clipboard', 'jquery', 'wp-util', 'wp-a11y', 'wp-i18n' ), false, 1 );
 		$scripts->set_translations( 'site-health' );
 
-		$scripts->add( 'updates', "/wp-admin/js/updates$suffix.js", array( 'jquery', 'wp-util', 'wp-a11y' ), false, 1 );
+		$scripts->add( 'privacy-tools', "/wp-admin/js/privacy-tools$suffix.js", array( 'jquery' ), false, 1 );
+		did_action( 'init' ) && $scripts->localize(
+			'privacy-tools',
+			'privacyToolsL10n',
+			array(
+				'noDataFound'     => __( 'No personal data was found for this user.' ),
+				'foundAndRemoved' => __( 'All of the personal data found for this user was erased.' ),
+				'noneRemoved'     => __( 'Personal data was found for this user but was not erased.' ),
+				'someNotRemoved'  => __( 'Personal data was found for this user but some of the personal data found was not erased.' ),
+				'removalError'    => __( 'An error occurred while attempting to find and erase personal data.' ),
+				'emailSent'       => __( 'The personal data export link for this user was sent.' ),
+				'noExportFile'    => __( 'No personal data export file was generated.' ),
+				'exportError'     => __( 'An error occurred while attempting to export personal data.' ),
+			)
+		);
+
+		$scripts->add( 'updates', "/wp-admin/js/updates$suffix.js", array( 'jquery', 'wp-util', 'wp-a11y', 'wp-sanitize' ), false, 1 );
 		did_action( 'init' ) && $scripts->localize(
 			'updates',
 			'_wpUpdatesSettings',
@@ -2026,7 +2065,7 @@ function wp_default_styles( &$styles ) {
 	$styles->add( 'wp-admin', false, array( 'dashicons', 'common', 'forms', 'admin-menu', 'dashboard', 'list-tables', 'edit', 'revisions', 'media', 'themes', 'about', 'nav-menus', 'widgets', 'site-icon', 'l10n' ) );
 
 	$styles->add( 'login', "/wp-admin/css/login$suffix.css", array( 'dashicons', 'buttons', 'forms', 'l10n' ) );
-	$styles->add( 'install', "/wp-admin/css/install$suffix.css", array( 'buttons' ) );
+	$styles->add( 'install', "/wp-admin/css/install$suffix.css", array( 'dashicons', 'buttons', 'forms', 'l10n' ) );
 	$styles->add( 'wp-color-picker', "/wp-admin/css/color-picker$suffix.css" );
 	$styles->add( 'customize-controls', "/wp-admin/css/customize-controls$suffix.css", array( 'wp-admin', 'colors', 'ie', 'imgareaselect' ) );
 	$styles->add( 'customize-widgets', "/wp-admin/css/customize-widgets$suffix.css", array( 'wp-admin', 'colors' ) );

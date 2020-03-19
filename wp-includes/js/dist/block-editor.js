@@ -12818,540 +12818,485 @@ function useMovingAnimation(ref, isSelected, adjustScrolling, enableAnimation, t
 
 
 
-var block_BlockListBlock =
-/*#__PURE__*/
-function (_Component) {
-  Object(inherits["a" /* default */])(BlockListBlock, _Component);
+/**
+ * Prevents default dragging behavior within a block to allow for multi-
+ * selection to take effect unhampered.
+ *
+ * @param {DragEvent} event Drag event.
+ */
 
-  function BlockListBlock() {
-    var _this;
+var preventDrag = function preventDrag(event) {
+  event.preventDefault();
+};
 
-    Object(classCallCheck["a" /* default */])(this, BlockListBlock);
+function block_BlockListBlock(_ref) {
+  var blockRef = _ref.blockRef,
+      mode = _ref.mode,
+      isFocusMode = _ref.isFocusMode,
+      hasFixedToolbar = _ref.hasFixedToolbar,
+      isLocked = _ref.isLocked,
+      clientId = _ref.clientId,
+      rootClientId = _ref.rootClientId,
+      isSelected = _ref.isSelected,
+      isPartOfMultiSelection = _ref.isPartOfMultiSelection,
+      isFirstMultiSelected = _ref.isFirstMultiSelected,
+      isTypingWithinBlock = _ref.isTypingWithinBlock,
+      isCaretWithinFormattedText = _ref.isCaretWithinFormattedText,
+      isEmptyDefaultBlock = _ref.isEmptyDefaultBlock,
+      isMovable = _ref.isMovable,
+      isParentOfSelectedBlock = _ref.isParentOfSelectedBlock,
+      isDraggable = _ref.isDraggable,
+      isSelectionEnabled = _ref.isSelectionEnabled,
+      className = _ref.className,
+      name = _ref.name,
+      isValid = _ref.isValid,
+      isLast = _ref.isLast,
+      attributes = _ref.attributes,
+      initialPosition = _ref.initialPosition,
+      wrapperProps = _ref.wrapperProps,
+      setAttributes = _ref.setAttributes,
+      onReplace = _ref.onReplace,
+      onInsertBlocksAfter = _ref.onInsertBlocksAfter,
+      onMerge = _ref.onMerge,
+      onSelect = _ref.onSelect,
+      onRemove = _ref.onRemove,
+      onInsertDefaultBlockAfter = _ref.onInsertDefaultBlockAfter,
+      toggleSelection = _ref.toggleSelection,
+      onShiftSelection = _ref.onShiftSelection,
+      onSelectionStart = _ref.onSelectionStart,
+      animateOnChange = _ref.animateOnChange,
+      enableAnimation = _ref.enableAnimation,
+      isNavigationMode = _ref.isNavigationMode,
+      enableNavigationMode = _ref.enableNavigationMode;
 
-    _this = Object(possibleConstructorReturn["a" /* default */])(this, Object(getPrototypeOf["a" /* default */])(BlockListBlock).apply(this, arguments));
-    _this.setBlockListRef = _this.setBlockListRef.bind(Object(assertThisInitialized["a" /* default */])(Object(assertThisInitialized["a" /* default */])(_this)));
-    _this.bindBlockNode = _this.bindBlockNode.bind(Object(assertThisInitialized["a" /* default */])(Object(assertThisInitialized["a" /* default */])(_this)));
-    _this.setAttributes = _this.setAttributes.bind(Object(assertThisInitialized["a" /* default */])(Object(assertThisInitialized["a" /* default */])(_this)));
-    _this.maybeHover = _this.maybeHover.bind(Object(assertThisInitialized["a" /* default */])(Object(assertThisInitialized["a" /* default */])(_this)));
-    _this.forceFocusedContextualToolbar = _this.forceFocusedContextualToolbar.bind(Object(assertThisInitialized["a" /* default */])(Object(assertThisInitialized["a" /* default */])(_this)));
-    _this.hideHoverEffects = _this.hideHoverEffects.bind(Object(assertThisInitialized["a" /* default */])(Object(assertThisInitialized["a" /* default */])(_this)));
-    _this.onFocus = _this.onFocus.bind(Object(assertThisInitialized["a" /* default */])(Object(assertThisInitialized["a" /* default */])(_this)));
-    _this.preventDrag = _this.preventDrag.bind(Object(assertThisInitialized["a" /* default */])(Object(assertThisInitialized["a" /* default */])(_this)));
-    _this.onPointerDown = _this.onPointerDown.bind(Object(assertThisInitialized["a" /* default */])(Object(assertThisInitialized["a" /* default */])(_this)));
-    _this.deleteOrInsertAfterWrapper = _this.deleteOrInsertAfterWrapper.bind(Object(assertThisInitialized["a" /* default */])(Object(assertThisInitialized["a" /* default */])(_this)));
-    _this.onBlockError = _this.onBlockError.bind(Object(assertThisInitialized["a" /* default */])(Object(assertThisInitialized["a" /* default */])(_this)));
-    _this.onTouchStart = _this.onTouchStart.bind(Object(assertThisInitialized["a" /* default */])(Object(assertThisInitialized["a" /* default */])(_this)));
-    _this.onClick = _this.onClick.bind(Object(assertThisInitialized["a" /* default */])(Object(assertThisInitialized["a" /* default */])(_this)));
-    _this.onDragStart = _this.onDragStart.bind(Object(assertThisInitialized["a" /* default */])(Object(assertThisInitialized["a" /* default */])(_this)));
-    _this.onDragEnd = _this.onDragEnd.bind(Object(assertThisInitialized["a" /* default */])(Object(assertThisInitialized["a" /* default */])(_this)));
-    _this.selectOnOpen = _this.selectOnOpen.bind(Object(assertThisInitialized["a" /* default */])(Object(assertThisInitialized["a" /* default */])(_this)));
-    _this.hadTouchStart = false;
-    _this.state = {
-      error: null,
-      dragging: false,
-      isHovered: false
-    };
-    _this.isForcingContextualToolbar = false;
-    return _this;
-  }
+  // Random state used to rerender the component if needed, ideally we don't need this
+  var _useState = Object(external_this_wp_element_["useState"])({}),
+      _useState2 = Object(slicedToArray["a" /* default */])(_useState, 2),
+      updateRerenderState = _useState2[1];
 
-  Object(createClass["a" /* default */])(BlockListBlock, [{
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      if (this.props.isSelected) {
-        this.focusTabbable();
-      }
+  var rerender = function rerender() {
+    return updateRerenderState({});
+  }; // Reference of the wrapper
+
+
+  var wrapper = Object(external_this_wp_element_["useRef"])(null);
+  Object(external_this_wp_element_["useEffect"])(function () {
+    blockRef(wrapper.current, clientId);
+  }, []); // Reference to the block edit node
+
+  var blockNodeRef = Object(external_this_wp_element_["useRef"])();
+  var breadcrumb = Object(external_this_wp_element_["useRef"])(); // Keep track of touchstart to disable hover on iOS
+
+  var hadTouchStart = Object(external_this_wp_element_["useRef"])(false);
+
+  var onTouchStart = function onTouchStart() {
+    hadTouchStart.current = true;
+  };
+
+  var onTouchStop = function onTouchStop() {
+    // Clear touchstart detection
+    // Browser will try to emulate mouse events also see https://www.html5rocks.com/en/mobile/touchandmouse/
+    hadTouchStart.current = false;
+  }; // Handling isHovered
+
+
+  var _useState3 = Object(external_this_wp_element_["useState"])(false),
+      _useState4 = Object(slicedToArray["a" /* default */])(_useState3, 2),
+      isBlockHovered = _useState4[0],
+      setBlockHoveredState = _useState4[1];
+  /**
+   * Sets the block state as unhovered if currently hovering. There are cases
+   * where mouseleave may occur but the block is not hovered (multi-select),
+   * so to avoid unnecesary renders, the state is only set if hovered.
+   */
+
+
+  var hideHoverEffects = function hideHoverEffects() {
+    if (isBlockHovered) {
+      setBlockHoveredState(false);
     }
-  }, {
-    key: "componentDidUpdate",
-    value: function componentDidUpdate(prevProps) {
-      if (this.isForcingContextualToolbar) {
-        // The forcing of contextual toolbar should only be true during one update,
-        // after the first update normal conditions should apply.
-        this.isForcingContextualToolbar = false;
-      }
-
-      if (this.props.isTypingWithinBlock || this.props.isSelected) {
-        this.hideHoverEffects();
-      }
-
-      if (this.props.isSelected && !prevProps.isSelected) {
-        this.focusTabbable(true);
-      } // When triggering a multi-selection, move the focus to the wrapper of the first selected block.
-      // This ensures that it is not possible to continue editing the initially selected block
-      // when a multi-selection is triggered.
+  };
+  /**
+   * A mouseover event handler to apply hover effect when a pointer device is
+   * placed within the bounds of the block. The mouseover event is preferred
+   * over mouseenter because it may be the case that a previous mouseenter
+   * event was blocked from being handled by a IgnoreNestedEvents component,
+   * therefore transitioning out of a nested block to the bounds of the block
+   * would otherwise not trigger a hover effect.
+   *
+   * @see https://developer.mozilla.org/en-US/docs/Web/Events/mouseenter
+   */
 
 
-      if (this.props.isFirstMultiSelected && !prevProps.isFirstMultiSelected) {
-        this.wrapperNode.focus();
-      }
+  var maybeHover = function maybeHover() {
+    if (isBlockHovered || isPartOfMultiSelection || isSelected || hadTouchStart.current) {
+      return;
     }
-  }, {
-    key: "setBlockListRef",
-    value: function setBlockListRef(node) {
-      this.wrapperNode = node;
-      this.props.blockRef(node, this.props.clientId); // We need to rerender to trigger a rerendering of HoverArea
-      // it depents on this.wrapperNode but we can't keep this.wrapperNode in state
-      // Because we need it to be immediately availeble for `focusableTabbable` to work.
 
-      this.forceUpdate();
+    setBlockHoveredState(true);
+  }; // Set hover to false once we start typing or select the block.
+
+
+  Object(external_this_wp_element_["useEffect"])(function () {
+    if (isTypingWithinBlock || isSelected) {
+      hideHoverEffects();
     }
-  }, {
-    key: "bindBlockNode",
-    value: function bindBlockNode(node) {
-      this.node = node;
+  }); // Handling the dragging state
+
+  var _useState5 = Object(external_this_wp_element_["useState"])(false),
+      _useState6 = Object(slicedToArray["a" /* default */])(_useState5, 2),
+      isDragging = _useState6[0],
+      setBlockDraggingState = _useState6[1];
+
+  var onDragStart = function onDragStart() {
+    setBlockDraggingState(true);
+  };
+
+  var onDragEnd = function onDragEnd() {
+    setBlockDraggingState(false);
+  }; // Handling the error state
+
+
+  var _useState7 = Object(external_this_wp_element_["useState"])(false),
+      _useState8 = Object(slicedToArray["a" /* default */])(_useState7, 2),
+      hasError = _useState8[0],
+      setErrorState = _useState8[1];
+
+  var onBlockError = function onBlockError() {
+    return setErrorState(true);
+  }; // Handling of forceContextualToolbarFocus
+
+
+  var isForcingContextualToolbar = Object(external_this_wp_element_["useRef"])(false);
+  Object(external_this_wp_element_["useEffect"])(function () {
+    if (isForcingContextualToolbar.current) {
+      // The forcing of contextual toolbar should only be true during one update,
+      // after the first update normal conditions should apply.
+      isForcingContextualToolbar.current = false;
     }
-    /**
-     * When a block becomes selected, transition focus to an inner tabbable.
-     *
-     * @param {boolean} ignoreInnerBlocks Should not focus inner blocks.
-     */
+  });
 
-  }, {
-    key: "focusTabbable",
-    value: function focusTabbable(ignoreInnerBlocks) {
-      var _this2 = this;
+  var forceFocusedContextualToolbar = function forceFocusedContextualToolbar() {
+    isForcingContextualToolbar.current = true; // trigger a re-render
 
-      var initialPosition = this.props.initialPosition; // Focus is captured by the wrapper node, so while focus transition
-      // should only consider tabbables within editable display, since it
-      // may be the wrapper itself or a side control which triggered the
-      // focus event, don't unnecessary transition to an inner tabbable.
+    rerender();
+  }; // Handing the focus of the block on creation and update
 
-      if (this.wrapperNode.contains(document.activeElement)) {
-        return;
-      } // Find all tabbables within node.
+  /**
+   * When a block becomes selected, transition focus to an inner tabbable.
+   *
+   * @param {boolean} ignoreInnerBlocks Should not focus inner blocks.
+   */
 
 
-      var textInputs = external_this_wp_dom_["focus"].tabbable.find(this.node).filter(external_this_wp_dom_["isTextField"]) // Exclude inner blocks
-      .filter(function (node) {
-        return !ignoreInnerBlocks || isInsideRootBlock(_this2.node, node);
-      }); // If reversed (e.g. merge via backspace), use the last in the set of
-      // tabbables.
-
-      var isReverse = -1 === initialPosition;
-      var target = (isReverse ? external_lodash_["last"] : external_lodash_["first"])(textInputs);
-
-      if (!target) {
-        this.wrapperNode.focus();
-        return;
-      }
-
-      target.focus(); // In reverse case, need to explicitly place caret position.
-
-      if (isReverse) {
-        Object(external_this_wp_dom_["placeCaretAtHorizontalEdge"])(target, true);
-        Object(external_this_wp_dom_["placeCaretAtVerticalEdge"])(target, true);
-      }
+  var focusTabbable = function focusTabbable(ignoreInnerBlocks) {
+    // Focus is captured by the wrapper node, so while focus transition
+    // should only consider tabbables within editable display, since it
+    // may be the wrapper itself or a side control which triggered the
+    // focus event, don't unnecessary transition to an inner tabbable.
+    if (wrapper.current.contains(document.activeElement)) {
+      return;
     }
-  }, {
-    key: "setAttributes",
-    value: function setAttributes(attributes) {
-      var _this$props = this.props,
-          clientId = _this$props.clientId,
-          name = _this$props.name,
-          onChange = _this$props.onChange;
-      var type = Object(external_this_wp_blocks_["getBlockType"])(name);
-      onChange(clientId, attributes);
-      var metaAttributes = Object(external_lodash_["reduce"])(attributes, function (result, value, key) {
-        if (Object(external_lodash_["get"])(type, ['attributes', key, 'source']) === 'meta') {
-          result[type.attributes[key].meta] = value;
-        }
 
-        return result;
-      }, {});
+    if (isNavigationMode) {
+      breadcrumb.current.focus();
+      return;
+    } // Find all tabbables within node.
 
-      if (Object(external_lodash_["size"])(metaAttributes)) {
-        this.props.onMetaChange(metaAttributes);
-      }
+
+    var textInputs = external_this_wp_dom_["focus"].tabbable.find(blockNodeRef.current).filter(external_this_wp_dom_["isTextField"]) // Exclude inner blocks
+    .filter(function (node) {
+      return !ignoreInnerBlocks || isInsideRootBlock(blockNodeRef.current, node);
+    }); // If reversed (e.g. merge via backspace), use the last in the set of
+    // tabbables.
+
+    var isReverse = -1 === initialPosition;
+    var target = (isReverse ? external_lodash_["last"] : external_lodash_["first"])(textInputs);
+
+    if (!target) {
+      wrapper.current.focus();
+      return;
     }
-  }, {
-    key: "onTouchStart",
-    value: function onTouchStart() {
-      // Detect touchstart to disable hover on iOS
-      this.hadTouchStart = true;
+
+    Object(external_this_wp_dom_["placeCaretAtHorizontalEdge"])(target, isReverse);
+  }; // Focus the selected block's wrapper or inner input on mount and update
+
+
+  var isMounting = Object(external_this_wp_element_["useRef"])(true);
+  Object(external_this_wp_element_["useEffect"])(function () {
+    if (isSelected) {
+      focusTabbable(!isMounting.current);
     }
-  }, {
-    key: "onClick",
-    value: function onClick() {
-      // Clear touchstart detection
-      // Browser will try to emulate mouse events also see https://www.html5rocks.com/en/mobile/touchandmouse/
-      this.hadTouchStart = false;
+
+    isMounting.current = false;
+  }, [isSelected]); // Focus the first multi selected block
+
+  Object(external_this_wp_element_["useEffect"])(function () {
+    if (isFirstMultiSelected) {
+      wrapper.current.focus();
     }
-    /**
-     * A mouseover event handler to apply hover effect when a pointer device is
-     * placed within the bounds of the block. The mouseover event is preferred
-     * over mouseenter because it may be the case that a previous mouseenter
-     * event was blocked from being handled by a IgnoreNestedEvents component,
-     * therefore transitioning out of a nested block to the bounds of the block
-     * would otherwise not trigger a hover effect.
-     *
-     * @see https://developer.mozilla.org/en-US/docs/Web/Events/mouseenter
-     */
+  }, [isFirstMultiSelected]); // Block Reordering animation
 
-  }, {
-    key: "maybeHover",
-    value: function maybeHover() {
-      var _this$props2 = this.props,
-          isPartOfMultiSelection = _this$props2.isPartOfMultiSelection,
-          isSelected = _this$props2.isSelected;
-      var isHovered = this.state.isHovered;
+  var animationStyle = moving_animation(wrapper, isSelected || isPartOfMultiSelection, isSelected || isFirstMultiSelected, enableAnimation, animateOnChange); // Focus the breadcrumb if the wrapper is focused on navigation mode.
+  // Focus the first editable or the wrapper if edit mode.
 
-      if (isHovered || isPartOfMultiSelection || isSelected || this.hadTouchStart) {
-        return;
-      }
-
-      this.setState({
-        isHovered: true
-      });
-    }
-    /**
-     * Sets the block state as unhovered if currently hovering. There are cases
-     * where mouseleave may occur but the block is not hovered (multi-select),
-     * so to avoid unnecesary renders, the state is only set if hovered.
-     */
-
-  }, {
-    key: "hideHoverEffects",
-    value: function hideHoverEffects() {
-      if (this.state.isHovered) {
-        this.setState({
-          isHovered: false
-        });
-      }
-    }
-    /**
-     * Marks the block as selected when focused and not already selected. This
-     * specifically handles the case where block does not set focus on its own
-     * (via `setFocus`), typically if there is no focusable input in the block.
-     *
-     * @return {void}
-     */
-
-  }, {
-    key: "onFocus",
-    value: function onFocus() {
-      if (!this.props.isSelected && !this.props.isPartOfMultiSelection) {
-        this.props.onSelect();
-      }
-    }
-    /**
-     * Prevents default dragging behavior within a block to allow for multi-
-     * selection to take effect unhampered.
-     *
-     * @param {DragEvent} event Drag event.
-     *
-     * @return {void}
-     */
-
-  }, {
-    key: "preventDrag",
-    value: function preventDrag(event) {
-      event.preventDefault();
-    }
-    /**
-     * Begins tracking cursor multi-selection when clicking down within block.
-     *
-     * @param {MouseEvent} event A mousedown event.
-     *
-     * @return {void}
-     */
-
-  }, {
-    key: "onPointerDown",
-    value: function onPointerDown(event) {
-      // Not the main button.
-      // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button
-      if (event.button !== 0) {
-        return;
-      }
-
-      if (event.shiftKey) {
-        if (!this.props.isSelected) {
-          this.props.onShiftSelection();
-          event.preventDefault();
-        }
+  Object(external_this_wp_element_["useLayoutEffect"])(function () {
+    if (isSelected) {
+      if (isNavigationMode) {
+        breadcrumb.current.focus();
       } else {
-        this.props.onSelectionStart(this.props.clientId); // Allow user to escape out of a multi-selection to a singular
-        // selection of a block via click. This is handled here since
-        // onFocus excludes blocks involved in a multiselection, as
-        // focus can be incurred by starting a multiselection (focus
-        // moved to first block's multi-controls).
-
-        if (this.props.isPartOfMultiSelection) {
-          this.props.onSelect();
-        }
+        focusTabbable(true);
       }
     }
-    /**
-     * Interprets keydown event intent to remove or insert after block if key
-     * event occurs on wrapper node. This can occur when the block has no text
-     * fields of its own, particularly after initial insertion, to allow for
-     * easy deletion and continuous writing flow to add additional content.
-     *
-     * @param {KeyboardEvent} event Keydown event.
-     */
+  }, [isSelected, isNavigationMode]); // Other event handlers
 
-  }, {
-    key: "deleteOrInsertAfterWrapper",
-    value: function deleteOrInsertAfterWrapper(event) {
-      var keyCode = event.keyCode,
-          target = event.target; // These block shortcuts should only trigger if the wrapper of the block is selected
-      // And when it's not a multi-selection to avoid conflicting with RichText/Inputs and multiselection.
+  /**
+   * Marks the block as selected when focused and not already selected. This
+   * specifically handles the case where block does not set focus on its own
+   * (via `setFocus`), typically if there is no focusable input in the block.
+   */
 
-      if (!this.props.isSelected || target !== this.wrapperNode || this.props.isLocked) {
-        return;
-      }
+  var onFocus = function onFocus() {
+    if (!isSelected && !isPartOfMultiSelection) {
+      onSelect();
+    }
+  };
+  /**
+   * Interprets keydown event intent to remove or insert after block if key
+   * event occurs on wrapper node. This can occur when the block has no text
+   * fields of its own, particularly after initial insertion, to allow for
+   * easy deletion and continuous writing flow to add additional content.
+   *
+   * @param {KeyboardEvent} event Keydown event.
+   */
 
-      switch (keyCode) {
-        case external_this_wp_keycodes_["ENTER"]:
+
+  var onKeyDown = function onKeyDown(event) {
+    var keyCode = event.keyCode,
+        target = event.target; // ENTER/BACKSPACE Shortcuts are only available if the wrapper is focused
+    // and the block is not locked.
+
+    var canUseShortcuts = isSelected && !isLocked && (target === wrapper.current || target === breadcrumb.current);
+    var isEditMode = !isNavigationMode;
+
+    switch (keyCode) {
+      case external_this_wp_keycodes_["ENTER"]:
+        if (canUseShortcuts && isEditMode) {
           // Insert default block after current block if enter and event
           // not already handled by descendant.
-          this.props.onInsertDefaultBlockAfter();
+          onInsertDefaultBlockAfter();
           event.preventDefault();
-          break;
-
-        case external_this_wp_keycodes_["BACKSPACE"]:
-        case external_this_wp_keycodes_["DELETE"]:
-          // Remove block on backspace.
-          var _this$props3 = this.props,
-              clientId = _this$props3.clientId,
-              onRemove = _this$props3.onRemove;
-          onRemove(clientId);
-          event.preventDefault();
-          break;
-      }
-    }
-  }, {
-    key: "onBlockError",
-    value: function onBlockError(error) {
-      this.setState({
-        error: error
-      });
-    }
-  }, {
-    key: "onDragStart",
-    value: function onDragStart() {
-      this.setState({
-        dragging: true
-      });
-    }
-  }, {
-    key: "onDragEnd",
-    value: function onDragEnd() {
-      this.setState({
-        dragging: false
-      });
-    }
-  }, {
-    key: "selectOnOpen",
-    value: function selectOnOpen(open) {
-      if (open && !this.props.isSelected) {
-        this.props.onSelect();
-      }
-    }
-  }, {
-    key: "forceFocusedContextualToolbar",
-    value: function forceFocusedContextualToolbar() {
-      this.isForcingContextualToolbar = true; // trigger a re-render
-
-      this.setState(function () {
-        return {};
-      });
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var _this3 = this;
-
-      return Object(external_this_wp_element_["createElement"])(hover_area, {
-        container: this.wrapperNode
-      }, function (_ref) {
-        var hoverArea = _ref.hoverArea;
-        var _this3$props = _this3.props,
-            mode = _this3$props.mode,
-            isFocusMode = _this3$props.isFocusMode,
-            hasFixedToolbar = _this3$props.hasFixedToolbar,
-            isLocked = _this3$props.isLocked,
-            isFirst = _this3$props.isFirst,
-            isLast = _this3$props.isLast,
-            clientId = _this3$props.clientId,
-            rootClientId = _this3$props.rootClientId,
-            isSelected = _this3$props.isSelected,
-            isPartOfMultiSelection = _this3$props.isPartOfMultiSelection,
-            isFirstMultiSelected = _this3$props.isFirstMultiSelected,
-            isTypingWithinBlock = _this3$props.isTypingWithinBlock,
-            isCaretWithinFormattedText = _this3$props.isCaretWithinFormattedText,
-            isEmptyDefaultBlock = _this3$props.isEmptyDefaultBlock,
-            isMovable = _this3$props.isMovable,
-            isParentOfSelectedBlock = _this3$props.isParentOfSelectedBlock,
-            isDraggable = _this3$props.isDraggable,
-            className = _this3$props.className,
-            name = _this3$props.name,
-            isValid = _this3$props.isValid,
-            attributes = _this3$props.attributes;
-        var isHovered = _this3.state.isHovered && !isPartOfMultiSelection;
-        var blockType = Object(external_this_wp_blocks_["getBlockType"])(name); // translators: %s: Type of block (i.e. Text, Image etc)
-
-        var blockLabel = Object(external_this_wp_i18n_["sprintf"])(Object(external_this_wp_i18n_["__"])('Block: %s'), blockType.title); // The block as rendered in the editor is composed of general block UI
-        // (mover, toolbar, wrapper) and the display of the block content.
-
-        var isUnregisteredBlock = name === Object(external_this_wp_blocks_["getUnregisteredTypeHandlerName"])(); // If the block is selected and we're typing the block should not appear.
-        // Empty paragraph blocks should always show up as unselected.
-
-        var showEmptyBlockSideInserter = (isSelected || isHovered) && isEmptyDefaultBlock && isValid;
-        var shouldAppearSelected = !isFocusMode && !showEmptyBlockSideInserter && isSelected && !isTypingWithinBlock;
-        var shouldAppearHovered = !isFocusMode && !hasFixedToolbar && isHovered && !isEmptyDefaultBlock; // We render block movers and block settings to keep them tabbale even if hidden
-
-        var shouldRenderMovers = !isFocusMode && (isSelected || hoverArea === 'left') && !showEmptyBlockSideInserter && !isPartOfMultiSelection && !isTypingWithinBlock;
-        var shouldShowBreadcrumb = !isFocusMode && isHovered && !isEmptyDefaultBlock;
-        var shouldShowContextualToolbar = !hasFixedToolbar && !showEmptyBlockSideInserter && (isSelected && (!isTypingWithinBlock || isCaretWithinFormattedText) || isFirstMultiSelected);
-        var shouldShowMobileToolbar = shouldAppearSelected;
-        var _this3$state = _this3.state,
-            error = _this3$state.error,
-            dragging = _this3$state.dragging; // Insertion point can only be made visible if the block is at the
-        // the extent of a multi-selection, or not in a multi-selection.
-
-        var shouldShowInsertionPoint = isPartOfMultiSelection && isFirstMultiSelected || !isPartOfMultiSelection; // The wp-block className is important for editor styles.
-        // Generate the wrapper class names handling the different states of the block.
-
-        var wrapperClassName = classnames_default()('wp-block editor-block-list__block block-editor-block-list__block', {
-          'has-warning': !isValid || !!error || isUnregisteredBlock,
-          'is-selected': shouldAppearSelected,
-          'is-multi-selected': isPartOfMultiSelection,
-          'is-hovered': shouldAppearHovered,
-          'is-reusable': Object(external_this_wp_blocks_["isReusableBlock"])(blockType),
-          'is-dragging': dragging,
-          'is-typing': isTypingWithinBlock,
-          'is-focused': isFocusMode && (isSelected || isParentOfSelectedBlock),
-          'is-focus-mode': isFocusMode
-        }, className);
-        var onReplace = _this3.props.onReplace; // Determine whether the block has props to apply to the wrapper.
-
-        var wrapperProps = _this3.props.wrapperProps;
-
-        if (blockType.getEditWrapperProps) {
-          wrapperProps = Object(objectSpread["a" /* default */])({}, wrapperProps, blockType.getEditWrapperProps(attributes));
         }
 
-        var blockElementId = "block-".concat(clientId); // We wrap the BlockEdit component in a div that hides it when editing in
-        // HTML mode. This allows us to render all of the ancillary pieces
-        // (InspectorControls, etc.) which are inside `BlockEdit` but not
-        // `BlockHTML`, even in HTML mode.
+        break;
 
-        var blockEdit = Object(external_this_wp_element_["createElement"])(block_edit, {
-          name: name,
-          isSelected: isSelected,
-          attributes: attributes,
-          setAttributes: _this3.setAttributes,
-          insertBlocksAfter: isLocked ? undefined : _this3.props.onInsertBlocksAfter,
-          onReplace: isLocked ? undefined : onReplace,
-          mergeBlocks: isLocked ? undefined : _this3.props.onMerge,
-          clientId: clientId,
-          isSelectionEnabled: _this3.props.isSelectionEnabled,
-          toggleSelection: _this3.props.toggleSelection
-        });
+      case external_this_wp_keycodes_["BACKSPACE"]:
+      case external_this_wp_keycodes_["DELETE"]:
+        if (canUseShortcuts) {
+          // Remove block on backspace.
+          onRemove(clientId);
+          event.preventDefault();
+        }
 
-        if (mode !== 'visual') {
-          blockEdit = Object(external_this_wp_element_["createElement"])("div", {
-            style: {
-              display: 'none'
-            }
-          }, blockEdit);
-        } // Disable reasons:
-        //
-        //  jsx-a11y/mouse-events-have-key-events:
-        //   - onMouseOver is explicitly handling hover effects
-        //
-        //  jsx-a11y/no-static-element-interactions:
-        //   - Each block can be selected by clicking on it
+        break;
 
-        /* eslint-disable jsx-a11y/mouse-events-have-key-events, jsx-a11y/no-static-element-interactions, jsx-a11y/onclick-has-role, jsx-a11y/click-events-have-key-events */
+      case external_this_wp_keycodes_["ESCAPE"]:
+        if (isSelected && isEditMode) {
+          enableNavigationMode();
+          wrapper.current.focus();
+        }
 
-
-        return Object(external_this_wp_element_["createElement"])(ignore_nested_events, Object(esm_extends["a" /* default */])({
-          id: blockElementId,
-          ref: _this3.setBlockListRef,
-          onMouseOver: _this3.maybeHover,
-          onMouseOverHandled: _this3.hideHoverEffects,
-          onMouseLeave: _this3.hideHoverEffects,
-          className: wrapperClassName,
-          "data-type": name,
-          onTouchStart: _this3.onTouchStart,
-          onFocus: _this3.onFocus,
-          onClick: _this3.onClick,
-          onKeyDown: _this3.deleteOrInsertAfterWrapper,
-          tabIndex: "0",
-          "aria-label": blockLabel,
-          childHandledEvents: ['onDragStart', 'onMouseDown']
-        }, wrapperProps), shouldShowInsertionPoint && Object(external_this_wp_element_["createElement"])(insertion_point, {
-          clientId: clientId,
-          rootClientId: rootClientId
-        }), Object(external_this_wp_element_["createElement"])(block_drop_zone, {
-          clientId: clientId,
-          rootClientId: rootClientId
-        }), isFirstMultiSelected && Object(external_this_wp_element_["createElement"])(multi_controls, {
-          rootClientId: rootClientId
-        }), Object(external_this_wp_element_["createElement"])("div", {
-          className: "editor-block-list__block-edit block-editor-block-list__block-edit"
-        }, shouldRenderMovers && Object(external_this_wp_element_["createElement"])(block_mover, {
-          clientIds: clientId,
-          blockElementId: blockElementId,
-          isFirst: isFirst,
-          isLast: isLast,
-          isHidden: !(isHovered || isSelected) || hoverArea !== 'left',
-          isDraggable: isDraggable !== false && !isPartOfMultiSelection && isMovable,
-          onDragStart: _this3.onDragStart,
-          onDragEnd: _this3.onDragEnd
-        }), shouldShowBreadcrumb && Object(external_this_wp_element_["createElement"])(breadcrumb, {
-          clientId: clientId,
-          isHidden: !(isHovered || isSelected) || hoverArea !== 'left'
-        }), (shouldShowContextualToolbar || _this3.isForcingContextualToolbar) && Object(external_this_wp_element_["createElement"])(block_contextual_toolbar // If the toolbar is being shown because of being forced
-        // it should focus the toolbar right after the mount.
-        , {
-          focusOnMount: _this3.isForcingContextualToolbar
-        }), !shouldShowContextualToolbar && isSelected && !hasFixedToolbar && !isEmptyDefaultBlock && Object(external_this_wp_element_["createElement"])(external_this_wp_components_["KeyboardShortcuts"], {
-          bindGlobal: true,
-          eventName: "keydown",
-          shortcuts: {
-            'alt+f10': _this3.forceFocusedContextualToolbar
-          }
-        }), Object(external_this_wp_element_["createElement"])(ignore_nested_events, {
-          ref: _this3.bindBlockNode,
-          onDragStart: _this3.preventDrag,
-          onMouseDown: _this3.onPointerDown,
-          "data-block": clientId
-        }, Object(external_this_wp_element_["createElement"])(block_crash_boundary, {
-          onError: _this3.onBlockError
-        }, isValid && blockEdit, isValid && mode === 'html' && Object(external_this_wp_element_["createElement"])(block_html, {
-          clientId: clientId
-        }), !isValid && [Object(external_this_wp_element_["createElement"])(block_invalid_warning, {
-          key: "invalid-warning",
-          clientId: clientId
-        }), Object(external_this_wp_element_["createElement"])("div", {
-          key: "invalid-preview"
-        }, Object(external_this_wp_blocks_["getSaveElement"])(blockType, attributes))]), shouldShowMobileToolbar && Object(external_this_wp_element_["createElement"])(block_mobile_toolbar, {
-          clientId: clientId
-        }), !!error && Object(external_this_wp_element_["createElement"])(block_crash_warning, null))), showEmptyBlockSideInserter && Object(external_this_wp_element_["createElement"])(external_this_wp_element_["Fragment"], null, Object(external_this_wp_element_["createElement"])("div", {
-          className: "editor-block-list__side-inserter block-editor-block-list__side-inserter"
-        }, Object(external_this_wp_element_["createElement"])(inserter_with_shortcuts, {
-          clientId: clientId,
-          rootClientId: rootClientId,
-          onToggle: _this3.selectOnOpen
-        })), Object(external_this_wp_element_["createElement"])("div", {
-          className: "editor-block-list__empty-block-inserter block-editor-block-list__empty-block-inserter"
-        }, Object(external_this_wp_element_["createElement"])(inserter, {
-          position: "top right",
-          onToggle: _this3.selectOnOpen,
-          rootClientId: rootClientId,
-          clientId: clientId
-        }))));
-        /* eslint-enable jsx-a11y/no-static-element-interactions, jsx-a11y/onclick-has-role, jsx-a11y/click-events-have-key-events */
-      });
+        break;
     }
-  }]);
+  };
+  /**
+   * Begins tracking cursor multi-selection when clicking down within block.
+   *
+   * @param {MouseEvent} event A mousedown event.
+   */
 
-  return BlockListBlock;
-}(external_this_wp_element_["Component"]);
+
+  var onPointerDown = function onPointerDown(event) {
+    // Not the main button.
+    // https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/button
+    if (event.button !== 0) {
+      return;
+    }
+
+    if (event.shiftKey) {
+      if (!isSelected) {
+        onShiftSelection();
+        event.preventDefault();
+      } // Avoid triggering multi-selection if we click toolbars/inspectors
+      // and all elements that are outside the Block Edit DOM tree.
+
+    } else if (blockNodeRef.current.contains(event.target)) {
+      onSelectionStart(clientId); // Allow user to escape out of a multi-selection to a singular
+      // selection of a block via click. This is handled here since
+      // onFocus excludes blocks involved in a multiselection, as
+      // focus can be incurred by starting a multiselection (focus
+      // moved to first block's multi-controls).
+
+      if (isPartOfMultiSelection) {
+        onSelect();
+      }
+    }
+  };
+
+  var selectOnOpen = function selectOnOpen(open) {
+    if (open && !isSelected) {
+      onSelect();
+    }
+  }; // Rendering the output
+
+
+  var isHovered = isBlockHovered && !isPartOfMultiSelection;
+  var blockType = Object(external_this_wp_blocks_["getBlockType"])(name); // translators: %s: Type of block (i.e. Text, Image etc)
+
+  var blockLabel = Object(external_this_wp_i18n_["sprintf"])(Object(external_this_wp_i18n_["__"])('Block: %s'), blockType.title); // The block as rendered in the editor is composed of general block UI
+  // (mover, toolbar, wrapper) and the display of the block content.
+
+  var isUnregisteredBlock = name === Object(external_this_wp_blocks_["getUnregisteredTypeHandlerName"])(); // If the block is selected and we're typing the block should not appear.
+  // Empty paragraph blocks should always show up as unselected.
+
+  var showInserterShortcuts = !isNavigationMode && (isSelected || isHovered) && isEmptyDefaultBlock && isValid;
+  var showEmptyBlockSideInserter = !isNavigationMode && (isSelected || isHovered || isLast) && isEmptyDefaultBlock && isValid;
+  var shouldAppearSelected = !isFocusMode && !showEmptyBlockSideInserter && isSelected && !isTypingWithinBlock;
+  var shouldAppearHovered = !isFocusMode && !hasFixedToolbar && isHovered && !isEmptyDefaultBlock; // We render block movers and block settings to keep them tabbale even if hidden
+
+  var shouldRenderMovers = !isNavigationMode && isSelected && !showEmptyBlockSideInserter && !isPartOfMultiSelection && !isTypingWithinBlock;
+  var shouldShowBreadcrumb = isSelected && isNavigationMode || !isNavigationMode && !isFocusMode && isHovered && !isEmptyDefaultBlock;
+  var shouldShowContextualToolbar = !isNavigationMode && !hasFixedToolbar && !showEmptyBlockSideInserter && (isSelected && (!isTypingWithinBlock || isCaretWithinFormattedText) || isFirstMultiSelected);
+  var shouldShowMobileToolbar = !isNavigationMode && shouldAppearSelected; // Insertion point can only be made visible if the block is at the
+  // the extent of a multi-selection, or not in a multi-selection.
+
+  var shouldShowInsertionPoint = isPartOfMultiSelection && isFirstMultiSelected || !isPartOfMultiSelection; // The wp-block className is important for editor styles.
+  // Generate the wrapper class names handling the different states of the block.
+
+  var wrapperClassName = classnames_default()('wp-block editor-block-list__block block-editor-block-list__block', {
+    'has-warning': !isValid || !!hasError || isUnregisteredBlock,
+    'is-selected': shouldAppearSelected,
+    'is-navigate-mode': isNavigationMode,
+    'is-multi-selected': isPartOfMultiSelection,
+    'is-hovered': shouldAppearHovered,
+    'is-reusable': Object(external_this_wp_blocks_["isReusableBlock"])(blockType),
+    'is-dragging': isDragging,
+    'is-typing': isTypingWithinBlock,
+    'is-focused': isFocusMode && (isSelected || isParentOfSelectedBlock),
+    'is-focus-mode': isFocusMode,
+    'has-child-selected': isParentOfSelectedBlock
+  }, className); // Determine whether the block has props to apply to the wrapper.
+
+  if (blockType.getEditWrapperProps) {
+    wrapperProps = Object(objectSpread["a" /* default */])({}, wrapperProps, blockType.getEditWrapperProps(attributes));
+  }
+
+  var blockElementId = "block-".concat(clientId); // We wrap the BlockEdit component in a div that hides it when editing in
+  // HTML mode. This allows us to render all of the ancillary pieces
+  // (InspectorControls, etc.) which are inside `BlockEdit` but not
+  // `BlockHTML`, even in HTML mode.
+
+  var blockEdit = Object(external_this_wp_element_["createElement"])(block_edit, {
+    name: name,
+    isSelected: isSelected,
+    attributes: attributes,
+    setAttributes: setAttributes,
+    insertBlocksAfter: isLocked ? undefined : onInsertBlocksAfter,
+    onReplace: isLocked ? undefined : onReplace,
+    mergeBlocks: isLocked ? undefined : onMerge,
+    clientId: clientId,
+    isSelectionEnabled: isSelectionEnabled,
+    toggleSelection: toggleSelection
+  });
+
+  if (mode !== 'visual') {
+    blockEdit = Object(external_this_wp_element_["createElement"])("div", {
+      style: {
+        display: 'none'
+      }
+    }, blockEdit);
+  }
+
+  return Object(external_this_wp_element_["createElement"])(ignore_nested_events, Object(esm_extends["a" /* default */])({
+    id: blockElementId,
+    ref: wrapper,
+    onMouseOver: maybeHover,
+    onMouseOverHandled: hideHoverEffects,
+    onMouseLeave: hideHoverEffects,
+    className: wrapperClassName,
+    "data-type": name,
+    onTouchStart: onTouchStart,
+    onFocus: onFocus,
+    onClick: onTouchStop,
+    onKeyDown: onKeyDown,
+    tabIndex: "0",
+    "aria-label": blockLabel,
+    childHandledEvents: ['onDragStart', 'onMouseDown'],
+    tagName: web_cjs["animated"].div
+  }, wrapperProps, {
+    style: wrapperProps && wrapperProps.style ? Object(objectSpread["a" /* default */])({}, wrapperProps.style, animationStyle) : animationStyle
+  }), shouldShowInsertionPoint && Object(external_this_wp_element_["createElement"])(insertion_point, {
+    clientId: clientId,
+    rootClientId: rootClientId
+  }), Object(external_this_wp_element_["createElement"])(block_drop_zone, {
+    clientId: clientId,
+    rootClientId: rootClientId
+  }), isFirstMultiSelected && Object(external_this_wp_element_["createElement"])(multi_controls, {
+    rootClientId: rootClientId
+  }), Object(external_this_wp_element_["createElement"])("div", {
+    className: "editor-block-list__block-edit block-editor-block-list__block-edit"
+  }, shouldRenderMovers && Object(external_this_wp_element_["createElement"])(block_mover, {
+    clientIds: clientId,
+    blockElementId: blockElementId,
+    isHidden: !isSelected,
+    isDraggable: isDraggable !== false && !isPartOfMultiSelection && isMovable,
+    onDragStart: onDragStart,
+    onDragEnd: onDragEnd
+  }), shouldShowBreadcrumb && Object(external_this_wp_element_["createElement"])(block_list_breadcrumb, {
+    clientId: clientId,
+    ref: breadcrumb
+  }), (shouldShowContextualToolbar || isForcingContextualToolbar.current) && Object(external_this_wp_element_["createElement"])(block_contextual_toolbar // If the toolbar is being shown because of being forced
+  // it should focus the toolbar right after the mount.
+  , {
+    focusOnMount: isForcingContextualToolbar.current
+  }), !isNavigationMode && !shouldShowContextualToolbar && isSelected && !hasFixedToolbar && !isEmptyDefaultBlock && Object(external_this_wp_element_["createElement"])(external_this_wp_components_["KeyboardShortcuts"], {
+    bindGlobal: true,
+    eventName: "keydown",
+    shortcuts: {
+      'alt+f10': forceFocusedContextualToolbar
+    }
+  }), Object(external_this_wp_element_["createElement"])(ignore_nested_events, {
+    ref: blockNodeRef,
+    onDragStart: preventDrag,
+    onMouseDown: onPointerDown,
+    "data-block": clientId
+  }, Object(external_this_wp_element_["createElement"])(block_crash_boundary, {
+    onError: onBlockError
+  }, isValid && blockEdit, isValid && mode === 'html' && Object(external_this_wp_element_["createElement"])(block_html, {
+    clientId: clientId
+  }), !isValid && [Object(external_this_wp_element_["createElement"])(block_invalid_warning, {
+    key: "invalid-warning",
+    clientId: clientId
+  }), Object(external_this_wp_element_["createElement"])("div", {
+    key: "invalid-preview"
+  }, Object(external_this_wp_blocks_["getSaveElement"])(blockType, attributes))]), !!hasError && Object(external_this_wp_element_["createElement"])(block_crash_warning, null), shouldShowMobileToolbar && Object(external_this_wp_element_["createElement"])(block_mobile_toolbar, {
+    clientId: clientId
+  }))), showInserterShortcuts && Object(external_this_wp_element_["createElement"])("div", {
+    className: "editor-block-list__side-inserter block-editor-block-list__side-inserter"
+  }, Object(external_this_wp_element_["createElement"])(inserter_with_shortcuts, {
+    clientId: clientId,
+    rootClientId: rootClientId,
+    onToggle: selectOnOpen
+  })), showEmptyBlockSideInserter && Object(external_this_wp_element_["createElement"])("div", {
+    className: "editor-block-list__empty-block-inserter block-editor-block-list__empty-block-inserter"
+  }, Object(external_this_wp_element_["createElement"])(inserter, {
+    position: "top right",
+    onToggle: selectOnOpen,
+    rootClientId: rootClientId,
+    clientId: clientId
+  })));
+}
+
 var applyWithSelect = Object(external_this_wp_data_["withSelect"])(function (select, _ref2) {
   var clientId = _ref2.clientId,
       rootClientId = _ref2.rootClientId,
