@@ -13,8 +13,6 @@ Update on release as soon as possible.
 * all-in-one-seo-pack
 * google-captcha
 * google-sitemap-generator
-* nextend-google-connect
-* spam-captcha
 * wordpress-popular-posts
 * wordpress-seo
 * wp-statistics
