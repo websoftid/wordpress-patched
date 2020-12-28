@@ -69,6 +69,15 @@ msgstr "<span class=\"screen-reader-text\">Diposkan pada</span> %s"
 msgid "by %s"
 msgstr "oleh %s"
 
+#: inc/icon-functions.php:44
+msgid "Please define an SVG icon filename."
+msgstr "Harap tentukan sebuah nama file ikon SVG"
+
+#. translators: %d: The front page section number.
+#: inc/customizer.php:142
+msgid "Front Page Section %d Content"
+msgstr "Konten Halaman Depan %d "
+
 #: inc/customizer.php:112 inc/customizer.php:171
 msgid "Two Column"
 msgstr "Dua Kolom"
@@ -76,6 +85,14 @@ msgstr "Dua Kolom"
 #: inc/customizer.php:111 inc/customizer.php:170
 msgid "One Column"
 msgstr "Satu Kolom"
+
+#: inc/customizer.php:106
+msgid "Page Layout"
+msgstr "Layout Halaman"
+
+#: inc/customizer.php:89
+msgid "Theme Options"
+msgstr "Opsi Tema"
 
 #: inc/customizer.php:62
 msgid "Light"
@@ -85,22 +102,13 @@ msgstr "Terang"
 msgid "Color Scheme"
 msgstr "Skema Warna"
 
-#: inc/icon-functions.php:44
-msgid "Please define an SVG icon filename."
-msgstr "Harap tentukan sebuah nama file ikon SVG"
+#: functions.php:362
+msgid "Footer 2"
+msgstr "Footer 2"
 
-#: inc/customizer.php:89
-msgid "Theme Options"
-msgstr "Opsi Tema"
-
-#: inc/customizer.php:106
-msgid "Page Layout"
-msgstr "Layout Halaman"
-
-#. translators: %d: The front page section number.
-#: inc/customizer.php:142
-msgid "Front Page Section %d Content"
-msgstr "Konten Halaman Depan %d "
+#: functions.php:350
+msgid "Footer 1"
+msgstr "Footer 1"
 
 #: functions.php:290
 msgctxt "Libre Franklin font: on or off"
@@ -116,13 +124,9 @@ msgstr "Menu Atas"
 msgid "Reply"
 msgstr "Balas"
 
-#: functions.php:362
-msgid "Footer 2"
-msgstr "Footer 2"
-
-#: functions.php:350
-msgid "Footer 1"
-msgstr "Footer 1"
+#: template-parts/post/content-none.php:33
+msgid "It seems we can&rsquo;t find what you&rsquo;re looking for. Perhaps searching can help."
+msgstr "Tampaknya kami tak bisa menemukan apa yang Anda inginkan. Mungkin pencarian bisa membantu."
 
 #: search.php:59
 msgid "Sorry, but nothing matched your search terms. Please try again with some different keywords."
@@ -132,6 +136,10 @@ msgstr "Maaf, tapi tak ada yang cocok dengan terma pencarian Anda. Silakan coba 
 msgid "Nothing Found"
 msgstr "Tak ada apapun"
 
+#: single.php:33
+msgid "Previous Post"
+msgstr "Pos Sebelumnya"
+
 #: comments.php:71 single.php:33
 msgid "Previous"
 msgstr "Sebelumnya"
@@ -140,23 +148,39 @@ msgstr "Sebelumnya"
 msgid "Next"
 msgstr "Selanjutnya"
 
-#: template-parts/post/content-none.php:33
-msgid "It seems we can&rsquo;t find what you&rsquo;re looking for. Perhaps searching can help."
-msgstr "Tampaknya kami tak bisa menemukan apa yang Anda inginkan. Mungkin pencarian bisa membantu."
+#: searchform.php:20
+msgctxt "submit button"
+msgid "Search"
+msgstr "Cari"
 
 #: searchform.php:19
 msgctxt "placeholder"
 msgid "Search &hellip;"
 msgstr "Cari &hellip;"
 
-#: searchform.php:20
-msgctxt "submit button"
-msgid "Search"
-msgstr "Cari"
+#: searchform.php:17
+msgctxt "label"
+msgid "Search for:"
+msgstr "Pencarian untuk:"
 
-#: single.php:33
-msgid "Previous Post"
-msgstr "Pos Sebelumnya"
+#. translators: %s: Post title.
+#: functions.php:392 template-parts/post/content-gallery.php:71
+#: template-parts/post/content-video.php:83
+#: template-parts/post/content-image.php:61
+#: template-parts/post/content-audio.php:84 template-parts/post/content.php:57
+#: template-parts/page/content-front-page-panels.php:45
+#: template-parts/page/content-front-page.php:42
+msgid "Continue reading<span class=\"screen-reader-text\"> \"%s\"</span>"
+msgstr "Lanjutkan membaca<span class=\"screen-reader-text\"> \"%s\"</span>"
+
+#: inc/customizer.php:63
+msgid "Dark"
+msgstr "Gelap"
+
+#. translators: %s: The current WordPress version.
+#: inc/back-compat.php:40 inc/back-compat.php:54 inc/back-compat.php:73
+msgid "Twenty Seventeen requires at least WordPress version 4.7. You are running version %s. Please upgrade and try again."
+msgstr "Twenty Seventeen membutuhkan WordPress versi 4.7. Anda saat ini menggunakan  versi %s. Perbaharui WordPress Anda dan coba lagi."
 
 #: template-parts/post/content-gallery.php:78
 #: template-parts/post/content-video.php:90
@@ -179,6 +203,15 @@ msgstr "Lompat ke konten"
 msgid "Social Links Menu"
 msgstr "Menu Tautan Sosial"
 
+#. translators: %s: WordPress
+#: template-parts/footer/site-info.php:21
+msgid "Proudly powered by %s"
+msgstr "Dengan bangga ditenagai oleh %s"
+
+#: footer.php:26
+msgid "Footer Social Links Menu"
+msgstr "Menu Tautan Sosial di Footer"
+
 #: comments.php:82
 msgid "Comments are closed."
 msgstr "Komentar ditutup."
@@ -187,54 +220,21 @@ msgstr "Komentar ditutup."
 msgid "Page"
 msgstr "Laman"
 
-#: 404.php:21
-msgid "Oops! That page can&rsquo;t be found."
-msgstr "Ups! Laman tersebut tak ditemukan."
-
-#: 404.php:24
-msgid "It looks like nothing was found at this location. Maybe try a search?"
-msgstr "Sepertinya tidak ditemukan apapun di sini. Mungkin coba pencarian?"
+#: archive.php:50 index.php:54 search.php:51
+msgid "Next page"
+msgstr "Laman selanjutnya"
 
 #: archive.php:49 index.php:53 search.php:50
 msgid "Previous page"
 msgstr "Laman sebelumnya"
 
-#: inc/customizer.php:63
-msgid "Dark"
-msgstr "Gelap"
+#: 404.php:24
+msgid "It looks like nothing was found at this location. Maybe try a search?"
+msgstr "Sepertinya tidak ditemukan apapun di sini. Mungkin coba pencarian?"
 
-#. translators: %s: WordPress
-#: template-parts/footer/site-info.php:21
-msgid "Proudly powered by %s"
-msgstr "Dengan bangga ditenagai oleh %s"
-
-#: searchform.php:17
-msgctxt "label"
-msgid "Search for:"
-msgstr "Pencarian untuk:"
-
-#. translators: %s: Post title.
-#: functions.php:392 template-parts/post/content-gallery.php:71
-#: template-parts/post/content-video.php:83
-#: template-parts/post/content-image.php:61
-#: template-parts/post/content-audio.php:84 template-parts/post/content.php:57
-#: template-parts/page/content-front-page-panels.php:45
-#: template-parts/page/content-front-page.php:42
-msgid "Continue reading<span class=\"screen-reader-text\"> \"%s\"</span>"
-msgstr "Lanjutkan membaca<span class=\"screen-reader-text\"> \"%s\"</span>"
-
-#: archive.php:50 index.php:54 search.php:51
-msgid "Next page"
-msgstr "Laman selanjutnya"
-
-#: footer.php:26
-msgid "Footer Social Links Menu"
-msgstr "Menu Tautan Sosial di Footer"
-
-#. translators: %s: The current WordPress version.
-#: inc/back-compat.php:40 inc/back-compat.php:54 inc/back-compat.php:73
-msgid "Twenty Seventeen requires at least WordPress version 4.7. You are running version %s. Please upgrade and try again."
-msgstr "Twenty Seventeen membutuhkan WordPress versi 4.7. Anda saat ini menggunakan  versi %s. Perbaharui WordPress Anda dan coba lagi."
+#: 404.php:21
+msgid "Oops! That page can&rsquo;t be found."
+msgstr "Ups! Laman tersebut tak ditemukan."
 
 #. Author of the theme
 msgid "the WordPress team"
