@@ -21,7 +21,7 @@ if ( isset($_POST['section']) ) {
     if ( "stats" == $_POST['section'] ) {
         $current = 'stats';
 
-        if ( isset($_POST['wpp-admin-token']) && wp_verify_nonce($_POST['wpp-admin-token'], 'wpp-update-stats-options') ) {
+        if ( isset($_POST['wpp-update-stats-options-token']) && wp_verify_nonce($_POST['wpp-update-stats-options-token'], 'wpp-update-stats-options') ) {
             $this->config['stats']['limit'] = ( \WordPressPopularPosts\Helper::is_number($_POST['stats_limit']) && $_POST['stats_limit'] > 0 ) ? $_POST['stats_limit'] : 10;
             $this->config['stats']['post_type'] = empty($_POST['stats_type']) ? "post,page" : $_POST['stats_type'];
             $this->config['stats']['freshness'] = empty($_POST['stats_freshness']) ? false : $_POST['stats_freshness'];
@@ -33,9 +33,10 @@ if ( isset($_POST['section']) ) {
     elseif ( "misc" == $_POST['section'] ) {
         $current = 'tools';
 
-        if ( isset($_POST['wpp-admin-token'] ) && wp_verify_nonce($_POST['wpp-admin-token'], 'wpp-update-misc-options') ) {
+        if ( isset($_POST['wpp-update-misc-options-token'] ) && wp_verify_nonce($_POST['wpp-update-misc-options-token'], 'wpp-update-misc-options') ) {
             $this->config['tools']['link']['target'] = $_POST['link_target'];
             $this->config['tools']['css'] = $_POST['css'];
+            $this->config['tools']['experimental'] = empty($_POST['experimental_features']) ? false : $_POST['experimental_features'];
 
             update_option('wpp_settings_config', $this->config);
             echo "<div class=\"notice notice-success is-dismissible\"><p><strong>" . __('Settings saved.', 'wordpress-popular-posts') . "</strong></p></div>";
@@ -44,7 +45,7 @@ if ( isset($_POST['section']) ) {
     elseif ( "thumb" == $_POST['section'] ) {
         $current = 'tools';
 
-        if ( isset($_POST['wpp-admin-token']) && wp_verify_nonce($_POST['wpp-admin-token'], 'wpp-update-thumbnail-options') ) {
+        if ( isset($_POST['wpp-update-thumbnail-options-token']) && wp_verify_nonce($_POST['wpp-update-thumbnail-options-token'], 'wpp-update-thumbnail-options') ) {
             if (
                 $_POST['thumb_source'] == "custom_field"
                 && ( ! isset($_POST['thumb_field']) || empty($_POST['thumb_field']) )
@@ -71,7 +72,7 @@ if ( isset($_POST['section']) ) {
     elseif ( "data" == $_POST['section'] && current_user_can('manage_options') ) {
         $current = 'tools';
 
-        if ( isset($_POST['wpp-admin-token'] ) && wp_verify_nonce($_POST['wpp-admin-token'], 'wpp-update-data-options') ) {
+        if ( isset($_POST['wpp-update-data-options-token'] ) && wp_verify_nonce($_POST['wpp-update-data-options-token'], 'wpp-update-data-options') ) {
             $this->config['tools']['log']['level'] = $_POST['log_option'];
             $this->config['tools']['log']['limit'] = $_POST['log_limit'];
             $this->config['tools']['log']['expires_after'] = ( \WordPressPopularPosts\Helper::is_number($_POST['log_expire_time']) && $_POST['log_expire_time'] > 0 )
@@ -278,7 +279,7 @@ if ( ! $wpp_rand = get_option("wpp_rand") ) {
             <button type="submit" class="button-primary action"><?php _e("Apply", 'wordpress-popular-posts'); ?></button>
             <button class="button-secondary action right"><?php _e("Cancel"); ?></button>
 
-            <?php wp_nonce_field('wpp-update-stats-options', 'wpp-admin-token'); ?>
+            <?php wp_nonce_field('wpp-update-stats-options', 'wpp-update-stats-options-token'); ?>
         </form>
     </div>
 
@@ -395,8 +396,23 @@ if ( ! $wpp_rand = get_option("wpp_rand") ) {
                     <tr valign="top">
                         <th scope="row"><label for="thumb_default"><?php _e("Default thumbnail", 'wordpress-popular-posts'); ?>:</label></th>
                         <td>
+                            <?php
+                            $fallback_thumbnail_url = trim($this->config['tools']['thumbnail']['default']);
+
+                            if ( ! $fallback_thumbnail_url )
+                                $fallback_thumbnail_url = $this->thumbnail->get_default_url();
+
+                            $fallback_thumbnail_url = str_replace(
+                                parse_url(
+                                    $fallback_thumbnail_url
+                                    , PHP_URL_SCHEME
+                                ) . ':',
+                                '',
+                                $fallback_thumbnail_url
+                            );
+                            ?>
                             <div id="thumb-review">
-                                <img src="<?php echo ($this->config['tools']['thumbnail']['default'] ) ? str_replace(parse_url($this->config['tools']['thumbnail']['default'], PHP_URL_SCHEME) . ':', '', $this->config['tools']['thumbnail']['default']) : plugins_url() . '/wordpress-popular-posts/assets/images/no_thumb.jpg'; ?>" alt="" />
+                                <img src="<?php echo esc_url($fallback_thumbnail_url); ?>" alt="" />
                             </div>
 
                             <input id="upload_thumb_button" type="button" class="button" value="<?php _e("Change thumbnail", 'wordpress-popular-posts'); ?>">
@@ -465,7 +481,7 @@ if ( ! $wpp_rand = get_option("wpp_rand") ) {
                 </tbody>
             </table>
 
-            <?php wp_nonce_field('wpp-update-thumbnail-options', 'wpp-admin-token'); ?>
+            <?php wp_nonce_field('wpp-update-thumbnail-options', 'wpp-update-thumbnail-options-token'); ?>
         </form>
         <br />
         <p style="display: <?php echo ( current_user_can('manage_options') ) ? 'block' : 'none'; ?>; float:none; clear:both;">&nbsp;</p>
@@ -572,7 +588,7 @@ if ( ! $wpp_rand = get_option("wpp_rand") ) {
                 </tbody>
             </table>
 
-            <?php wp_nonce_field('wpp-update-data-options', 'wpp-admin-token'); ?>
+            <?php wp_nonce_field('wpp-update-data-options', 'wpp-update-data-options-token'); ?>
         </form>
         <br />
         <p style="display: block; float:none; clear: both;">&nbsp;</p>
@@ -604,6 +620,12 @@ if ( ! $wpp_rand = get_option("wpp_rand") ) {
                         </td>
                     </tr>
                     <tr valign="top">
+                        <th scope="row"><label for="experimental_features"><?php _e("Enable experimental features", 'wordpress-popular-posts'); ?>:</label></th>
+                        <td>
+                            <input type="checkbox" class="checkbox" id="experimental_features" name="experimental_features" <?php echo ($this->config['tools']['experimental']) ? 'checked="checked"' : ''; ?>>
+                        </td>
+                    </tr>
+                    <tr valign="top">
                         <td colspan="2">
                             <input type="hidden" name="section" value="misc">
                             <input type="submit" class="button-primary action" value="<?php _e("Apply", 'wordpress-popular-posts'); ?>" name="">
@@ -612,7 +634,7 @@ if ( ! $wpp_rand = get_option("wpp_rand") ) {
                 </tbody>
             </table>
 
-            <?php wp_nonce_field('wpp-update-misc-options', 'wpp-admin-token'); ?>
+            <?php wp_nonce_field('wpp-update-misc-options', 'wpp-update-misc-options-token'); ?>
         </form>
         <br />
         <p style="display: block; float: none; clear: both;">&nbsp;</p>
@@ -875,7 +897,7 @@ if ( ! $wpp_rand = get_option("wpp_rand") ) {
                         <tr>
                             <td><strong>post_html</strong></td>
                             <td><?php _e('Sets the HTML structure of each post', 'wordpress-popular-posts'); ?></td>
-                            <td><?php _e('Text string, custom HTML', 'wordpress-popular-posts'); ?>.<br /><br /><strong><?php _e('Available Content Tags', 'wordpress-popular-posts'); ?>:</strong> <br /><br /><em>{thumb}</em> (<?php _e('returns thumbnail linked to post/page, requires thumbnail_width & thumbnail_height', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{thumb_img}</em> (<?php _e('returns thumbnail image without linking to post/page, requires thumbnail_width & thumbnail_height', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{thumb_url}</em> (<?php _e('returns thumbnail url, requires thumbnail_width & thumbnail_height', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{title}</em> (<?php _e('returns linked post/page title', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{pid}</em> (<?php _e('returns the post/page ID', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{summary}</em> (<?php _e('returns post/page excerpt, and requires excerpt_length to be greater than 0', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{stats}</em> (<?php _e('returns the default stats tags', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{rating}</em> (<?php _e('returns post/page current rating, requires WP-PostRatings installed and enabled', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{score}</em> (<?php _e('returns post/page current rating as an integer, requires WP-PostRatings installed and enabled', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{url}</em> (<?php _e('returns the URL of the post/page', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{text_title}</em> (<?php _e('returns post/page title, no link', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{title_attr}</em> (<?php _e('similar to text_title, sanitized for use in title/alt attributes', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{author}</em> (<?php _e('returns linked author name, requires stats_author=1', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{category}</em> (<?php _e('returns linked category name, requires stats_category=1', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{taxonomy}</em> (<?php _e('returns linked taxonomy names, requires stats_taxonomy=1', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{views}</em> (<?php _e('returns views count only, no text', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{comments}</em> (<?php _e('returns comments count only, no text, requires stats_comments=1', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{date}</em> (<?php _e('returns post/page date, requires stats_date=1', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{total_items}</em> (<?php _e('outputs number of popular posts found', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{item_position}</em> (<?php _e('outputs the position of the post in the listing', 'wordpress-popular-posts'); ?>)</td>
+                            <td><?php _e('Text string, custom HTML', 'wordpress-popular-posts'); ?>.<br /><br /><strong><?php _e('Available Content Tags', 'wordpress-popular-posts'); ?>:</strong> <br /><br /><em>{thumb}</em> (<?php _e('returns thumbnail linked to post/page, requires thumbnail_width & thumbnail_height', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{thumb_img}</em> (<?php _e('returns thumbnail image without linking to post/page, requires thumbnail_width & thumbnail_height', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{thumb_url}</em> (<?php _e('returns thumbnail url, requires thumbnail_width & thumbnail_height', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{title}</em> (<?php _e('returns linked post/page title', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{pid}</em> (<?php _e('returns the post/page ID', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{summary}</em> (<?php _e('returns post/page excerpt, and requires excerpt_length to be greater than 0', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{stats}</em> (<?php _e('returns the default stats tags', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{rating}</em> (<?php _e('returns post/page current rating, requires WP-PostRatings installed and enabled', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{score}</em> (<?php _e('returns post/page current rating as an integer, requires WP-PostRatings installed and enabled', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{url}</em> (<?php _e('returns the URL of the post/page', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{text_title}</em> (<?php _e('returns post/page title, no link', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{title_attr}</em> (<?php _e('similar to text_title, sanitized for use in title/alt attributes', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{author}</em> (<?php _e('returns linked author name, requires stats_author=1', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{author_copy}</em> (<?php _e('returns linked author name with copy, requires stats_author=1', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{category}</em> (<?php _e('returns linked category name, requires stats_category=1', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{category_copy}</em> (<?php _e('returns linked category name with copy, requires stats_category=1', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{taxonomy}</em> (<?php _e('returns linked taxonomy names, requires stats_taxonomy=1', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{taxonomy_copy}</em> (<?php _e('returns linked taxonomy names with copy, requires stats_taxonomy=1', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{views}</em> (<?php _e('returns views count only, no text, requires stats_views=1', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{views_copy}</em> (<?php _e('returns views count with copy, requires stats_views=1', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{comments}</em> (<?php _e('returns comments count only, no text, requires stats_comments=1', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{comments_copy}</em> (<?php _e('returns comments count with copy, requires stats_comments=1', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{date}</em> (<?php _e('returns post/page date, requires stats_date=1', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{date_copy}</em> (<?php _e('returns post/page date with copy, requires stats_date=1', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{total_items}</em> (<?php _e('outputs number of popular posts found', 'wordpress-popular-posts'); ?>)<br /><br /> <em>{item_position}</em> (<?php _e('outputs the position of the post in the listing', 'wordpress-popular-posts'); ?>)</td>
                             <td>&lt;li&gt;{thumb} {title} &lt;span class="wpp-meta post-stats"&gt;{stats}&lt;/span&gt;&lt;/li&gt;</td>
                             <td><strong><?php _e('With wpp_get_mostpopular():', 'wordpress-popular-posts'); ?></strong><br /><br />&lt;?php<br />$args = array(<br />&nbsp;&nbsp;&nbsp;&nbsp;'post_html' => '&lt;li&gt;{thumb} &lt;a href="{url}"&gt;{text_title}&lt;/a&gt;&lt;/li&gt;',<br />&nbsp;&nbsp;&nbsp;&nbsp;'thumbnail_width' => 100,<br />&nbsp;&nbsp;&nbsp;&nbsp;'thumbnail_height' => 75<br />);<br /><br />wpp_get_mostpopular($args);<br />?&gt;<br /><br /><hr /><br /><strong><?php _e('With the [wpp] shortcode:', 'wordpress-popular-posts'); ?></strong><br /><br />[wpp thumbnail_width=100 thumbnail_height=75 post_html='&lt;li&gt;{thumb} &lt;a href="{url}"&gt;{text_title}&lt;/a&gt;&lt;/li&gt;']<br /><br /></td>
                         </tr>

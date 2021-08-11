@@ -1,6 +1,11 @@
 <?php
 namespace AIOSEO\Plugin\Common\Social;
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Handles the Social Meta.
  *
@@ -9,7 +14,6 @@ namespace AIOSEO\Plugin\Common\Social;
  * @since 4.0.0
  */
 class Social {
-
 
 	/**
 	 * Class constructor.
@@ -83,6 +87,10 @@ class Social {
 	 * @return string          The filtered 'html' tag as a string.
 	 */
 	public function addAttributes( $htmlTag ) {
+		if ( ! aioseo()->options->social->facebook->general->enable ) {
+			return $htmlTag;
+		}
+
 		// Avoid having duplicate meta tags.
 		$type = aioseo()->social->facebook->getObjectType();
 		if ( empty( $type ) ) {

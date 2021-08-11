@@ -1,6 +1,11 @@
 <?php
 namespace AIOSEO\Plugin\Common\Traits;
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Options trait.
  *
@@ -81,6 +86,15 @@ trait Options {
 	protected $defaultsMerged = [];
 
 	/**
+	 * Holds a redirect link or slug.
+	 *
+	 * @since 4.0.17
+	 *
+	 * @var string
+	 */
+	protected $screenRedirection = '';
+
+	/**
 	 * Initialize network options.
 	 *
 	 * @since 4.0.0
@@ -118,7 +132,7 @@ trait Options {
 			$this->resetGroups();
 			return ! empty( $this->arguments[0] )
 				? $this->arguments[0]
-				: $this->getDefault( $name );
+				: $this->getDefault( $name, false );
 		}
 
 		if ( empty( $defaults[ $name ]['type'] ) ) {
@@ -130,7 +144,7 @@ trait Options {
 			: (
 				! empty( $this->arguments[0] )
 					? $this->arguments[0]
-					: $this->getDefault( $name )
+					: $this->getDefault( $name, false )
 			);
 
 		$this->resetGroups();
@@ -147,6 +161,10 @@ trait Options {
 	 * @return mixed        The value from the options or default/null.
 	 */
 	public function __get( $name ) {
+		if ( 'type' === $name ) {
+			$name = '_aioseo_type';
+		}
+
 		if ( $this->setGroupKey( $name ) ) {
 			return $this;
 		}
@@ -160,7 +178,7 @@ trait Options {
 		}
 
 		if ( ! isset( $defaults[ $name ] ) ) {
-			$default = $this->getDefault( $name );
+			$default = $this->getDefault( $name, false );
 			$this->resetGroups();
 
 			return $default;
@@ -170,7 +188,7 @@ trait Options {
 			return $this->setSubGroup( $name );
 		}
 
-		$value = $this->getDefault( $name );
+		$value = $this->getDefault( $name, false );
 
 		if ( isset( $defaults[ $name ]['value'] ) ) {
 			$preserveHtml = ! empty( $defaults[ $name ]['preserveHtml'] );
@@ -242,7 +260,7 @@ trait Options {
 		}
 
 		if ( ! isset( $defaults[ $name ] ) ) {
-			$default = $this->getDefault( $name );
+			$default = $this->getDefault( $name, false );
 			$this->resetGroups();
 
 			return $default;
@@ -388,7 +406,7 @@ trait Options {
 	 */
 	public function all( $include = [], $exclude = [] ) {
 		// Make sure our dynamic options have loaded.
-		$this->init();
+		$this->init( true );
 
 		$originalGroupKey = $this->groupKey;
 
@@ -426,7 +444,19 @@ trait Options {
 	 */
 	public function reset( $include = [], $exclude = [] ) {
 		// Make sure our dynamic options have loaded.
-		$this->init();
+		$this->init( true );
+
+		// If we don't have a group key set, it means we want to reset everything.
+		if ( empty( $this->groupKey ) ) {
+			$groupKeys = array_keys( $this->options );
+			foreach ( $groupKeys as $groupKey ) {
+				$this->groupKey = $groupKey;
+				$this->reset();
+			}
+
+			// Since we just finished resetting everything, we can return early.
+			return;
+		}
 
 		// If we need to set a sub-group, do that now.
 		$keys     = array_merge( [ $this->groupKey ], $this->subGroups );
@@ -493,8 +523,21 @@ trait Options {
 	 * @return bool                  True if it does, false if not.
 	 */
 	public function has( $optionOrGroup = '', $resetGroups = true ) {
+		if ( 'type' === $optionOrGroup ) {
+			$optionOrGroup = '_aioseo_type';
+		}
+
+		static $hasInitialized = false;
+
 		// Make sure our dynamic options have loaded.
-		$this->init();
+		if ( ! $hasInitialized ) {
+			foreach ( $this->subGroups as $subGroup ) {
+				if ( 'dynamic' === $subGroup ) {
+					$hasInitialized = true;
+					$this->init( true );
+				}
+			}
+		}
 
 		// If we need to set a sub-group, do that now.
 		$defaults = $this->groupKey ? $this->options[ $this->groupKey ] : $this->options;
@@ -568,7 +611,7 @@ trait Options {
 	 * @param  string $name The option name.
 	 * @return void
 	 */
-	public function getDefault( $name ) {
+	public function getDefault( $name, $resetGroups = true ) {
 		$defaults = $this->defaultsMerged[ $this->groupKey ];
 		if ( ! empty( $this->subGroups ) ) {
 			foreach ( $this->subGroups as $subGroup ) {
@@ -577,6 +620,10 @@ trait Options {
 				}
 				$defaults = $defaults[ $subGroup ];
 			}
+		}
+
+		if ( $resetGroups ) {
+			$this->resetGroups();
 		}
 
 		if ( ! isset( $defaults[ $name ] ) ) {
@@ -593,15 +640,27 @@ trait Options {
 	}
 
 	/**
+	 * Gets the defaults options.
+	 *
+	 * @since 4.1.3
+	 *
+	 * @return array An array of dafults.
+	 */
+	public function getDefaults() {
+		return $this->defaults;
+	}
+
+	/**
 	 * Updates the options in the database.
 	 *
 	 * @since 4.0.0
 	 *
+	 * @param  array|null $options An optional options array.
 	 * @return void
 	 */
-	public function update() {
+	public function update( $options = null ) {
 		// First, we need to filter our options.
-		$options = $this->filterOptions( $this->defaults );
+		$options = $this->filterOptions( $this->defaults, $options );
 
 		// Refactor options.
 		$refactored = $this->convertOptionsToValues( $options );
@@ -616,11 +675,13 @@ trait Options {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @param  array $defaults The defaults to use in filtering.
-	 * @return array           An array of filtered options.
+	 * @param  array      $defaults The defaults to use in filtering.
+	 * @param  array|null $options  An optional options array.
+	 * @return array                An array of filtered options.
 	 */
-	public function filterOptions( $defaults ) {
-		return $this->filterRecursively( $this->options, $defaults );
+	public function filterOptions( $defaults, $options = null ) {
+		$options = ! empty( $options ) ? $options : $this->options;
+		return $this->filterRecursively( $options, $defaults );
 	}
 
 	/**

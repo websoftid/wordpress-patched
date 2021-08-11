@@ -1,6 +1,11 @@
 <?php
 namespace AIOSEO\Plugin\Common\Main;
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use AIOSEO\Plugin\Common\Meta;
 
 /**
@@ -9,7 +14,6 @@ use AIOSEO\Plugin\Common\Meta;
  * @since 4.0.0
  */
 class Head {
-
 	/**
 	 * The page title.
 	 *
@@ -26,7 +30,7 @@ class Head {
 	 */
 	public function __construct() {
 		add_action( 'init', [ $this, 'addAnalytics' ] );
-		add_action( 'after_setup_theme', [ $this, 'registerTitleHooks' ], 1000 );
+		add_action( 'wp', [ $this, 'registerTitleHooks' ], 1000 );
 		add_action( 'wp_head', [ $this, 'init' ], 1 );
 
 		$this->analytics    = new GoogleAnalytics();
@@ -62,7 +66,7 @@ class Head {
 	 * @return void
 	 */
 	public function registerTitleHooks() {
-		if ( apply_filters( 'aioseo_disable_title_rewrites', false ) ) {
+		if ( apply_filters( 'aioseo_disable', false ) || apply_filters( 'aioseo_disable_title_rewrites', false ) ) {
 			return;
 		}
 
@@ -125,13 +129,15 @@ class Head {
 	 * @return void
 	 */
 	public function rewriteTitle() {
-		$content   = ob_get_clean();
-		$split     = preg_split( '#</head>#', $content );
+		$content   = apply_filters( 'aioseo_flush_output_buffer', true ) ? ob_get_clean() : ob_get_contents();
+		$split     = explode( '</head>', $content );
 		$head      = $split[0] . '</head>';
-		$body      = $split[1];
+
+		unset( $split[0] );
+		$body = implode( '</head>', $split );
 
 		// Remove all existing title tags.
-		$head = preg_replace( '#<title.*?\/title>#', '', $head );
+		$head = preg_replace( '#<title.*?\/title>#s', '', $head );
 
 		// Add the new title tag to our own comment block.
 		$pageTitle = aioseo()->helpers->escapeRegexReplacement( $this->getTitle() );
@@ -151,14 +157,19 @@ class Head {
 	public function output() {
 		remove_action( 'wp_head', 'rel_canonical' );
 
+		$views = apply_filters( 'aioseo_meta_views', $this->views );
+		if ( empty( $views ) ) {
+			return;
+		}
+
 		echo "\n\t\t<!-- " . sprintf(
 			'%1$s %2$s',
 			esc_html( AIOSEO_PLUGIN_NAME ),
 			aioseo()->version // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		) . " -->\n";
 
-		foreach ( $this->views as $view ) {
-			require_once( $view );
+		foreach ( $views as $view ) {
+			require( $view );
 		}
 
 		echo "\t\t<!-- " . esc_html( AIOSEO_PLUGIN_NAME ) . " -->\n\n";

@@ -1,13 +1,17 @@
 <?php
 namespace AIOSEO\Plugin\Common\Sitemap;
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Determines which indexes should appear in the sitemap root index.
  *
  * @since 4.0.0
  */
 class Root {
-
 	/**
 	 * Returns the indexes for the sitemap root index.
 	 *
@@ -43,10 +47,13 @@ class Root {
 		}
 
 		$indexes = [];
+
+		$additionalPages = apply_filters( 'aioseo_sitemap_additional_pages', [] );
 		if (
 			'posts' === get_option( 'show_on_front' ) ||
 			( aioseo()->options->sitemap->general->additionalPages->enable && count( $pages ) ) ||
-			! in_array( 'page', $postTypes, true )
+			! in_array( 'page', $postTypes, true ) ||
+			! empty( $additionalPages )
 		) {
 			$indexes[] = $this->buildAdditionalIndexes();
 		}
@@ -57,11 +64,18 @@ class Root {
 				$postIndexes = $this->buildIndexesPostType( $postType );
 				$indexes     = array_merge( $indexes, $postIndexes );
 
-				if ( empty( $postIndexes ) || $hasPostArchive || in_array( $postType, [ 'post', 'page', 'product' ], true ) ) {
+				if ( empty( $postIndexes ) || $hasPostArchive ) {
 					continue;
 				}
 
-				if ( get_post_type_archive_link( $postType ) ) {
+				if (
+					get_post_type_archive_link( $postType ) &&
+					aioseo()->options->noConflict()->searchAppearance->dynamic->archives->has( $postType ) &&
+					(
+						aioseo()->options->searchAppearance->dynamic->archives->$postType->advanced->robotsMeta->default ||
+						! aioseo()->options->searchAppearance->dynamic->archives->$postType->advanced->robotsMeta->noindex
+					)
+				) {
 					$hasPostArchive = true;
 					$indexes[]      = [
 						'loc'     => aioseo()->helpers->localizedUrl( "/post-archive-$filename.xml" ),

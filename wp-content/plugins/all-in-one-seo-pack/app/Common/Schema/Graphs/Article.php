@@ -1,13 +1,17 @@
 <?php
 namespace AIOSEO\Plugin\Common\Schema\Graphs;
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Article graph class.
  *
  * @since 4.0.0
  */
 class Article extends Graph {
-
 	/**
 	 * Returns the graph data.
 	 *
@@ -75,7 +79,7 @@ class Article extends Graph {
 		preg_match_all( '#<img[^>]+src="([^">]+)"#', $post->post_content, $matches );
 		if ( isset( $matches[1] ) && isset( $matches[1][0] ) ) {
 			$url     = aioseo()->helpers->removeImageDimensions( $matches[1][0] );
-			$imageId = attachment_url_to_postid( $url );
+			$imageId = aioseo()->helpers->attachmentUrlToPostId( $url );
 			if ( $imageId ) {
 				return $this->image( $imageId, 'articleImage' );
 			} else {

@@ -1,6 +1,11 @@
 <?php
 namespace AIOSEO\Plugin\Common\Social;
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use AIOSEO\Plugin\Common\Models;
 
 /**
@@ -9,7 +14,6 @@ use AIOSEO\Plugin\Common\Models;
  * @since 4.0.0
  */
 class Image {
-
 	/**
 	 * The default thumbnail size.
 	 *
@@ -18,15 +22,6 @@ class Image {
 	 * @var string
 	 */
 	public $thumbnailSize;
-
-	/**
-	 * Class constructor.
-	 *
-	 * @since 4.0.0
-	 */
-	public function __construct() {
-		$this->thumbnailSize = apply_filters( 'aioseo_thumbnail_size', apply_filters( 'post_thumbnail_size', 'large' ) );
-	}
 
 	/**
 	 * Returns the Facebook or Twitter image.
@@ -39,6 +34,8 @@ class Image {
 	 * @return string|array              The image data.
 	 */
 	public function getImage( $type, $imageSource, $post ) {
+		$this->thumbnailSize = apply_filters( 'aioseo_thumbnail_size', 'fullsize' );
+
 		static $images = [];
 		if ( isset( $images[ $type ] ) ) {
 			return $images[ $type ];
@@ -86,13 +83,7 @@ class Image {
 			return $images[ $type ];
 		}
 
-		$uploadDirUrl = aioseo()->helpers->escapeRegex( aioseo()->helpers->getWpContentUrl() );
-		if ( ! preg_match( "/$uploadDirUrl.*/", $image ) ) {
-			$images[ $type ] = $image;
-			return $images[ $type ];
-		}
-
-		$attachmentId    = attachment_url_to_postid( aioseo()->helpers->removeImageDimensions( $image ) );
+		$attachmentId    = aioseo()->helpers->attachmentUrlToPostId( aioseo()->helpers->removeImageDimensions( $image ) );
 		$images[ $type ] = $attachmentId ? wp_get_attachment_image_src( $attachmentId, $this->thumbnailSize ) : $image;
 		return $images[ $type ];
 	}
@@ -145,7 +136,17 @@ class Image {
 	 */
 	public function getFirstImageInContent( $post ) {
 		preg_match_all( '|<img.*?src=[\'"](.*?)[\'"].*?>|i', $post->post_content, $matches );
-		return ! empty( $matches[1][0] ) ? $matches[1][0] : '';
+
+		// Ignore cover block background image - WP >= 5.7.
+		if ( ! empty( $matches[0] ) && apply_filters( 'aioseo_social_image_ignore_cover_block', true, $post, $matches ) ) {
+			foreach ( $matches[0] as $key => $match ) {
+				if ( false !== stripos( $match, 'wp-block-cover__image-background' ) ) {
+					unset( $matches[1][ $key ] );
+				}
+			}
+		}
+
+		return ! empty( $matches[1] ) ? current( $matches[1] ) : '';
 	}
 
 	/**

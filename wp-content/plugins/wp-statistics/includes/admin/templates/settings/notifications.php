@@ -104,6 +104,7 @@
                 ?>
             </select>
             <p class="description"><?php _e('Select how often to receive statistical report.', 'wp-statistics'); ?></p>
+            <p class="description"><?php echo sprintf(__('To set your own schedule, check out <a href="%s" target="_blank">this doc</a>.', 'wp-statistics'), 'https://wp-statistics.com/resources/schedule-statistical-reports/'); ?></p>
         </td>
     </tr>
 
@@ -155,6 +156,8 @@
                 <?php _e('Total Visits', 'wp-statistics'); ?>:
                 <code>[wpstatistics stat=visits time=total]</code><br>
             </p>
+
+            <h4>Looking for chart reporting? check out <a target="_blank" href="https://wp-statistics.com/product/wp-statistics-advanced-reporting/">Advanced Reporting</a>. </h4>
         </td>
     </tr>
 

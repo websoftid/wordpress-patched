@@ -1,6 +1,11 @@
 <?php
 namespace AIOSEO\Plugin\Common\Admin;
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Class that holds our dashboard widget.
  *
@@ -65,7 +70,7 @@ class Dashboard {
 
 		include_once( ABSPATH . WPINC . '/feed.php' );
 
-		$rssItems = get_transient( 'aioseo_rss_feed' );
+		$rssItems = aioseo()->transients->get( 'rss_feed' );
 		if ( false === $rssItems ) {
 
 			$rss = fetch_feed( 'https://aioseo.com/feed/' );
@@ -86,7 +91,7 @@ class Dashboard {
 			}
 			$rssItems = $cached;
 
-			set_transient( 'aioseo_rss_feed', $cached, 12 * HOUR_IN_SECONDS );
+			aioseo()->transients->update( 'rss_feed', $cached, 12 * HOUR_IN_SECONDS );
 
 		}
 

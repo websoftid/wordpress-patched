@@ -1,13 +1,17 @@
 <?php
 namespace AIOSEO\Plugin\Common\Admin\Notices;
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Plugin import notice.
  *
  * @since 4.0.0
  */
 class Import {
-
 	/**
 	 * Go through all the checks to see if we should show the notice.
 	 *
@@ -19,13 +23,13 @@ class Import {
 		$transients = aioseo()->db
 			->start( 'options' )
 			->select( 'option_name as name' )
-			->whereRaw( "`option_name` LIKE '%transient_aioseo_%'" )
+			->whereRaw( "`option_name` LIKE '_aioseo_cache_%'" )
 			->run()
 			->result();
 
 		$foundImportTransient = false;
 		foreach ( $transients as $transient ) {
-			if ( preg_match( '#_aioseo_import_.*_meta_.*#', $transient->name ) ) {
+			if ( preg_match( '#import_.*_meta_.*#', $transient->name ) ) {
 				$foundImportTransient = true;
 				break;
 			}

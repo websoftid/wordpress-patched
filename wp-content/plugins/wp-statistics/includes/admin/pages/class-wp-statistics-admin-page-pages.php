@@ -16,10 +16,27 @@ class pages_page
 
             // Check Exist Statistics For Custom Page
             if (self::is_custom_page()) {
-                $page_count = $wpdb->get_var("SELECT COUNT(*) FROM " . DB::table('pages') . " WHERE `id` = " . esc_sql($_GET['ID']) . " AND `type` = '" . esc_sql($_GET['type']) . "'");
+                /**
+                 * Prepares the queries
+                 * @since 13.0.8
+                 */
+                $pageTablePage = DB::table('pages');
+                $preparedSql   = $wpdb->prepare(
+                    "SELECT COUNT(*) FROM {$pageTablePage} WHERE `id` = %s AND `type` = %s",
+                    esc_sql($_GET['ID']),
+                    esc_sql($_GET['type'])
+                );
+                $page_count    = $wpdb->get_var($preparedSql);
+
                 if ($page_count < 1) {
                     wp_die(__('Your request is not valid.', 'wp-statistics'));
                 }
+            }
+
+            // Is Validate Date Request
+            $DateRequest = Admin_Template::isValidDateRequest();
+            if (!$DateRequest['status']) {
+                wp_die($DateRequest['message']);
             }
         }
     }
@@ -46,23 +63,33 @@ class pages_page
             $args['title'] = __('Top Pages', 'wp-statistics');
 
             // Get Current Page Url
-            $args['pageName']   = Menus::get_page_slug('pages');
+            $args['pageName'] = Menus::get_page_slug('pages');
             $args['pagination'] = Admin_Template::getCurrentPaged();
 
+            // Get Date-Range
+            $args['DateRang'] = Admin_Template::DateRange();
+
+            // Get List
+            $args['lists'] = \WP_STATISTICS\Pages::getTop(array(
+                'paged' => Admin_Template::getCurrentPaged(),
+                'from' => $args['DateRang']['from'],
+                'to' => $args['DateRang']['to']
+            ));
+
             // Total Number
-            $args['total'] = Pages::TotalCount();
+            $args['total'] = Pages::TotalCount('uri', array('from' => $args['DateRang']['from'], 'to' => $args['DateRang']['to']));
 
             // Create WordPress Pagination
             $args['pagination'] = '';
             if ($args['total'] > 0) {
                 $args['pagination'] = Admin_Template::paginate_links(array(
                     'total' => $args['total'],
-                    'echo'  => false
+                    'echo' => false
                 ));
             }
 
             // Show Template Page
-            Admin_Template::get_template(array('layout/header', 'layout/title', 'pages/pages', 'layout/postbox.hide', 'layout/footer'), $args);
+            Admin_Template::get_template(array('layout/header', 'layout/title', 'layout/date.range', 'pages/pages', 'layout/postbox.hide', 'layout/footer'), $args);
         }
     }
 
@@ -74,16 +101,16 @@ class pages_page
         global $wpdb;
 
         // Page ID
-        $ID   = esc_html($_GET['ID']);
+        $ID = esc_html($_GET['ID']);
         $Type = esc_html($_GET['type']);
 
         // Page title
         $args['title'] = __('Page Statistics', 'wp-statistics');
 
         // Get Current Page Url
-        $args['pageName']   = Menus::get_page_slug('pages');
+        $args['pageName'] = Menus::get_page_slug('pages');
         $args['custom_get'] = array(
-            'ID'   => $ID,
+            'ID' => $ID,
             'type' => $Type
         );
 
@@ -113,7 +140,7 @@ class pages_page
 
         // Create Select List For WordPress Terms
         if ($_is_term and isset($query)) {
-            $this_term         = Pages::get_page_info($ID, $Type);
+            $this_term = Pages::get_page_info($ID, $Type);
             $args['list'][$ID] = $this_term['title'];
             foreach ($query as $item) {
                 $get_page_info = Pages::get_page_info($item['id'], $Type);

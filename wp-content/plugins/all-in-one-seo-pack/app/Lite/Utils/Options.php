@@ -1,6 +1,11 @@
 <?php
 namespace AIOSEO\Plugin\Lite\Utils;
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use AIOSEO\Plugin\Common\Utils as CommonUtils;
 
 /**
@@ -40,9 +45,15 @@ class Options extends CommonUtils\Options {
 	 *
 	 * @since 4.0.0
 	 *
+	 * @param  boolean $resetKeys Whether or not to reset keys after init.
 	 * @return void
 	 */
-	protected function init() {
+	protected function init( $resetKeys = false ) {
+		if ( $resetKeys ) {
+			$originalGroupKey  = $this->groupKey;
+			$originalSubGroups = $this->subGroups;
+		}
+
 		parent::init();
 
 		$dbOptions = json_decode( get_option( $this->optionsName . '_lite' ), true );
@@ -59,6 +70,11 @@ class Options extends CommonUtils\Options {
 		);
 
 		$this->options = apply_filters( 'aioseo_get_options_lite', $options );
+
+		if ( $resetKeys ) {
+			$this->groupKey  = $originalGroupKey;
+			$this->subGroups = $originalSubGroups;
+		}
 	}
 
 	/**
@@ -66,11 +82,12 @@ class Options extends CommonUtils\Options {
 	 *
 	 * @since 4.0.0
 	 *
+	 * @param  array|null $options An optional options array.
 	 * @return void
 	 */
-	public function update() {
+	public function update( $options = null ) {
 		$optionsBefore = $this->options;
-		parent::update();
+		parent::update( $options );
 		$this->options = $optionsBefore;
 
 		// First, we need to filter our options.
@@ -83,6 +100,8 @@ class Options extends CommonUtils\Options {
 
 		update_option( $this->optionsName . '_lite', wp_json_encode( $refactored ) );
 
-		$this->init();
+		if ( ! $this->needsUpdate ) {
+			$this->init();
+		}
 	}
 }

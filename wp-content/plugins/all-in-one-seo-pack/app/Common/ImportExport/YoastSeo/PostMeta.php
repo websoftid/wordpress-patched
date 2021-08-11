@@ -1,6 +1,11 @@
 <?php
 namespace AIOSEO\Plugin\Common\ImportExport\YoastSeo;
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use AIOSEO\Plugin\Common\ImportExport;
 use AIOSEO\Plugin\Common\Models;
 
@@ -12,7 +17,6 @@ use AIOSEO\Plugin\Common\Models;
  * @since 4.0.0
  */
 class PostMeta {
-
 	/**
 	 * Class constructor.
 	 *
@@ -24,8 +28,8 @@ class PostMeta {
 				return;
 			}
 
-			if ( ! get_transient( 'aioseo_import_post_meta_yoast_seo' ) ) {
-				set_transient( 'aioseo_import_post_meta_yoast_seo', time(), WEEK_IN_SECONDS );
+			if ( ! aioseo()->transients->get( 'import_post_meta_yoast_seo' ) ) {
+				aioseo()->transients->update( 'import_post_meta_yoast_seo', time(), WEEK_IN_SECONDS );
 			}
 
 			as_schedule_single_action( time(), aioseo()->importExport->yoastSeo->postActionName, [], 'aioseo' );
@@ -44,7 +48,7 @@ class PostMeta {
 	public function importPostMeta() {
 		$postsPerAction  = 100;
 		$publicPostTypes = implode( "', '", aioseo()->helpers->getPublicPostTypes( true ) );
-		$timeStarted     = gmdate( 'Y-m-d H:i:s', get_transient( 'aioseo_import_post_meta_yoast_seo' ) );
+		$timeStarted     = gmdate( 'Y-m-d H:i:s', aioseo()->transients->get( 'import_post_meta_yoast_seo' ) );
 
 		$posts = aioseo()->db
 			->start( 'posts' . ' as p' )
@@ -60,7 +64,7 @@ class PostMeta {
 			->result();
 
 		if ( ! $posts || ! count( $posts ) ) {
-			delete_transient( 'aioseo_import_post_meta_yoast_seo' );
+			aioseo()->transients->delete( 'import_post_meta_yoast_seo' );
 			return;
 		}
 
@@ -137,7 +141,7 @@ class PostMeta {
 						$meta[ $mappedMeta[ $name ] ] = esc_url( $value );
 						break;
 					case '_yoast_wpseo_schema_page_type':
-						$value = preg_replace( '#\s#', '', $value );
+						$value = aioseo()->helpers->pregReplace( '#\s#', '', $value );
 						if ( in_array( $post->post_type, [ 'post', 'page', 'attachment' ], true ) ) {
 							break;
 						}
@@ -149,7 +153,7 @@ class PostMeta {
 						$meta['schema_type_options'] = wp_json_encode( $options );
 						break;
 					case '_yoast_wpseo_schema_article_type':
-						$value = preg_replace( '#\s#', '', $value );
+						$value = aioseo()->helpers->pregReplace( '#\s#', '', $value );
 						if ( 'none' === lcfirst( $value ) ) {
 							$meta[ $mappedMeta[ $name ] ] = 'None';
 							break;
@@ -202,10 +206,10 @@ class PostMeta {
 					case '_yoast_wpseo_opengraph-title':
 					case '_yoast_wpseo_opengraph-description':
 						if ( 'page' === $post->post_type ) {
-							$value = preg_replace( '#%%primary_category%%#', '', $value );
-							$value = preg_replace( '#%%excerpt%%#', '', $value );
+							$value = aioseo()->helpers->pregReplace( '#%%primary_category%%#', '', $value );
+							$value = aioseo()->helpers->pregReplace( '#%%excerpt%%#', '', $value );
 						}
-						$value = aioseo()->importExport->yoastSeo->helpers->macrosToSmartTags( $value );
+						$value = aioseo()->importExport->yoastSeo->helpers->macrosToSmartTags( $value, 'post', $post->post_type );
 					default:
 						$meta[ $mappedMeta[ $name ] ] = esc_html( wp_strip_all_tags( strval( $value ) ) );
 						break;
@@ -224,7 +228,7 @@ class PostMeta {
 				// Do nothing.
 			}
 		} else {
-			delete_transient( 'aioseo_import_post_meta_yoast_seo' );
+			aioseo()->transients->delete( 'import_post_meta_yoast_seo' );
 		}
 	}
 }

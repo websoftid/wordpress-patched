@@ -1,6 +1,11 @@
 <?php
 namespace AIOSEO\Plugin\Common\Migration;
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 // phpcs:disable WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
 
 /**
@@ -9,7 +14,6 @@ namespace AIOSEO\Plugin\Common\Migration;
  * @since 4.0.0
  */
 class Sitemap {
-
 	/**
 	 * The old V3 options.
 	 *
@@ -117,10 +121,11 @@ class Sitemap {
 
 		$excludedPosts = aioseo()->options->sitemap->general->advancedSettings->excludePosts;
 		if ( ! empty( $this->oldOptions['modules']['aiosp_sitemap_options']['aiosp_sitemap_excl_pages'] ) ) {
-			$pages = explode( ', ', $this->oldOptions['modules']['aiosp_sitemap_options']['aiosp_sitemap_excl_pages'] );
+			$pages = explode( ',', $this->oldOptions['modules']['aiosp_sitemap_options']['aiosp_sitemap_excl_pages'] );
 			if ( count( $pages ) ) {
 				foreach ( $pages as $page ) {
-					$id = intval( $page );
+					$page = trim( $page );
+					$id   = intval( $page );
 					if ( ! $id ) {
 						$post = get_page_by_path( $page, OBJECT, aioseo()->helpers->getPublicPostTypes( true ) );
 						if ( $post && is_object( $post ) ) {
@@ -298,7 +303,7 @@ class Sitemap {
 				continue;
 			}
 
-			$objectSlug = preg_replace( '#post_(?!tag)|taxonomies_#', '', $slug[1] );
+			$objectSlug = aioseo()->helpers->pregReplace( '#post_(?!tag)|taxonomies_#', '', $slug[1] );
 
 			if ( in_array( $objectSlug, aioseo()->helpers->getPublicPostTypes( true ), true ) ) {
 				$settings[ $name ] = [

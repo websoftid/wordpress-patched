@@ -1,6 +1,11 @@
 <?php
 namespace AIOSEO\Plugin\Common\Admin\Notices;
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * V3 to V4 migration notice.
  *
@@ -15,8 +20,8 @@ class Migration {
 	 * @return void
 	 */
 	public function maybeShowNotice() {
-		$transientPosts = get_transient( 'aioseo_v3_migration_in_progress_posts' );
-		$transientTerms = get_transient( 'aioseo_v3_migration_in_progress_terms' );
+		$transientPosts = aioseo()->transients->get( 'v3_migration_in_progress_posts' );
+		$transientTerms = aioseo()->transients->get( 'v3_migration_in_progress_terms' );
 		if ( ! $transientPosts && ! $transientTerms ) {
 			return;
 		}

@@ -95,23 +95,23 @@ class GeoIP
      */
     public static function Loader($pack)
     {
-
         // Check file Exist
         $file = self::get_geo_ip_path($pack);
+
         if (file_exists($file)) {
             try {
 
                 //Load GeoIP Reader
-                $reader = new \GeoIp2\Database\Reader($file);
-            } catch (InvalidDatabaseException $e) {
+                return new \GeoIp2\Database\Reader($file);
+
+            } catch (\Exception $e) {
                 \WP_Statistics::log($e->getMessage());
                 return false;
             }
+
         } else {
             return false;
         }
-
-        return $reader;
     }
 
     /**
@@ -189,9 +189,8 @@ class GeoIP
                 } else {
                     $location = $record->country->{$return};
                 }
-            } catch (AddressNotFoundException $e) {
-                \WP_Statistics::log($e->getMessage());
-            } catch (InvalidDatabaseException $e) {
+
+            } catch (\Exception $e) {
                 \WP_Statistics::log($e->getMessage());
             }
         }
@@ -267,9 +266,13 @@ class GeoIP
 
         // This is the location of the file to download.
         $download_url = GeoIP::$library[$pack]['source'];
-        $response     = wp_remote_get($download_url);
+        $response = wp_remote_get($download_url, array(
+            'timeout' => 60,
+            'sslverify' => false
+        ));
 
         if (is_wp_error($response)) {
+            \WP_Statistics::log(array('code' => 'download_geoip', 'type' => $pack, 'message' => $response->get_error_message()));
             return array_merge($result, array("notice" => $response->get_error_message()));
         }
 
@@ -504,10 +507,11 @@ class GeoIP
                 } else {
                     $location = $record->city->{$return};
                 }
-            } catch (AddressNotFoundException $e) {
-                //Don't Stuff
-            } catch (InvalidDatabaseException $e) {
-                //Don't Stuff
+            } catch (\Exception $e) {
+                /**
+                 * For debugging, you can comment out the logger.
+                 */
+                //\WP_Statistics::log($e->getMessage());
             }
         }
 

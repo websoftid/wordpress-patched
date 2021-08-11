@@ -1,6 +1,11 @@
 <?php
 namespace AIOSEO\Plugin\Common\Meta;
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Handles the keywords.
  *
@@ -202,7 +207,7 @@ class Keywords {
 		}
 		if ( ! empty( $keywords ) ) {
 			foreach ( $keywords as $keyword ) {
-				$smallKeywords[] = trim( strtolower( $keyword ) );
+				$smallKeywords[] = trim( aioseo()->helpers->toLowercase( $keyword ) );
 			}
 		}
 		return array_unique( $smallKeywords );

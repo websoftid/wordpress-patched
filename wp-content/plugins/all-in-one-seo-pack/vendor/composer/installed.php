@@ -6,7 +6,7 @@
     'aliases' => 
     array (
     ),
-    'reference' => 'f6b7fd67b30af2ce3421d93e53b5a21220a33b8a',
+    'reference' => '305b003c1f54de637836d74ed50e97e30fe5511d',
     'name' => 'awesomemotive/all-in-one-seo-pack-pro',
   ),
   'versions' => 
@@ -18,7 +18,16 @@
       'aliases' => 
       array (
       ),
-      'reference' => 'f6b7fd67b30af2ce3421d93e53b5a21220a33b8a',
+      'reference' => '305b003c1f54de637836d74ed50e97e30fe5511d',
+    ),
+    'jwhennessey/phpinsight' => 
+    array (
+      'pretty_version' => 'v2.0.9',
+      'version' => '2.0.9.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => 'b89e7a7f418ebd88ae330b889be4dd1d47d4ceaa',
     ),
     'monolog/monolog' => 
     array (
@@ -31,12 +40,12 @@
     ),
     'psr/log' => 
     array (
-      'pretty_version' => '1.1.3',
-      'version' => '1.1.3.0',
+      'pretty_version' => '1.1.4',
+      'version' => '1.1.4.0',
       'aliases' => 
       array (
       ),
-      'reference' => '0f73288fd15629204f9d42b7055f72dacbe811fc',
+      'reference' => 'd49695b909c3b7628b6289db5479a1c204601f11',
     ),
     'psr/log-implementation' => 
     array (

@@ -1,6 +1,11 @@
 <?php
 namespace AIOSEO\Plugin\Common\Admin;
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * WP Site Health class.
  *
@@ -26,11 +31,6 @@ class SiteHealth {
 	 * @return array
 	 */
 	public function registerTests( $tests ) {
-		$tests['direct']['aioseo_automatic_updates'] = [
-			// Translators: 1 - The plugin short name ("AIOSEO").
-			'label' => sprintf( __( '%1$s Automatic Updates', 'all-in-one-seo-pack' ), AIOSEO_PLUGIN_SHORT_NAME ),
-			'test'  => [ $this, 'testCheckAutoUpdates' ],
-		];
 		$tests['direct']['aioseo_site_public'] = [
 			// Translators: 1 - The plugin short name ("AIOSEO").
 			'label' => sprintf( __( '%1$s Site Public', 'all-in-one-seo-pack' ), AIOSEO_PLUGIN_SHORT_NAME ),
@@ -99,67 +99,6 @@ class SiteHealth {
 			'fields'      => $fields,
 		];
 		return $debugInfo;
-	}
-
-	/**
-	 * Tests that run to check if autoupdates are enabled.
-	 *
-	 * @since 4.0.0
-	 *
-	 * @return array A results array for the test.
-	 */
-	public function testCheckAutoUpdates() {
-		$label       = __( 'Your website is receiving automatic updates', 'all-in-one-seo-pack' );
-		$status      = 'good';
-		$actions     = '';
-		$description = sprintf(
-			// Translators: 1 - The plugin short name ("AIOSEO").
-			__( '%1$s automatic updates are enabled and you are getting the latest features, bugfixes, and security updates as they are released.', 'all-in-one-seo-pack' ),
-			AIOSEO_PLUGIN_SHORT_NAME
-		);
-
-		$updatesOption = aioseo()->options->advanced->autoUpdates;
-
-		if ( 'minor' === $updatesOption ) {
-			$label       = __( 'Your website is receiving minor updates', 'all-in-one-seo-pack' );
-			$description = sprintf(
-				// Translators: 1 - The plugin short name ("AIOSEO").
-				__( '%1$s minor updates are enabled and you are getting the latest bugfixes and security updates, but not major features.', 'all-in-one-seo-pack' ),
-				AIOSEO_PLUGIN_SHORT_NAME
-			);
-		}
-		if ( 'none' === $updatesOption ) {
-			$status      = 'recommended';
-			$label       = __( 'Automatic updates are disabled', 'all-in-one-seo-pack' );
-			$description = sprintf(
-				// Translators: 1 - The plugin short name ("AIOSEO").
-				__(
-					'%1$s automatic updates are disabled. We recommend enabling automatic updates so you can get access to the latest features, bugfixes, and security updates as they are released.',
-					'all-in-one-seo-pack'
-				),
-				AIOSEO_PLUGIN_SHORT_NAME
-			);
-			$actions = $this->actionLink( add_query_arg( 'page', 'aioseo-settings#/advanced', admin_url( 'admin.php' ) ), __( 'Update Settings', 'all-in-one-seo-pack' ) );
-		}
-
-		return [
-			'label'       => $label,
-			'status'      => $status,
-			'badge'       => [
-				'label' => AIOSEO_PLUGIN_SHORT_NAME,
-				'color' => 'blue',
-			],
-			'description' => $description,
-			'test'        => 'aioseo_automatic_updates',
-			'actions'     => $actions
-		];
-		return $this->result(
-			'aioseo_automatic_updates',
-			$status,
-			$label,
-			$description,
-			$actions
-		);
 	}
 
 	/**

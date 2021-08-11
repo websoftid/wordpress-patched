@@ -1,6 +1,11 @@
 <?php
 namespace AIOSEO\Plugin\Lite\Utils;
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use AIOSEO\Plugin\Common\Utils as CommonUtils;
 
 /**
@@ -74,11 +79,12 @@ class InternalOptions extends CommonUtils\InternalOptions {
 	 *
 	 * @since 4.0.0
 	 *
+	 * @param  array|null $options An optional options array.
 	 * @return void
 	 */
-	public function update() {
+	public function update( $options = null ) {
 		$optionsBefore = $this->options;
-		parent::update();
+		parent::update( $options );
 		$this->options = $optionsBefore;
 
 		// First, we need to filter our options.

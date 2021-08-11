@@ -1,6 +1,11 @@
 <?php
 namespace AIOSEO\Plugin\Common\Utils;
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use AIOSEO\Plugin\Common\Utils;
 
 /**
@@ -9,6 +14,24 @@ use AIOSEO\Plugin\Common\Utils;
  * @since 4.0.0
  */
 class Addons {
+	/**
+	 * Holds our list of loaded addons.
+	 *
+	 * @since 4.1.0
+	 *
+	 * @var array
+	 */
+	protected $loadedAddons = [];
+
+	/**
+	 * The licensing URL.
+	 *
+	 * @since 4.0.13
+	 *
+	 * @var string
+	 */
+	protected $licensingUrl = 'https://licensing-cdn.aioseo.com/keys/lite/all-in-one-seo-pack-pro.json';
+
 	/**
 	 * Returns our addons.
 	 *
@@ -20,29 +43,91 @@ class Addons {
 	public function getAddons( $flushCache = false ) {
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
 
-		$addons = get_transient( 'aioseo_addons' );
+		$addons = aioseo()->transients->get( 'addons' );
 		if ( false === $addons || $flushCache ) {
-			$addons = aioseo()->helpers->sendRequest( $this->getLicensingUrl() . 'addons/', $this->getAddonPayload() );
+			$response = wp_remote_get( $this->getLicensingUrl() );
+			if ( 200 === wp_remote_retrieve_response_code( $response ) ) {
+				$addons = json_decode( wp_remote_retrieve_body( $response ) );
+			}
 		}
 
-		$transientTime = 4 * HOUR_IN_SECONDS;
 		if ( ! $addons || ! empty( $addons->error ) ) {
-			$addons        = $this->getDefaultAddons();
-			$transientTime = 10 * MINUTE_IN_SECONDS;
+			$addons = $this->getDefaultAddons();
 		}
 
-		set_transient( 'aioseo_addons', $addons, $transientTime );
+		aioseo()->transients->update( 'addons', $addons );
 
 		// The API request will tell us if we can activate a plugin, but let's check if its already active.
 		$installedPlugins = array_keys( get_plugins() );
 		foreach ( $addons as $key => $addon ) {
-			$addons[ $key ]->basename   = $this->getAddonBasename( $addon->sku );
-			$addons[ $key ]->installed  = in_array( $this->getAddonBasename( $addon->sku ), $installedPlugins, true );
-			$addons[ $key ]->isActive   = is_plugin_active( $addons[ $key ]->basename );
-			$addons[ $key ]->canInstall = $this->canInstall();
+			$addons[ $key ]->basename    = $this->getAddonBasename( $addon->sku );
+			$addons[ $key ]->installed   = in_array( $this->getAddonBasename( $addon->sku ), $installedPlugins, true );
+			$addons[ $key ]->isActive    = is_plugin_active( $addons[ $key ]->basename );
+			$addons[ $key ]->canInstall  = $this->canInstall();
+			$addons[ $key ]->canActivate = $this->canActivate();
+			$addons[ $key ]->capability  = $this->getManageCapability( $addon->sku );
 		}
 
 		return $addons;
+	}
+
+	/**
+	 * Returns the required capability to manage the addon.
+	 *
+	 * @since 4.1.3
+	 *
+	 * @param  string $sku The addon sku.
+	 * @return string      The required capability.
+	 */
+	protected function getManageCapability( $sku ) {
+		$capability = apply_filters( 'aioseo_manage_seo', 'aioseo_manage_seo' );
+
+		switch ( $sku ) {
+			case 'aioseo-image-seo':
+				$capability = 'aioseo_search_appearance_settings';
+				break;
+			case 'aioseo-video-sitemap':
+			case 'aioseo-news-sitemap':
+				$capability = 'aioseo_sitemap_settings';
+				break;
+			case 'aioseo-redirects':
+				$capability = 'aioseo_redirects_settings';
+				break;
+			case 'aioseo-local-business':
+				$capability = 'aioseo_local_seo_settings';
+				break;
+		}
+		return $capability;
+	}
+
+	/**
+	 * Check to see if there are unlicensed addons installed and activated.
+	 *
+	 * @since 4.1.3
+	 *
+	 * @return boolean True if there are unlicensed addons, false if not.
+	 */
+	public function unlicensedAddons() {
+		$unlicensed = [
+			'addons'  => [],
+			// Translators: 1 - Opening bold tag, 2 - Plugin short name ("AIOSEO"), 3 - "Pro", 4 - Closing bold tag.
+			'message' => sprintf(
+				__( 'The following addons cannot be used, because they require %1$s%2$s %3$s%4$s to work:', 'all-in-one-seo-pack' ),
+				'<strong>',
+				AIOSEO_PLUGIN_SHORT_NAME,
+				'Pro',
+				'</strong>'
+			)
+		];
+
+		$addons = $this->getAddons();
+		foreach ( $addons as $addon ) {
+			if ( $addon->isActive ) {
+				$unlicensed['addons'][] = $addon;
+			}
+		}
+
+		return $unlicensed;
 	}
 
 	/**
@@ -59,17 +144,16 @@ class Addons {
 	public function getAddon( $sku, $flushCache = false ) {
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
 
-		$addon = get_transient( 'aioseo_addon_' . $sku );
+		$addon = aioseo()->transients->get( 'addon_' . $sku );
 		if ( false === $addon || $flushCache ) {
 			$addon = aioseo()->helpers->sendRequest( $this->getLicensingUrl() . 'addons/', $this->getAddonPayload( $sku ) );
+			aioseo()->transients->update( 'addon_' . $sku, $addon, DAY_IN_SECONDS );
 		}
 
-		$transientTime = 10 * MINUTE_IN_SECONDS;
 		if ( ! $addon || ! empty( $addon->error ) ) {
 			$addon = $this->getDefaultAddon( $sku );
+			aioseo()->transients->update( 'addon_' . $sku, $addon, 10 * MINUTE_IN_SECONDS );
 		}
-
-		set_transient( 'aioseo_addon_' . $sku, $addon, $transientTime );
 
 		// The API request will tell us if we can activate a plugin, but let's check if its already active.
 		$installedPlugins  = array_keys( get_plugins() );
@@ -89,8 +173,8 @@ class Addons {
 	 * @param  string $sku The sku to use in the request.
 	 * @return array       A payload array.
 	 */
-	private function getAddonPayload( $sku = 'all-in-one-seo-pack-pro' ) {
-		return [
+	protected function getAddonPayload( $sku = 'all-in-one-seo-pack-pro' ) {
+		$payload = [
 			'license'     => aioseo()->options->has( 'general' ) && aioseo()->options->general->has( 'licenseKey' )
 				? aioseo()->options->general->licenseKey
 				: '',
@@ -100,6 +184,12 @@ class Addons {
 			'php_version' => PHP_VERSION,
 			'wp_version'  => get_bloginfo( 'version' )
 		];
+
+		if ( defined( 'AIOSEO_INTERNAL_ADDONS' ) && AIOSEO_INTERNAL_ADDONS ) {
+			$payload['internal'] = true;
+		}
+
+		return $payload;
 	}
 
 	/**
@@ -155,11 +245,11 @@ class Addons {
 	 *
 	 * @return string The URL.
 	 */
-	private function getLicensingUrl() {
+	protected function getLicensingUrl() {
 		if ( defined( 'AIOSEO_LICENSING_URL' ) ) {
 			return AIOSEO_LICENSING_URL;
 		}
-		return 'https://licensing.aioseo.com/v1/';
+		return $this->licensingUrl;
 	}
 
 	/**
@@ -274,6 +364,67 @@ class Addons {
 	}
 
 	/**
+	 * Determine if addons/plugins can be activated.
+	 *
+	 * @since 4.1.3
+	 *
+	 * @return bool True if yes, false if not.
+	 */
+	public function canActivate() {
+		if ( ! current_user_can( 'activate_plugins' ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Load an addon into aioseo
+	 *
+	 * @since 4.1.0
+	 *
+	 * @param string $slug
+	 * @param object $addon Addon class instance
+	 *
+	 * @return void
+	 */
+	public function loadAddon( $slug, $addon ) {
+		$this->{$slug}        = $addon;
+		$this->loadedAddons[] = $slug;
+	}
+
+	/**
+	 * Return a loaded addon
+	 *
+	 * @since 4.1.0
+	 *
+	 * @param string $slug
+	 *
+	 * @return object|null
+	 */
+	public function getLoadedAddon( $slug ) {
+		return isset( $this->{$slug} ) ? $this->{$slug} : null;
+	}
+
+	/**
+	 * Returns loaded addons
+	 *
+	 * @since 4.1.0
+	 *
+	 * @return array
+	 */
+	public function getLoadedAddons() {
+		$loadedAddonsList = [];
+		if ( ! empty( $this->loadedAddons ) ) {
+			foreach ( $this->loadedAddons as $addonSlug ) {
+				$loadedAddonsList[ $addonSlug ] = $this->{$addonSlug};
+			}
+		}
+
+		return $loadedAddonsList;
+	}
+
+	/**
 	 * Retrieves a default addon with whatever information is needed if the API cannot be reached.
 	 *
 	 * @since 4.0.0
@@ -300,7 +451,7 @@ class Addons {
 	 *
 	 * @return array An array of addons.
 	 */
-	private function getDefaultAddons() {
+	protected function getDefaultAddons() {
 		return json_decode( wp_json_encode( [
 			[
 				'sku'                => 'aioseo-image-seo',
@@ -311,12 +462,14 @@ class Addons {
 				'levels'             => [
 					'business',
 					'agency',
+					'plus',
 					'pro',
 					'elite',
 				],
 				'currentLevels'      => [
-					'business',
-					'agency',
+					'plus',
+					'pro',
+					'elite'
 				],
 				'requiresUpgrade'    => false,
 				'description'        => '<p>Globally control the Title attribute and Alt text for images in your content. These attributes are essential for both accessibility and SEO.</p>',
@@ -341,12 +494,11 @@ class Addons {
 					'business',
 					'agency',
 					'pro',
-					'elite',
+					'elite'
 				],
 				'currentLevels'      => [
-					'individual',
-					'business',
-					'agency',
+					'pro',
+					'elite'
 				],
 				'requiresUpgrade'    => false,
 				'description'        => '<p>The Video Sitemap works in much the same way as the XML Sitemap module, it generates an XML Sitemap specifically for video content on your site. Search engines use this information to display rich snippet information in search results.</p>', // phpcs:ignore Generic.Files.LineLength.MaxExceeded
@@ -369,12 +521,14 @@ class Addons {
 				'levels'             => [
 					'business',
 					'agency',
+					'plus',
 					'pro',
-					'elite',
+					'elite'
 				],
 				'currentLevels'      => [
-					'business',
-					'agency',
+					'plus',
+					'pro',
+					'elite'
 				],
 				'requiresUpgrade'    => false,
 				'description'        => '<p>Local Business schema markup enables you to tell Google about your business, including your business name, address and phone number, opening hours and price range. This information may be displayed as a Knowledge Graph card or business carousel.</p>', // phpcs:ignore Generic.Files.LineLength.MaxExceeded
@@ -398,11 +552,11 @@ class Addons {
 					'business',
 					'agency',
 					'pro',
-					'elite',
+					'elite'
 				],
 				'currentLevels'      => [
-					'business',
-					'agency',
+					'pro',
+					'elite'
 				],
 				'requiresUpgrade'    => false,
 				'description'        => '<p>Our Google News Sitemap lets you control which content you submit to Google News and only contains articles that were published in the last 48 hours. In order to submit a News Sitemap to Google, you must have added your site to Google’s Publisher Center and had it approved.</p>', // phpcs:ignore Generic.Files.LineLength.MaxExceeded
@@ -412,6 +566,37 @@ class Addons {
 				'learnMoreUrl'       => 'https://aioseo.com/news-sitemap',
 				'manageUrl'          => 'https://route#aioseo-sitemaps:news-sitemap',
 				'basename'           => 'aioseo-news-sitemap/aioseo-news-sitemap.php',
+				'installed'          => false,
+				'isActive'           => false,
+				'canInstall'         => false
+			],
+			[
+				'sku'                => 'aioseo-redirects',
+				'name'               => 'Redirection Manager',
+				'version'            => '1.0.0',
+				'image'              => null,
+				'icon'               => 'svg-redirect',
+				'levels'             => [
+					'agency',
+					'basic',
+					'plus',
+					'pro',
+					'elite'
+				],
+				'currentLevels'      => [
+					'basic',
+					'plus',
+					'pro',
+					'elite'
+				],
+				'requiresUpgrade'    => false,
+				'description'        => '<p>Our Redirection Manager allows you to easily create and manage redirects for your broken links to avoid confusing search engines and users, as well as losing valuable backlinks. It even automatically sends users and search engines from your old URLs to your new ones.</p>', // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+				'descriptionVersion' => 0,
+				'downloadUrl'        => '',
+				'productUrl'         => 'https://aioseo.com/redirection-manager',
+				'learnMoreUrl'       => 'https://aioseo.com/redirection-manager',
+				'manageUrl'          => 'https://route#aioseo-redirects',
+				'basename'           => 'aioseo-redirects/aioseo-redirects.php',
 				'installed'          => false,
 				'isActive'           => false,
 				'canInstall'         => false

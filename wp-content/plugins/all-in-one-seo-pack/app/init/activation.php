@@ -1,4 +1,9 @@
 <?php
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 if ( ! function_exists( 'aioseo_lite_just_activated' ) ) {
 	/**
 	 * Store temporarily that the Lite version of the plugin was activated.
@@ -8,7 +13,7 @@ if ( ! function_exists( 'aioseo_lite_just_activated' ) ) {
 	 * @since 4.0.0
 	 */
 	function aioseo_lite_just_activated() {
-		set_transient( 'aioseo_lite_just_activated', true );
+		aioseo()->transients->update( 'lite_just_activated', true );
 	}
 }
 
@@ -23,10 +28,10 @@ if ( ! function_exists( 'aioseo_lite_just_deactivated' ) ) {
 	function aioseo_lite_just_deactivated() {
 		global $aioseoLiteJustActivated, $aioseoLiteJustDeactivated;
 
-		$aioseoLiteJustActivated   = (bool) get_transient( 'aioseo_lite_just_activated' );
+		$aioseoLiteJustActivated   = (bool) aioseo()->transients->get( 'lite_just_activated' );
 		$aioseoLiteJustDeactivated = true;
 
-		delete_transient( 'aioseo_lite_just_activated' );
+		aioseo()->transients->delete( 'lite_just_activated' );
 	}
 }
 
@@ -41,7 +46,7 @@ if ( ! function_exists( 'aioseo_pro_just_activated' ) ) {
 	function aioseo_pro_just_activated() {
 		$liteActivated = is_plugin_active( 'all-in-one-seo-pack/all_in_one_seo_pack.php' );
 		if ( $liteActivated ) {
-			set_transient( 'aioseo_pro_just_deactivated_lite', true );
+			aioseo()->transients->update( 'pro_just_deactivated_lite', true );
 		}
 	}
 }
