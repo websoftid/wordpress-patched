@@ -27,10 +27,11 @@ $ git submodule update --init
 
 ## Themes
 
-* [kisi-kisi-hitam](https://github.com/yht/kisi-kisi-hitam)
-* [twentytwenty](https://wordpress.org/themes/twentytwenty/)
-* [twentynineteen](https://wordpress.org/themes/twentynineteen/)
-* [twenty8teen](https://wordpress.org/themes/twenty8teen/)
-* [twentyseventeen](https://wordpress.org/themes/twentyseventeen/)
-* [twentysixteen](https://wordpress.org/themes/twentysixteen/)
-* [twentyfifteen](https://wordpress.org/themes/twentyfifteen/)
+* [Kisi-kisi Hitam](https://github.com/yht/kisi-kisi-hitam)
+* [Twenty Twenty-One](https://wordpress.org/themes/twentytwentyone/)
+* [Twenty Twenty](https://wordpress.org/themes/twentytwenty/)
+* [Twenty Nineteen](https://wordpress.org/themes/twentynineteen/)
+* [Twenty 8teen](https://wordpress.org/themes/twenty8teen/)
+* [Twenty Seventeen](https://wordpress.org/themes/twentyseventeen/)
+* [Twenty Sixteen](https://wordpress.org/themes/twentysixteen/)
+* [Twenty Fifteen](https://wordpress.org/themes/twentyfifteen/)
