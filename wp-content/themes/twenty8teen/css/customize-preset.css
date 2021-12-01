@@ -1,0 +1,37 @@
+/*!
+Theme Name: Twenty8teen
+Customizer styles for Custom Preset Control
+*/
+.customize-control-preset,
+.customize-control-preset .add-content,
+.customize-control-preset .new-content-item {
+	margin-top: 1em;
+}
+
+.customize-control-preset .preset-list-item {
+	margin: 0 1em;
+	list-style-type: circle;
+}
+
+#customize-control-preset .accordion-section-content {
+	position: static;
+	display: none;
+}
+
+#customize-control-preset .accordion-section-title {
+	border-left: none;
+	border-right: none;
+}
+
+#customize-control-preset .accordion-section-title::after {
+	content: "\f140";
+	color: inherit;
+}
+
+#customize-control-preset .accordion-section.open .accordion-section-title::after {
+	content: "\f142";
+}
+
+#customize-control-preset .accordion-section.open {
+	border: 1px solid #999;
+}
