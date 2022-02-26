@@ -34,7 +34,7 @@ class Sitemaps {
 
 		$detectedFiles = [];
 		if ( ! $isGeneralSitemapStatic ) {
-			foreach ( $files as $index => $filename ) {
+			foreach ( $files as $filename ) {
 				if ( preg_match( '#.*sitemap.*#', $filename ) ) {
 					// We don't want to delete the video sitemap here at all.
 					$isVideoSitemap = preg_match( '#.*video.*#', $filename ) ? true : false;
@@ -137,11 +137,11 @@ class Sitemaps {
 			], 400 );
 		}
 
-		$path = trim( $pageUrl['path'], '/' );
-		$page = get_page_by_path( $path, OBJECT, aioseo()->helpers->getPublicPostTypes( true ) );
+		$path   = trim( $pageUrl['path'], '/' );
+		$exists = aioseo()->helpers->pathExists( $path );
 
 		return new \WP_REST_Response( [
-			'exists' => is_object( $page )
+			'exists' => $exists
 		], 200 );
 	}
 }

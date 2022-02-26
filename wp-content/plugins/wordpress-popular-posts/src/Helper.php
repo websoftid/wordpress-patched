@@ -262,18 +262,20 @@ class Helper {
     public static function truncate($text = '', $length = 25, $truncate_by_words = false, $more = '...')
     {
         if ( '' !== $text ) {
+            $charset = get_bloginfo('charset');
+
             // Truncate by words
             if ( $truncate_by_words ) {
                 $words = explode(" ", $text, $length + 1);
 
                 if ( count($words) > $length ) {
                     array_pop($words);
-                    $text = rtrim(implode(" ", $words), ",.") . " {$more}";
+                    $text = rtrim(implode(" ", $words), ",.") . $more;
                 }
             }
             // Truncate by characters
-            elseif ( strlen($text) > $length ) {
-                $text = rtrim(mb_substr($text, 0, $length , get_bloginfo('charset')), " ,.") . $more;
+            elseif ( mb_strlen($text, $charset) > $length ) {
+                $text = rtrim(mb_substr($text, 0, $length , $charset), " ,.") . $more;
             }
         }
 

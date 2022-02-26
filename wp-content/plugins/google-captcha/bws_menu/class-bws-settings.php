@@ -230,7 +230,10 @@ if ( ! class_exists( 'Bws_Settings_Tabs' ) ) {
 									<?php /**
 									 * action - Display custom metabox
 									 */
-									do_action( __CLASS__ . '_display_metabox' ); ?>
+									do_action( __CLASS__ . '_display_metabox' );
+
+									if ( function_exists( 'bws_affiliate_postbox' ) )
+										bws_affiliate_postbox(); ?>
                                 </div>
                             </div>
                             <div id="postbox-container-2" class="postbox-container">
@@ -527,7 +530,7 @@ if ( ! class_exists( 'Bws_Settings_Tabs' ) ) {
 
 				if ( isset( $_POST["bws_newcontent_{$extension}"] ) &&
 				     $this->custom_code_args["{$extension}_writeable"] ) {
-					$newcontent = trim( wp_unslash( $_POST["bws_newcontent_{$extension}"] ) );
+					$newcontent = trim( sanitize_text_field( $_POST["bws_newcontent_{$extension}"] ) );
 					if ( 'css' == $extension )
 						$newcontent = wp_kses( $newcontent, array( '\'', '\"' ) );
 

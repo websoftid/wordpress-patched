@@ -139,7 +139,7 @@ class Admin_Assets
 
         // Load Chart Js Library [ Load in <head> Tag ]
         if (Menus::in_plugin_page() || (in_array($screen_id, array('dashboard')) and !Option::get('disable_dashboard')) || (in_array($hook, array('post.php', 'edit.php', 'post-new.php')) and !Option::get('disable_editor'))) {
-            wp_enqueue_script(self::$prefix . '-chart.js', self::url('chartjs/chart.min.js'), false, '3.4.1', false);
+            wp_enqueue_script(self::$prefix . '-chart.js', self::url('chartjs/chart.min.js'), false, '3.5.1', false);
         }
 
         // Load Jquery VMap Js Library
@@ -277,7 +277,7 @@ class Admin_Assets
             'er_valid_ip'   => __('Please enter a valid ip.', 'wp-statistics'),
             'please_wait'   => __('Please Wait ...', 'wp-statistics'),
             'user'          => __('User', 'wp-statistics'),
-            'rest_connect' => __('An error occurred while connecting to WordPress REST API. It seems blocked by one of your plugins or your theme.', 'wp-statistics'),
+            'rest_connect'  => __('An error occurred while connecting to WordPress REST API. It seems blocked by one of your plugins or your theme.', 'wp-statistics'),
         );
 
         // Rest-API Meta Box Url
@@ -359,7 +359,7 @@ class Admin_Assets
             'dayNamesMin'     => Helper::strip_array_indices($wp_locale->weekday_initial),
             'dateFormat'      => 'yy-mm-dd', // Format time for Jquery UI
             'firstDay'        => get_option('start_of_week'),
-            'isRTL'           => (int)$wp_locale->is_rtl(),
+            'isRTL'           => $wp_locale->is_rtl(),
         );
     }
 }

@@ -7,6 +7,8 @@ use Yoast\WP\SEO\Helpers\Taxonomy_Helper;
 
 /**
  * Reindexing action for term link indexables.
+ *
+ * @phpcs:disable Yoast.NamingConventions.ObjectNameDepth.MaxExceeded
  */
 class Term_Link_Indexing_Action extends Abstract_Link_Indexing_Action {
 
@@ -16,6 +18,13 @@ class Term_Link_Indexing_Action extends Abstract_Link_Indexing_Action {
 	 * @var string
 	 */
 	const UNINDEXED_COUNT_TRANSIENT = 'wpseo_unindexed_term_link_count';
+
+	/**
+	 * The transient cache key for limited counts.
+	 *
+	 * @var string
+	 */
+	const UNINDEXED_LIMITED_COUNT_TRANSIENT = self::UNINDEXED_COUNT_TRANSIENT . '_limited';
 
 	/**
 	 * The post type helper.

@@ -76,6 +76,14 @@ class Output {
     private $themer;
 
     /**
+     * WordPress Date format.
+     *
+     * @var     string
+     * @access  private
+     */
+    private $wp_date_format;
+
+    /**
      * Constructor.
      *
      * @since   4.0.0
@@ -95,9 +103,10 @@ class Output {
 
         $this->more = '...';
 
-        // Allow customization of the more (...) string
-        if ( has_filter('wpp_excerpt_more') )
-            $this->more = apply_filters('wpp_excerpt_more', $this->more);
+        $this->wp_date_format = get_option('date_format');
+
+        if ( ! $this->wp_date_format )
+            $this->wp_date_format = 'F j, Y';
     }
 
     /**
@@ -287,7 +296,9 @@ class Output {
               ? $this->public_options['shorten_title']['length']
               : 25;
 
-            $post_title = Helper::truncate($post_title, $length, $this->public_options['shorten_title']['words'], $this->more);
+            $more = $this->public_options['shorten_title']['words'] ? ' ' . $this->more : $this->more;
+            $more = apply_filters('wpp_title_more', $more);
+            $post_title = Helper::truncate($post_title, $length, $this->public_options['shorten_title']['words'], $more);
         }
 
         // Thumbnail
@@ -355,6 +366,7 @@ class Output {
         if ( $this->public_options['markup']['custom_html'] ) {
             $data = [
                 'id' => $post_id,
+                'is_current_post' => $is_current_post,
                 'title' => '<a href="' . $permalink . '" ' . ($post_title_attr !== $post_title ? 'title="' . $post_title_attr . '" ' : '' ) . 'class="wpp-post-title" target="' . $this->admin_options['tools']['link']['target'] . '">' . $post_title . '</a>',
                 'title_attr' => $post_title_attr,
                 'summary' => $post_excerpt,
@@ -367,6 +379,8 @@ class Output {
                 'taxonomy_copy' => isset($meta_arr['taxonomy']) ? $meta_arr['taxonomy'] : null,
                 'author' => ( ! empty($post_author) ) ? '<a href="' . get_author_posts_url($post_object->uid != $post_id ? get_post_field('post_author', $post_id) : $post_object->uid ) . '">' . $post_author . '</a>' : '',
                 'author_copy' => isset($meta_arr['author']) ? $meta_arr['author'] : null,
+                'author_name' => $post_author,
+                'author_url' => ( ! empty($post_author) ) ? get_author_posts_url($post_object->uid != $post_id ? get_post_field('post_author', $post_id) : $post_object->uid ) : '',
                 'views' => ( $this->public_options['order_by'] == "views" || $this->public_options['order_by'] == "comments" ) ? ($prettify_numbers ? Helper::prettify_number($post_views) : number_format_i18n($post_views)) : ($prettify_numbers ? Helper::prettify_number($post_views, 2) : number_format_i18n($post_views, 2)),
                 'views_copy' => isset($meta_arr['views']) ? $meta_arr['views'] : null,
                 'comments' => $prettify_numbers ? Helper::prettify_number($post_comments) : number_format_i18n($post_comments),
@@ -540,12 +554,16 @@ class Output {
                 $excerpt = preg_replace('_^(?:(?:https?|ftp)://)(?:\S+(?::\S*)?@)?(?:(?!10(?:\.\d{1,3}){3})(?!127(?:\.\d{1,3}){3})(?!169\.254(?:\.\d{1,3}){2})(?!192\.168(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\x{00a1}-\x{ffff}0-9]+-?)*[a-z\x{00a1}-\x{ffff}0-9]+)(?:\.(?:[a-z\x{00a1}-\x{ffff}0-9]+-?)*[a-z\x{00a1}-\x{ffff}0-9]+)*(?:\.(?:[a-z\x{00a1}-\x{ffff}]{2,})))(?::\d{2,5})?(?:/[^\s]*)?$_iuS', '', $excerpt);
             }
 
+            $excerpt = trim($excerpt);
+
         }
 
         // Balance tags, if needed
         if ( '' !== $excerpt ) {
 
-            $excerpt = Helper::truncate($excerpt, $this->public_options['post-excerpt']['length'], $this->public_options['post-excerpt']['words'], $this->more);
+            $more = $this->public_options['post-excerpt']['words'] ? ' ' . $this->more : $this->more;
+            $more = apply_filters('wpp_excerpt_more', $more);
+            $excerpt = Helper::truncate($excerpt, $this->public_options['post-excerpt']['length'], $this->public_options['post-excerpt']['words'], $more);
 
             if ( $this->public_options['post-excerpt']['keep_format'] )
                 $excerpt = force_balance_tags($excerpt);
@@ -586,9 +604,20 @@ class Output {
         $date = '';
 
         if ( $this->public_options['stats_tag']['date']['active'] ) {
-            $date = ( 'relative' == $this->public_options['stats_tag']['date']['format'] )
-                ? sprintf(__('%s ago', 'wordpress-popular-posts'), human_time_diff(strtotime($post_object->date), current_time('timestamp')))
-                : date_i18n($this->public_options['stats_tag']['date']['format'], strtotime($post_object->date));
+            if ( 'relative' == $this->public_options['stats_tag']['date']['format'] ) {
+                $date = sprintf(
+                    __('%s ago', 'wordpress-popular-posts'),
+                    human_time_diff(
+                        strtotime($post_object->date),
+                        current_time('timestamp')
+                    )
+                );
+            } else {
+                $date = date_i18n(
+                    ( 'wp_date_format' == $this->public_options['stats_tag']['date']['format'] ? $this->wp_date_format : $this->public_options['stats_tag']['date']['format'] ),
+                    strtotime($post_object->date)
+                );
+            }
         }
 
         return $date;
@@ -800,13 +829,17 @@ class Output {
             return false;
 
         $params = [];
-        $pattern = '/\{(pid|excerpt|summary|meta|stats|title|title_attr|image|thumb|thumb_img|thumb_url|rating|score|url|text_title|author|author_copy|taxonomy|taxonomy_copy|category|category_copy|views|views_copy|comments|comments_copy|date|date_copy|total_items|item_position)\}/i';
+        $pattern = '/\{(pid|current_class|excerpt|summary|meta|stats|title|title_attr|image|thumb|thumb_img|thumb_url|rating|score|url|text_title|author|author_copy|author_name|author_url|taxonomy|taxonomy_copy|category|category_copy|views|views_copy|comments|comments_copy|date|date_copy|total_items|item_position)\}/i';
         preg_match_all($pattern, $string, $matches);
 
         array_map('strtolower', $matches[0]);
 
         if ( in_array("{pid}", $matches[0]) ) {
             $string = str_replace("{pid}", $data['id'], $string);
+        }
+
+        if ( in_array("{current_class}", $matches[0]) ) {
+            $string = str_replace("{current_class}", ( $data['is_current_post'] ? 'current' : '' ), $string);
         }
 
         if ( in_array("{title}", $matches[0]) ) {
@@ -841,8 +874,8 @@ class Output {
 
                 if ( $img_tag->length ) {
                     foreach( $img_tag as $node ) {
-                        if ( $node->hasAttribute('src') || $node->hasAttribute('data-img-src') ) {
-                            $src = $node->hasAttribute('src') ? $node->getAttribute('src') : $node->getAttribute('data-img-src');
+                        if ( $node->hasAttribute('src') ) {
+                            $src = $node->getAttribute('src');
                             $string = str_replace("{thumb_url}", $src, $string);
                         }
                     }
@@ -877,6 +910,14 @@ class Output {
 
         if ( in_array("{author_copy}", $matches[0]) ) {
             $string = str_replace("{author_copy}", $data['author_copy'], $string);
+        }
+
+        if ( in_array("{author_name}", $matches[0]) ) {
+            $string = str_replace("{author_name}", $data['author_name'], $string);
+        }
+
+        if ( in_array("{author_url}", $matches[0]) ) {
+            $string = str_replace("{author_url}", $data['author_url'], $string);
         }
 
         if ( in_array("{taxonomy}", $matches[0]) || in_array("{category}", $matches[0]) ) {

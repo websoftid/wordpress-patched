@@ -87,10 +87,13 @@ class Helper
      */
     public static function is_login_page()
     {
-
         // Check From global WordPress
         if (isset($GLOBALS['pagenow']) and in_array($GLOBALS['pagenow'], array('wp-login.php', 'wp-register.php'))) {
             return true;
+        }
+
+        if (defined('WP_CLI') && WP_CLI) {
+            return false;
         }
 
         // Check Native php
@@ -117,7 +120,7 @@ class Helper
      * @param string $style_extra
      * @return string
      */
-    public static function wp_admin_notice($text, $model = "info", $close_button = true, $id = false, $echo = true, $style_extra = 'padding:12px;')
+    public static function wp_admin_notice($text, $model = "info", $close_button = true, $id = false, $echo = true, $style_extra = 'padding:10px 0')
     {
         $text = '
         <div class="notice notice-' . $model . '' . ($close_button === true ? " is-dismissible" : "") . '"' . ($id != false ? ' id="' . $id . '"' : '') . '>
@@ -721,7 +724,7 @@ class Helper
 
         } catch (Exception $e) {
             \WP_Statistics::log($e->getMessage());
-            
+
             return false;
         }
     }

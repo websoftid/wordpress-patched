@@ -1,10 +1,10 @@
 === WP Statistics ===
-Contributors: mostafa.s1990, mehrshaddarzi, kashani, veronalabs, GregRoss, dedidata
+Contributors: mostafa.s1990, mehrshaddarzi, kashani, veronalabs, GregRoss
 Donate link: https://wp-statistics.com/donate/
 Tags: analytics, wordpress analytics, stats, statistics, visit, visitors, hits, chart, browser, today, yesterday, week, month, year, total, post, page, sidebar, google, live visit, search word, agent, google analytics, webmasters, google webmasters, geoip, location
 Requires at least: 3.0
-Tested up to: 5.8
-Stable tag: 13.0.9
+Tested up to: 5.9
+Stable tag: 13.1.6
 Requires PHP: 5.6
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -38,7 +38,7 @@ All these data are recorded in your server, and YES! WP Statistics is [GDPR comp
 Some advanced features are Premium, which means you need to buy extra add-ons to unlock those features. You can get [Premium add-ons](http://bit.ly/2x6tGly) here!
 
 = REPORT BUGS =
-If you encounter any bug, please create an issue on [Github](https://github.com/wp-statistics/wp-statistics/issues/new) where we can act upon them more efficiently. Since [Github](https://github.com/wp-statistics/wp-statistics) is not a support forum, just bugs are welcomed, and any other request will be closed.
+If you encounter any bug, please create an issue on [GitHub](https://github.com/wp-statistics/wp-statistics/issues/new) where we can act upon them more efficiently. Since [Github](https://github.com/wp-statistics/wp-statistics) is not a support forum, just bugs are welcomed, and any other request will be closed.
 
 == Installation ==
 1. Upload `wp-statistics` to the `/wp-content/plugins/` directory.
@@ -52,7 +52,7 @@ The greatest advantage of WP Statistics is that all the data is saved locally in
 This helps a lot while implementing the new GDPR restrictions; because it’s not necessary to create a data processing contract with an external company! [Read more about WP Statistics compliance with GDPR](http://bit.ly/2x0AFgT).
 
 = Does WP Statistics support Multisite? =
-WP Statistics doesn’t officially support the multisite feature; however, it does have limited functionally associated with it and should function without any issue. However, no support is provided at this time.
+WP Statistics doesn't officially support the multisite feature; however, it does have limited functionally associated with it and should function without any issue. However, no support is provided at this time.
 Version 8.8 is the first release that can be installed, upgraded and removed correctly on multi-site. It also has some basic support for the network admin menu. This should not be taken as an indication that WP Statistics fully supports the multisite, but only should be considered as a very first step.
 
 = Does WP Statistics work with caching plugins? =
@@ -124,6 +124,49 @@ Before updating, make sure you disabled all your add-ons, then after that, try t
 If you encounter any bug, please create an issue on [Github](https://github.com/wp-statistics/wp-statistics/issues/new) where we can act upon them more efficiently. Since [Github](https://github.com/wp-statistics/wp-statistics) is not a support forum, just bugs are welcomed, and any other request will be closed.
 
 == Changelog ==
+= v13.1.6 - 16.02.2022 =
+* Bugfix: Hardened plugin security. (Special thanks to Muhammad Zeeshan (Xib3rR4dAr) & WPScan for reporting the issues)
+
+= v13.1.5 - 02.02.2022 =
+* Enhancement: Tested up to v5.9
+* Enhancement: Disable showing the notices with hidden class in the admin settings page
+* Bugfix: A security issue to accepting the correct `exclusion_reason` through request
+* Bugfix: The 403 Forbidden Error issue in REST request
+
+= v13.1.4 - 14.01.2022 =
+* Enhancement: Datepicker direction issue has been fixed
+* Enhancement: UTF-8 referrers URLs has been supported
+* Bugfix: The Apache 403 error has been fixed when passing the actual URL as the GET parameter
+* Bugfix: Date filter in Top Referring Sites has been fixed
+
+= v13.1.3 - 23.12.2021 =
+* Bugfix: The issue for showing the pagination in date range template has been fixed
+* Enhancement: Skip undefined `HTTP_HOST` notice error
+* Enhancement: Minor Improvements
+
+= v13.1.2 - 09.11.2021 =
+* Enhancement: Avoiding altering some tables after every upgrade
+* Enhancement: Pages widget table clutter issue fixed when URLs are long
+* Bugfix: The variable types bug in Matomo Referrer schedule weekly update fixed
+* Bugfix: the Nonce check to active/deactivate add-ons added
+* Update: User roles added in online page
+
+= 13.1.1 =
+- Fixed exclusions setting page and storing properly data in option page and keep lines in the input data
+- Fixed some tweak issues and improved setting pages
+- Fixed showing chart in RTL language
+- Disable checking the SSL certificate while sending the request to check the plugin's REST API is enabled
+- Updated Chart.js to v3.5.1
+
+= 13.1 =
+- New admin design!
+- Improvement input data in setting and optimization page as well
+- Escaping all input data in admin pages, (Special thanks to Vlad Visse)
+- Improvement GeoIP enhancements
+- Added subdivision names to cities for clarity
+- Added links to mapping tools on more pages
+- Updated the mapping tool link to a site that doesn't have errors
+
 = 13.0.9 =
 - Compatibility with PHP v8 and WordPress v5.8
 - Fixed log file path and moved out to wp-content/uploads/wp-statistics/debug.log and protected for the public access as well

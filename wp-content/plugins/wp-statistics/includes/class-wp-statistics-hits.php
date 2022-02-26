@@ -66,9 +66,9 @@ class Hits
 
         if (isset($this->rest_hits->browser) and isset($this->rest_hits->platform) and isset($this->rest_hits->version)) {
             return array(
-                'browser'  => $this->rest_hits->browser,
-                'platform' => $this->rest_hits->platform,
-                'version'  => $this->rest_hits->version,
+                'browser'  => esc_sql(sanitize_text_field($this->rest_hits->browser)),
+                'platform' => esc_sql(sanitize_text_field($this->rest_hits->platform)),
+                'version'  => esc_sql(sanitize_text_field($this->rest_hits->version)),
             );
         }
 
@@ -94,7 +94,7 @@ class Hits
      */
     public function set_user_ip($ip)
     {
-        return isset($this->rest_hits->ip) ? $this->rest_hits->ip : $ip;
+        return isset($this->rest_hits->ip) ? esc_sql($this->rest_hits->ip) : esc_sql($ip);
     }
 
     /**
@@ -122,9 +122,9 @@ class Hits
     public function set_exclusion($exclude)
     {
 
-        if (isset($this->rest_hits->exclusion_match) and isset($this->rest_hits->exclusion_reason)) {
+        if (isset($this->rest_hits->exclusion_match) and isset($this->rest_hits->exclusion_reason) and in_array($this->rest_hits->exclusion_reason, Exclusion::exclusion_list()) == true) {
             return array(
-                'exclusion_match' => $this->rest_hits->exclusion_match == 'yes',
+                'exclusion_match'  => $this->rest_hits->exclusion_match == 'yes',
                 'exclusion_reason' => $this->rest_hits->exclusion_reason,
             );
         }
@@ -180,8 +180,8 @@ class Hits
 
         if (isset($this->rest_hits->current_page_type) and isset($this->rest_hits->current_page_id)) {
             return array(
-                'type'         => $this->rest_hits->current_page_type,
-                'id'           => $this->rest_hits->current_page_id,
+                'type'         => esc_sql($this->rest_hits->current_page_type),
+                'id'           => esc_sql($this->rest_hits->current_page_id),
                 'search_query' => isset($this->rest_hits->search_query) ? $this->rest_hits->search_query : ''
             );
         }

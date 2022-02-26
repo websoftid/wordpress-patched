@@ -65,7 +65,7 @@ class Admin_Template
             $template_file = WP_STATISTICS_DIR . "includes/admin/templates/" . $file . ".php";
             if (!file_exists($template_file)) {
                 Helper::doing_it_wrong(__FUNCTION__, __('Template not found.', 'wp-statistics'));
-                return;
+                continue;
             }
 
             // include File
@@ -241,7 +241,7 @@ class Admin_Template
             }
 
             // Push To list
-            $list[$number_days] = array('title' => $title, 'link' => $link, 'active' => $active);
+            $list[$number_days] = array('title' => $title, 'link' => sanitize_url($link), 'active' => $active);
         }
 
         return array('list' => $list, 'from' => reset($RequestDateKeys), 'to' => end($RequestDateKeys));

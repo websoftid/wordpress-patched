@@ -116,9 +116,10 @@ class Settings {
 	 * @return \WP_REST_Response          The response.
 	 */
 	public static function saveChanges( $request ) {
-		$body    = $request->get_json_params();
-		$options = ! empty( $body['options'] ) ? $body['options'] : [];
-		$network = ! empty( $body['network'] ) ? (bool) $body['network'] : false;
+		$body           = $request->get_json_params();
+		$options        = ! empty( $body['options'] ) ? $body['options'] : [];
+		$dynamicOptions = ! empty( $body['dynamicOptions'] ) ? $body['dynamicOptions'] : [];
+		$network        = ! empty( $body['network'] ) ? (bool) $body['network'] : false;
 
 		// If this is the network admin, reset the options.
 		if ( $network ) {
@@ -126,14 +127,14 @@ class Settings {
 		}
 
 		aioseo()->options->sanitizeAndSave( $options );
+		aioseo()->dynamicOptions->sanitizeAndSave( $dynamicOptions );
 
 		// Re-initialize notices.
 		aioseo()->notices->init();
 
 		return new \WP_REST_Response( [
 			'success'       => true,
-			'notifications' => Models\Notification::getNotifications(),
-			'redirection'   => aioseo()->options->getRedirection()
+			'notifications' => Models\Notification::getNotifications()
 		], 200 );
 	}
 
@@ -152,9 +153,9 @@ class Settings {
 		$notAllowedOptions = aioseo()->access->getNotAllowedOptions();
 
 		foreach ( $settings as $setting ) {
-			$option = in_array( $setting, [ 'robots', 'blocker' ], true ) ? 'tools' : aioseo()->helpers->dashesToCamelCase( $setting );
+			$optionAccess = in_array( $setting, [ 'robots', 'blocker' ], true ) ? 'tools' : $setting;
 
-			if ( in_array( $option, $notAllowedOptions, true ) ) {
+			if ( in_array( $optionAccess, $notAllowedOptions, true ) ) {
 				continue;
 			}
 
@@ -166,8 +167,11 @@ class Settings {
 					aioseo()->options->deprecated->tools->blocker->reset();
 					break;
 				default:
-					if ( aioseo()->options->has( $option ) ) {
-						aioseo()->options->$option->reset();
+					if ( aioseo()->options->has( $setting ) ) {
+						aioseo()->options->$setting->reset();
+					}
+					if ( aioseo()->dynamicOptions->has( $setting ) ) {
+						aioseo()->dynamicOptions->$setting->reset();
 					}
 			}
 
@@ -177,8 +181,7 @@ class Settings {
 		}
 
 		return new \WP_REST_Response( [
-			'success' => true,
-			'options' => aioseo()->options->all()
+			'success' => true
 		], 200 );
 	}
 
@@ -211,12 +214,38 @@ class Settings {
 					$contents['settings']['deprecated'] = array_diff_key( $contents['settings']['deprecated'], $notAllowedOptions );
 				}
 
+				// Remove any dynamic options and save them separately since this has been refactored.
+				$commonDynamic = [
+					'sitemap',
+					'searchAppearance',
+					'breadcrumbs',
+					'accessControl'
+				];
+
+				foreach ( $commonDynamic as $cd ) {
+					if ( ! empty( $contents['settings'][ $cd ]['dynamic'] ) ) {
+						$contents['settings']['dynamic'][ $cd ] = $contents['settings'][ $cd ]['dynamic'];
+						unset( $contents['settings'][ $cd ]['dynamic'] );
+					}
+				}
+
+				// These options have a very different structure so we'll do them separately.
+				if ( ! empty( $contents['settings']['social']['facebook']['general']['dynamic'] ) ) {
+					$contents['settings']['dynamic']['social']['facebook']['general'] = $contents['settings']['social']['facebook']['general']['dynamic'];
+					unset( $contents['settings']['social']['facebook']['general']['dynamic'] );
+				}
+
+				if ( ! empty( $contents['settings']['dynamic'] ) ) {
+					aioseo()->dynamicOptions->sanitizeAndSave( $contents['settings']['dynamic'] );
+					unset( $contents['settings']['dynamic'] );
+				}
+
 				aioseo()->options->sanitizeAndSave( $contents['settings'] );
 			}
 
 			if ( ! empty( $contents['postOptions'] ) ) {
 				$notAllowedFields = aioseo()->access->getNotAllowedPageFields();
-				foreach ( $contents['postOptions'] as $postType => $postData ) {
+				foreach ( $contents['postOptions'] as $postData ) {
 					// Posts.
 					if ( ! empty( $postData['posts'] ) ) {
 						foreach ( $postData['posts'] as $post ) {
@@ -266,15 +295,34 @@ class Settings {
 
 		if ( ! empty( $settings ) ) {
 			$options           = aioseo()->options->noConflict();
+			$dynamicOptions    = aioseo()->dynamicOptions->noConflict();
 			$notAllowedOptions = aioseo()->access->getNotAllowedOptions();
 			foreach ( $settings as $setting ) {
-				if ( ! in_array( $setting, $notAllowedOptions, true ) && $options->has( $setting ) ) {
-					$allSettings['settings'][ $setting ] = $options->$setting->all();
+				$optionAccess = in_array( $setting, [ 'robots', 'blocker' ], true ) ? 'tools' : $setting;
 
-					// It there is a related deprecated $setting, include it.
-					if ( $options->deprecated->has( $setting ) ) {
-						$allSettings['settings']['deprecated'][ $setting ] = $options->deprecated->$setting->all();
-					}
+				if ( in_array( $optionAccess, $notAllowedOptions, true ) ) {
+					continue;
+				}
+
+				switch ( $setting ) {
+					case 'robots':
+						$allSettings['settings']['tools']['robots'] = $options->tools->robots->all();
+						break;
+					default:
+						if ( $options->has( $setting ) ) {
+							$allSettings['settings'][ $setting ] = $options->$setting->all();
+						}
+
+						// If there are related dynamic settings, let's include them.
+						if ( $dynamicOptions->has( $setting ) ) {
+							$allSettings['settings']['dynamic'][ $setting ] = $dynamicOptions->$setting->all();
+						}
+
+						// It there is a related deprecated $setting, include it.
+						if ( $options->deprecated->has( $setting ) ) {
+							$allSettings['settings']['deprecated'][ $setting ] = $options->deprecated->$setting->all();
+						}
+						break;
 				}
 			}
 		}
@@ -340,7 +388,14 @@ class Settings {
 
 		switch ( $action ) {
 			case 'clear-cache':
-				aioseo()->transients->clearCache();
+				aioseo()->cache->clear();
+				break;
+			case 'readd-capabilities':
+				aioseo()->access->addCapabilities();
+				break;
+			case 'rerun-migrations':
+				aioseo()->internalOptions->database->installedTables   = '';
+				aioseo()->internalOptions->internal->lastActiveVersion = '4.0.0';
 				break;
 			case 'remove-duplicates':
 				aioseo()->updates->removeDuplicateRecords();
@@ -350,12 +405,6 @@ class Settings {
 				break;
 			case 'clear-image-data':
 				aioseo()->sitemap->query->resetImages();
-				break;
-			case 'clear-video-data':
-				$video = aioseo()->sitemap->addons['video'];
-				if ( ! empty( $video ) ) {
-					aioseo()->sitemap->addons['video']['query']->resetVideos();
-				}
 				break;
 			case 'restart-v3-migration':
 				Migration\Helpers::redoMigration();

@@ -7,6 +7,8 @@ use Yoast\WP\SEO\Helpers\Post_Type_Helper;
 
 /**
  * Reindexing action for post link indexables.
+ *
+ * @phpcs:disable Yoast.NamingConventions.ObjectNameDepth.MaxExceeded
  */
 class Post_Link_Indexing_Action extends Abstract_Link_Indexing_Action {
 
@@ -16,6 +18,13 @@ class Post_Link_Indexing_Action extends Abstract_Link_Indexing_Action {
 	 * @var string
 	 */
 	const UNINDEXED_COUNT_TRANSIENT = 'wpseo_unindexed_post_link_count';
+
+	/**
+	 * The transient cache key for limited counts.
+	 *
+	 * @var string
+	 */
+	const UNINDEXED_LIMITED_COUNT_TRANSIENT = self::UNINDEXED_COUNT_TRANSIENT . '_limited';
 
 	/**
 	 * The post type helper.
