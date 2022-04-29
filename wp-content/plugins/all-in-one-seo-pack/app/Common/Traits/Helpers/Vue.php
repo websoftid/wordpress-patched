@@ -20,10 +20,23 @@ trait Vue {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @param  string $page The current page.
-	 * @return array        The data.
+	 * @param  string $page         The current page.
+	 * @param  int    $staticPostId Data for a specific post.
+	 * @param  string $integration  Data for a integration ( builder ).
+	 * @return array                The data.
 	 */
 	public function getVueData( $page = null, $staticPostId = null, $integration = null ) {
+		static $showNotificationsDrawer = null;
+		if ( null === $showNotificationsDrawer ) {
+			$showNotificationsDrawer = aioseo()->core->cache->get( 'show_notifications_drawer' ) ? true : false;
+
+			// IF this is set to true, let's disable it now so it doesn't pop up again.
+			if ( $showNotificationsDrawer ) {
+				aioseo()->core->cache->delete( 'show_notifications_drawer' );
+			}
+		}
+
+		global $wp_version;
 		$screen = aioseo()->helpers->getCurrentScreen();
 
 		$isStaticHomePage = 'page' === get_option( 'show_on_front' );
@@ -47,7 +60,9 @@ trait Vue {
 				'mainSiteUrl'       => $this->getSiteUrl(),
 				'home'              => home_url(),
 				'restUrl'           => rest_url(),
-				'publicPath'        => plugin_dir_url( AIOSEO_FILE ),
+				'editScreen'        => admin_url( 'edit.php' ),
+				'publicPath'        => aioseo()->core->assets->normalizeAssetsHost( plugin_dir_url( AIOSEO_FILE ) ),
+				'assetsPath'        => aioseo()->core->assets->getAssetsPath(),
 				'rssFeedUrl'        => get_bloginfo( 'rss2_url' ),
 				'generalSitemapUrl' => aioseo()->sitemap->helpers->getUrl( 'general' ),
 				'rssSitemapUrl'     => aioseo()->sitemap->helpers->getUrl( 'rss' ),
@@ -61,17 +76,19 @@ trait Vue {
 					'redirect' => rawurldecode( base64_encode( admin_url( 'index.php?page=aioseo-connect' ) ) )
 				], defined( 'AIOSEO_CONNECT_URL' ) ? AIOSEO_CONNECT_URL : 'https://connect.aioseo.com' ),
 				'aio'               => [
-					'wizard'           => admin_url( 'index.php?page=aioseo-setup-wizard' ),
 					'dashboard'        => admin_url( 'admin.php?page=aioseo' ),
-					'settings'         => admin_url( 'admin.php?page=aioseo-settings' ),
-					'localSeo'         => admin_url( 'admin.php?page=aioseo-local-seo' ),
 					'featureManager'   => admin_url( 'admin.php?page=aioseo-feature-manager' ),
-					'sitemaps'         => admin_url( 'admin.php?page=aioseo-sitemaps' ),
-					'seoAnalysis'      => admin_url( 'admin.php?page=aioseo-seo-analysis' ),
+					'linkAssistant'    => admin_url( 'admin.php?page=aioseo-link-assistant' ),
+					'localSeo'         => admin_url( 'admin.php?page=aioseo-local-seo' ),
+					'monsterinsights'  => admin_url( 'admin.php?page=aioseo-monsterinsights' ),
+					'redirects'        => admin_url( 'admin.php?page=aioseo-redirects' ),
 					'searchAppearance' => admin_url( 'admin.php?page=aioseo-search-appearance' ),
+					'seoAnalysis'      => admin_url( 'admin.php?page=aioseo-seo-analysis' ),
+					'settings'         => admin_url( 'admin.php?page=aioseo-settings' ),
+					'sitemaps'         => admin_url( 'admin.php?page=aioseo-sitemaps' ),
 					'socialNetworks'   => admin_url( 'admin.php?page=aioseo-social-networks' ),
 					'tools'            => admin_url( 'admin.php?page=aioseo-tools' ),
-					'monsterinsights'  => admin_url( 'admin.php?page=aioseo-monsterinsights' )
+					'wizard'           => admin_url( 'index.php?page=aioseo-setup-wizard' )
 				],
 				'admin'             => [
 					'widgets'          => admin_url( 'widgets.php' ),
@@ -101,7 +118,7 @@ trait Vue {
 				'multisite'           => is_multisite(),
 				'network'             => is_network_admin(),
 				'mainSite'            => is_main_site(),
-				'subdomain'           => defined( 'SUBDOMAIN_INSTALL' ) && SUBDOMAIN_INSTALL,
+				'subdomain'           => $this->isSubdomain(),
 				'isWooCommerceActive' => $this->isWooCommerceActive(),
 				'isBBPressActive'     => class_exists( 'bbPress' ),
 				'staticHomePage'      => $isStaticHomePage ? $staticHomePage : false,
@@ -127,9 +144,12 @@ trait Vue {
 				'archives'     => $this->getPublicPostTypes( false, true, true ),
 				'postStatuses' => $this->getPublicPostStatuses()
 			],
-			'notifications'    => Models\Notification::getNotifications( false ),
+			'notifications'    => array_merge( Models\Notification::getNotifications( false ), [
+				'force' => $showNotificationsDrawer ? true : false
+			] ),
 			'addons'           => aioseo()->addons->getAddons(),
 			'version'          => AIOSEO_VERSION,
+			'wpVersion'        => $wp_version,
 			'helpPanel'        => json_decode( aioseo()->help->getDocs() ),
 			'scheduledActions' => [
 				'sitemaps' => []
@@ -156,7 +176,8 @@ trait Vue {
 				'id'                             => $postId,
 				'priority'                       => ! empty( $post->priority ) ? $post->priority : 'default',
 				'frequency'                      => ! empty( $post->frequency ) ? $post->frequency : 'default',
-				'permalink'                      => get_the_permalink(),
+				'permalink'                      => get_permalink( $postId ),
+				'permalinkPath'                  => aioseo()->helpers->leadingSlashIt( aioseo()->helpers->getPermalinkPath( get_permalink( $postId ) ) ),
 				'title'                          => ! empty( $post->title ) ? $post->title : aioseo()->meta->title->getPostTypeTitle( $postTypeObj->name ),
 				'description'                    => ! empty( $post->description ) ? $post->description : aioseo()->meta->description->getPostTypeDescription( $postTypeObj->name ),
 				'keywords'                       => ! empty( $post->keywords ) ? $post->keywords : wp_json_encode( [] ),
@@ -172,6 +193,7 @@ trait Vue {
 				],
 				'type'                           => $postTypeObj->labels->singular_name,
 				'postType'                       => 'type' === $postTypeObj->name ? '_aioseo_type' : $postTypeObj->name,
+				'postStatus'                     => get_post_status( $postId ),
 				'isSpecialPage'                  => $this->isSpecialPage( $postId ),
 				'isWooCommercePageWithoutSchema' => $this->isWooCommercePageWithoutSchema( $postId ),
 				'seo_score'                      => (int) $post->seo_score,
@@ -185,8 +207,8 @@ trait Vue {
 				'noimageindex'                   => ( (int) $post->robots_noimageindex ) === 0 ? false : true,
 				'noodp'                          => ( (int) $post->robots_noodp ) === 0 ? false : true,
 				'notranslate'                    => ( (int) $post->robots_notranslate ) === 0 ? false : true,
-				'maxSnippet'                     => null === $post->robots_max_snippet ? -1 : (int) $post->robots_max_snippet,
-				'maxVideoPreview'                => null === $post->robots_max_videopreview ? -1 : (int) $post->robots_max_videopreview,
+				'maxSnippet'                     => null === $post->robots_max_snippet ? - 1 : (int) $post->robots_max_snippet,
+				'maxVideoPreview'                => null === $post->robots_max_videopreview ? - 1 : (int) $post->robots_max_videopreview,
 				'maxImagePreview'                => $post->robots_max_imagepreview,
 				'modalOpen'                      => false,
 				'tabs'                           => ( ! empty( $post->tabs ) )
@@ -220,8 +242,14 @@ trait Vue {
 				],
 				'linkAssistant'                  => [
 					'modalOpen' => false
+				],
+				'limit_modified_date'            => ( (int) $post->limit_modified_date ) === 0 ? false : true,
+				'redirects'                      => [
+					'modalOpen' => false
 				]
 			];
+
+			$data['user']['siteAuthors'] = $this->getSiteAuthors();
 
 			if ( empty( $integration ) ) {
 				$data['integration'] = aioseo()->helpers->getPostPageBuilderName( $postId );
@@ -242,6 +270,13 @@ trait Vue {
 			}
 		}
 
+		if ( 'dashboard' === $page ) {
+			$data['setupWizard']['isCompleted'] = aioseo()->standalone->setupWizard->isCompleted();
+			$data['rssFeed']                    = aioseo()->dashboard->getAioseoRssFeed();
+			$data['seoOverview']                = aioseo()->postSettings->getPostTypesOverview();
+			$data['importers']                  = aioseo()->importExport->plugins();
+		}
+
 		if ( 'sitemaps' === $page ) {
 			try {
 				if ( as_next_scheduled_action( 'aioseo_static_sitemap_regeneration' ) ) {
@@ -255,6 +290,10 @@ trait Vue {
 		if ( 'setup-wizard' === $page ) {
 			$data['users']     = $this->getSiteUsers( [ 'administrator', 'editor', 'author' ] );
 			$data['importers'] = aioseo()->importExport->plugins();
+			$data['data'] += [
+				'staticHomePageTitle'       => $isStaticHomePage ? aioseo()->meta->title->getTitle( $staticHomePage ) : '',
+				'staticHomePageDescription' => $isStaticHomePage ? aioseo()->meta->description->getDescription( $staticHomePage ) : '',
+			];
 		}
 
 		if ( 'search-appearance' === $page ) {
@@ -298,13 +337,10 @@ trait Vue {
 			$data['breadcrumbs']['defaultTemplate'] = aioseo()->helpers->encodeOutputHtml( aioseo()->breadcrumbs->frontend->getDefaultTemplate() );
 		}
 
-		$loadedAddons = aioseo()->addons->getLoadedAddons();
-		if ( ! empty( $loadedAddons ) ) {
-			foreach ( $loadedAddons as $addon ) {
-				if ( isset( $addon->helpers ) && method_exists( $addon->helpers, 'getVueData' ) ) {
-					$data = $addon->helpers->getVueData( $data, $page, isset( $post ) ? $post : null );
-				}
-			}
+		if ( 'divi' === $integration ) {
+			// This needs to be dropped in order to prevent JavaScript errors in Divi's visual builder.
+			// Some of the data from the site analysis can contain HTML tags, e.g. the search preview, and somehow that causes JSON.parse to fail on our localized Vue data.
+			unset( $data['internalOptions']['internal']['siteAnalysis'] );
 		}
 
 		return $data;

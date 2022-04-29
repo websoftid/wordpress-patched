@@ -156,10 +156,6 @@ trait WpContext {
 	 * @return WP_Post|null         The post object.
 	 */
 	public function getPost( $postId = false ) {
-		static $showOnFront  = null;
-		static $pageOnFront  = null;
-		static $pageForPosts = null;
-
 		$postId = is_a( $postId, 'WP_Post' ) ? $postId->ID : $postId;
 
 		if ( aioseo()->helpers->isWooCommerceShopPage( $postId ) ) {
@@ -167,23 +163,21 @@ trait WpContext {
 		}
 
 		if ( is_front_page() || is_home() ) {
-			$showOnFront = $showOnFront ? $showOnFront : 'page' === get_option( 'show_on_front' );
+			$showOnFront = 'page' === get_option( 'show_on_front' );
 			if ( $showOnFront ) {
 				if ( is_front_page() ) {
-					$pageOnFront = $pageOnFront ? $pageOnFront : (int) get_option( 'page_on_front' );
+					$pageOnFront = (int) get_option( 'page_on_front' );
 
 					return get_post( $pageOnFront );
 				} elseif ( is_home() ) {
-					$pageForPosts = $pageForPosts ? $pageForPosts : (int) get_option( 'page_for_posts' );
+					$pageForPosts = (int) get_option( 'page_for_posts' );
 
 					return get_post( $pageForPosts );
 				}
 			}
-
-			return get_post();
 		}
 
-		// We need to check for this and not always return a post because we'll otherwise return a post on term pages.
+		// We need to check these conditions and cannot always return get_post() because we'll return the first post on archive pages (dynamic homepage, term pages, etc.).
 		if (
 			$this->isScreenBase( 'post' ) ||
 			$postId ||
@@ -203,7 +197,7 @@ trait WpContext {
 	 * @param  WP_Post|int $post The post (optional).
 	 * @return string            The post content.
 	 */
-	public function getContent( $post = null ) {
+	public function getPostContent( $post = null ) {
 		$post = ( $post && is_object( $post ) ) ? $post : $post = $this->getPost( $post );
 
 		static $content = [];
@@ -231,6 +225,10 @@ trait WpContext {
 	 * @return string              The parsed post content.
 	 */
 	public function theContent( $postContent ) {
+		if ( ! aioseo()->options->searchAppearance->advanced->runShortcodes ) {
+			return $postContent;
+		}
+
 		// The order of the function calls below is intentional and should NOT change.
 		$postContent = function_exists( 'do_blocks' ) ? do_blocks( $postContent ) : $postContent; // phpcs:ignore AIOSEO.WpFunctionUse.NewFunctions.do_blocksFound
 		$postContent = wpautop( $postContent );
@@ -259,14 +257,7 @@ trait WpContext {
 			return $post->post_content;
 		}
 
-		$postContent = $post->post_content;
-		if (
-			! in_array( 'runShortcodesInDescription', aioseo()->internalOptions->deprecatedOptions, true ) ||
-			aioseo()->options->deprecated->searchAppearance->advanced->runShortcodesInDescription
-		) {
-			$postContent = $this->theContent( $postContent );
-		}
-
+		$postContent          = $this->getPostContent( $post );
 		$postContent          = wp_trim_words( $postContent, 55, '' );
 		$postContent          = str_replace( ']]>', ']]&gt;', $postContent );
 		$postContent          = preg_replace( '#(<figure.*\/figure>|<img.*\/>)#', '', $postContent );
@@ -345,16 +336,22 @@ trait WpContext {
 	 * @return int The page number.
 	 */
 	public function getPageNumber() {
-		$page  = get_query_var( 'page' );
-		$paged = get_query_var( 'paged' );
+		$page = get_query_var( 'page' );
+		if ( ! empty( $page ) ) {
+			return (int) $page;
+		}
 
-		return ! empty( $page )
-			? $page
-			: (
-				! empty( $paged )
-					? $paged
-					: 1
-			);
+		$paged = get_query_var( 'paged' );
+		if ( ! empty( $paged ) ) {
+			return (int) $paged;
+		}
+
+		$cpage = get_query_var( 'cpage' );
+		if ( ! empty( $cpage ) ) {
+			return (int) $cpage;
+		}
+
+		return 1;
 	}
 
 	/**
@@ -363,7 +360,7 @@ trait WpContext {
 	 * @since 4.0.5
 	 *
 	 * @param  WP_Post $post                The Post object to check.
-	 * @param  bool    $allowedPostStatuses Whether or not to allow drafts.
+	 * @param  array   $allowedPostStatuses Allowed post statuses.
 	 * @return bool                         True if valid, false if not.
 	 */
 	public function isValidPost( $post, $allowedPostStatuses = [ 'publish' ] ) {
@@ -375,12 +372,23 @@ trait WpContext {
 			$post = get_post( $post );
 		}
 
-		// In order to prevent recursion, we are skipping scheduled-action posts.
+		// No post, no go.
+		if ( empty( $post ) ) {
+			return false;
+		}
+
+		// In order to prevent recursion, we are skipping scheduled-action posts and revisions.
 		if (
-			empty( $post ) ||
 			'scheduled-action' === $post->post_type ||
-			'revision' === $post->post_type ||
-			! in_array( $post->post_status, $allowedPostStatuses, true )
+			'revision' === $post->post_type
+		) {
+			return false;
+		}
+
+		// Ensure this post has the proper post status.
+		if (
+			! in_array( $post->post_status, $allowedPostStatuses, true ) &&
+			! in_array( 'all', $allowedPostStatuses, true )
 		) {
 			return false;
 		}
@@ -415,7 +423,7 @@ trait WpContext {
 	public function attachmentUrlToPostId( $url ) {
 		$cacheName = sha1( "aioseo_attachment_url_to_post_id_$url" );
 
-		$cachedId = aioseo()->cache->get( $cacheName );
+		$cachedId = aioseo()->core->cache->get( $cacheName );
 		if ( $cachedId ) {
 			return 'none' !== $cachedId && is_numeric( $cachedId ) ? (int) $cachedId : false;
 		}
@@ -432,7 +440,7 @@ trait WpContext {
 		}
 
 		if ( ! $this->isValidAttachment( $path ) ) {
-			aioseo()->cache->update( $cacheName, 'none' );
+			aioseo()->core->cache->update( $cacheName, 'none' );
 
 			return false;
 		}
@@ -441,7 +449,7 @@ trait WpContext {
 			$path = substr( $path, strlen( $uploadDirInfo['baseurl'] . '/' ) );
 		}
 
-		$results = aioseo()->db->start( 'postmeta' )
+		$results = aioseo()->core->db->start( 'postmeta' )
 			->select( 'post_id' )
 			->where( 'meta_key', '_wp_attached_file' )
 			->where( 'meta_value', $path )
@@ -450,12 +458,12 @@ trait WpContext {
 			->result();
 
 		if ( empty( $results[0]->post_id ) ) {
-			aioseo()->cache->update( $cacheName, 'none' );
+			aioseo()->core->cache->update( $cacheName, 'none' );
 
 			return false;
 		}
 
-		aioseo()->cache->update( $cacheName, $results[0]->post_id );
+		aioseo()->core->cache->update( $cacheName, $results[0]->post_id );
 
 		return $results[0]->post_id;
 	}
@@ -469,6 +477,10 @@ trait WpContext {
 	 * @return bool True if this is a REST API request.
 	 */
 	public function isRestApiRequest() {
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+			return true;
+		}
+
 		global $wp_rewrite;
 
 		if ( empty( $wp_rewrite ) ) {
@@ -494,7 +506,7 @@ trait WpContext {
 	 *
 	 * @return bool Wether the request is an AJAX, CRON or REST request.
 	 */
-	public function isAjaxCronRest() {
+	public function isAjaxCronRestRequest() {
 		return wp_doing_ajax() || wp_doing_cron() || $this->isRestApiRequest();
 	}
 
@@ -546,5 +558,20 @@ trait WpContext {
 		}
 
 		return get_current_screen();
+	}
+
+	/**
+	 * Checks whether the current site is a multisite subdomain.
+	 *
+	 * @since 4.1.9
+	 *
+	 * @return bool Whether the current site is a subdomain.
+	 */
+	public function isSubdomain() {
+		if ( ! is_multisite() ) {
+			return false;
+		}
+
+		return apply_filters( 'aioseo_multisite_subdomain', is_subdomain_install() );
 	}
 }

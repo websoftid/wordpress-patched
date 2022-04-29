@@ -283,6 +283,8 @@ trait Strings {
 			return $decodeHtmlEntities[ $string ];
 		}
 
+		// We must manually decode non-breaking spaces since html_entity_decode doesn't do this.
+		$string                        = $this->pregReplace( '/&nbsp;/', ' ', $string );
 		$decodeHtmlEntities[ $string ] = html_entity_decode( (string) $string, ENT_QUOTES );
 
 		return $decodeHtmlEntities[ $string ];
@@ -431,5 +433,18 @@ trait Strings {
 		}
 
 		return $outerQuotes ? "'" . implode( "', '", $array ) . "'" : implode( "', '", $array );
+	}
+
+	/**
+	 * Returns an imploded string of placeholders for usage in a WPDB prepare statement.
+	 *
+	 * @since 4.1.9
+	 *
+	 * @param  array  $array       The array.
+	 * @param  string $placeholder The placeholder (e.g. "%s" or "%d").
+	 * @return string              The imploded string with placeholders.
+	 */
+	public function implodePlaceholders( $array, $placeholder = '%s' ) {
+		return implode( ', ', array_fill( 0, count( $array ), $placeholder ) );
 	}
 }

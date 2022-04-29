@@ -66,6 +66,12 @@ abstract class Filters {
 
 		// Bypass the JWT Auth plugin's unnecessary restrictions. https://wordpress.org/plugins/jwt-auth/
 		add_filter( 'jwt_auth_default_whitelist', [ $this, 'allowRestRoutes' ] );
+
+		// Clear the site authors cache.
+		add_action( 'profile_update', [ $this, 'clearAuthorsCache' ] );
+		add_action( 'user_register', [ $this, 'clearAuthorsCache' ] );
+
+		add_filter( 'aioseo_public_post_types', [ $this, 'removeFalsePublicPostTypes' ] );
 	}
 
 	/**
@@ -253,5 +259,46 @@ abstract class Filters {
 		return array_merge( $allowList, [
 			'/aioseo/'
 		] );
+	}
+
+	/**
+	 * Clear the site authors cache when user is updated or registered.
+	 *
+	 * @since 4.1.8
+	 *
+	 * @return void
+	 */
+	public function clearAuthorsCache() {
+		aioseo()->core->cache->delete( 'site_authors' );
+	}
+
+	/**
+	 * Filters out post types that aren't really public when getPublicPostTypes() is called.
+	 *
+	 * @since 4.1.9
+	 *
+	 * @param  array[Object]|array[string] $postTypes The post types
+	 * @return array[Object]|array[string]            The filtered post types.
+	 */
+	public function removeFalsePublicPostTypes( $postTypes ) {
+		$elementorEnabled = isset( aioseo()->standalone->pageBuilderIntegrations['elementor'] ) &&
+			aioseo()->standalone->pageBuilderIntegrations['elementor']->isPluginActive();
+
+		if ( ! $elementorEnabled ) {
+			return $postTypes;
+		}
+
+		foreach ( $postTypes as $index => $postType ) {
+			if ( is_string( $postType ) && 'elementor_library' === $postType ) {
+				unset( $postTypes[ $index ] );
+				continue;
+			}
+
+			if ( is_array( $postType ) && 'elementor_library' === $postType['name'] ) {
+				unset( $postTypes[ $index ] );
+			}
+		}
+
+		return array_values( $postTypes );
 	}
 }

@@ -57,6 +57,7 @@ class Post extends Model {
 		'robots_noimageindex',
 		'robots_noodp',
 		'robots_notranslate',
+		'limit_modified_date',
 	];
 
 	/**
@@ -68,8 +69,16 @@ class Post extends Model {
 	 * @return Post         The Post object.
 	 */
 	public static function getPost( $postId ) {
-		$post = aioseo()->db
-			->start( 'aioseo_posts' )
+		// This is needed to prevent an error when upgrading from 4.1.8 to 4.1.9.
+		// WordPress deletes the attachment .zip file for the new plugin version after installing it, which triggers the "delete_post" hook.
+		// In-between the 4.1.8 to 4.1.9 update, the new Core class does not exist yet, causing the PHP error.
+		// TODO: Delete this in a future release.
+		$post = new self;
+		if ( ! property_exists( aioseo(), 'core' ) ) {
+			return $post;
+		}
+
+		$post = aioseo()->core->db->start( 'aioseo_posts' )
 			->where( 'post_id', $postId )
 			->run()
 			->model( 'AIOSEO\\Plugin\\Common\\Models\\Post' );
@@ -78,6 +87,7 @@ class Post extends Model {
 			$post->post_id = $postId;
 			$post          = self::setDynamicDefaults( $post, $postId );
 		} else {
+			$post = self::migrateRemovedQaSchema( $post );
 			$post = self::runDynamicMigrations( $post );
 		}
 
@@ -113,6 +123,31 @@ class Post extends Model {
 		$post->twitter_use_og = aioseo()->options->social->twitter->general->useOgData;
 
 		return $post;
+	}
+
+	/**
+	 * Migrates removed QAPage schema on-the-fly when the post is loaded.
+	 *
+	 * @since 4.1.8
+	 *
+	 * @param  Post $aioseoPost The post object.
+	 * @return Post             The modified post object.
+	 */
+	private static function migrateRemovedQaSchema( $aioseoPost ) {
+		if ( 'webpage' !== strtolower( $aioseoPost->schema_type ) ) {
+			return $aioseoPost;
+		}
+
+		$schemaTypeOptions = json_decode( $aioseoPost->schema_type_options );
+		if ( 'qapage' !== strtolower( $schemaTypeOptions->webPage->webPageType ) ) {
+			return $aioseoPost;
+		}
+
+		$schemaTypeOptions->webPage->webPageType = 'WebPage';
+		$aioseoPost->schema_type_options         = wp_json_encode( $schemaTypeOptions );
+		$aioseoPost->save();
+
+		return $aioseoPost;
 	}
 
 	/**
@@ -169,7 +204,7 @@ class Post extends Model {
 		$thePost->save();
 		$thePost->reset();
 
-		$lastError = aioseo()->db->lastError();
+		$lastError = aioseo()->core->db->lastError();
 		if ( ! empty( $lastError ) ) {
 			return $lastError;
 		}
@@ -270,6 +305,7 @@ class Post extends Model {
 		// Miscellaneous
 		$thePost->tabs                        = ! empty( $data['tabs'] ) ? wp_json_encode( $data['tabs'] ) : parent::getDefaultTabsOptions();
 		$thePost->local_seo                   = ! empty( $data['local_seo'] ) ? wp_json_encode( $data['local_seo'] ) : null;
+		$thePost->limit_modified_date         = isset( $data['limit_modified_date'] ) ? rest_sanitize_boolean( $data['limit_modified_date'] ) : 0;
 		$thePost->updated                     = gmdate( 'Y-m-d H:i:s' );
 
 		// Before we determine the OG/Twitter image, we need to set the meta data cache manually because the changes haven't been saved yet.

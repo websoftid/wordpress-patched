@@ -72,8 +72,8 @@ class Migration {
 
 		// Stop migration for new v4 users where it was incorrectly triggered.
 		if ( version_compare( $lastActiveVersion[0], '4.0.4', '=' ) && ! get_option( 'aioseop_options' ) ) {
-			aioseo()->cache->delete( 'v3_migration_in_progress_posts' );
-			aioseo()->cache->delete( 'v3_migration_in_progress_terms' );
+			aioseo()->core->cache->delete( 'v3_migration_in_progress_posts' );
+			aioseo()->core->cache->delete( 'v3_migration_in_progress_terms' );
 
 			try {
 				aioseo()->helpers->unscheduleAction( 'aioseo_migrate_post_meta' );
@@ -93,7 +93,7 @@ class Migration {
 	 */
 	public function doMigration() {
 		// If our tables do not exist, create them now.
-		if ( ! aioseo()->db->tableExists( 'aioseo_posts' ) ) {
+		if ( ! aioseo()->core->db->tableExists( 'aioseo_posts' ) ) {
 			aioseo()->updates->addInitialCustomTablesForV4();
 		}
 
@@ -109,7 +109,7 @@ class Migration {
 
 		update_option( 'aioseo_options_v3', $this->oldOptions );
 
-		aioseo()->cache->update( 'v3_migration_in_progress_posts', time(), WEEK_IN_SECONDS );
+		aioseo()->core->cache->update( 'v3_migration_in_progress_posts', time(), WEEK_IN_SECONDS );
 
 		$this->migrateSettings();
 		$this->meta->migrateMeta();
@@ -125,7 +125,7 @@ class Migration {
 	 * @return void
 	 */
 	public function redoMetaMigration() {
-		aioseo()->cache->update( 'v3_migration_in_progress_posts', time(), WEEK_IN_SECONDS );
+		aioseo()->core->cache->update( 'v3_migration_in_progress_posts', time(), WEEK_IN_SECONDS );
 		$this->meta->migrateMeta();
 	}
 
@@ -150,13 +150,13 @@ class Migration {
 			}
 		}
 
-		aioseo()->cache->update( 'v3_migration_in_progress_settings', time() );
+		aioseo()->core->cache->update( 'v3_migration_in_progress_settings', time() );
 
 		new GeneralSettings();
 
 		if ( ! isset( $this->oldOptions['modules']['aiosp_feature_manager_options'] ) ) {
 			new Sitemap();
-			aioseo()->cache->delete( 'v3_migration_in_progress_settings' );
+			aioseo()->core->cache->delete( 'v3_migration_in_progress_settings' );
 
 			return;
 		}
@@ -183,7 +183,7 @@ class Migration {
 			new Wpml();
 		}
 
-		aioseo()->cache->delete( 'v3_migration_in_progress_settings' );
+		aioseo()->core->cache->delete( 'v3_migration_in_progress_settings' );
 	}
 
 	/**
@@ -211,5 +211,16 @@ class Migration {
 		if ( ! empty( $this->oldOptions['modules']['aiosp_feature_manager_options']['aiosp_feature_manager_enable_robots'] ) ) {
 			aioseo()->options->tools->robots->enable = true;
 		}
+	}
+
+	/**
+	 * Checks whether the V3 migration is running.
+	 *
+	 * @since 4.1.8
+	 *
+	 * @return bool Whether the V3 migration is running.
+	 */
+	public function isMigrationRunning() {
+		return aioseo()->core->cache->get( 'v3_migration_in_progress_settings' ) || aioseo()->core->cache->get( 'v3_migration_in_progress_posts' );
 	}
 }

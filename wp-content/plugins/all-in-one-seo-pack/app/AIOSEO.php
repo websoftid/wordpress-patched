@@ -139,6 +139,15 @@ namespace AIOSEO\Plugin {
 		public $cachePrune;
 
 		/**
+		 * Whether we're in a dev environment.
+		 *
+		 * @since 4.1.9
+		 *
+		 * @var bool
+		 */
+		public $isDev = false;
+
+		/**
 		 * Main AIOSEO Instance.
 		 *
 		 * Insures that only one instance of AIOSEO exists in memory at any one
@@ -152,15 +161,6 @@ namespace AIOSEO\Plugin {
 			if ( null === self::$instance || ! self::$instance instanceof self ) {
 				self::$instance = new self();
 
-				// Plugin Slug - Determine plugin type and set slug accordingly.
-				if (
-					( ! defined( 'AIOSEO_DEV_VERSION' ) || 'pro' === AIOSEO_DEV_VERSION ) &&
-					is_dir( plugin_dir_path( AIOSEO_FILE ) . 'app/Pro' )
-				) {
-					self::$instance->pro         = true;
-					self::$instance->versionPath = 'Pro';
-				}
-
 				self::$instance->init();
 
 				// Load our addons on the action right after plugins_loaded.
@@ -172,6 +172,8 @@ namespace AIOSEO\Plugin {
 
 		/**
 		 * Initialize All in One SEO!
+		 *
+		 * @since 4.0.0
 		 *
 		 * @return void
 		 */
@@ -240,6 +242,45 @@ namespace AIOSEO\Plugin {
 			}
 
 			add_action( 'plugins_loaded', [ $this, 'actionScheduler' ], 10 );
+
+			$this->loadVersion();
+		}
+
+		/**
+		 * Load the version of the plugin we are currently using.
+		 *
+		 * @since 4.1.9
+		 *
+		 * @return void
+		 */
+		private function loadVersion() {
+			$proDir = is_dir( plugin_dir_path( AIOSEO_FILE ) . 'app/Pro' );
+
+			if (
+				! class_exists( '\Dotenv\Dotenv' ) ||
+				! file_exists( AIOSEO_DIR . '/build/.env' )
+			) {
+				$this->pro         = $proDir;
+				$this->versionPath = $proDir ? 'Pro' : 'Lite';
+
+				return;
+			}
+
+			$dotenv = \Dotenv\Dotenv::create( AIOSEO_DIR, '/build/.env' );
+			$dotenv->load();
+
+			$version = strtolower( getenv( 'VITE_VERSION' ) );
+			if ( ! empty( $version ) ) {
+				$this->isDev = true;
+
+				// Fix SSL certificate invalid in our local environments.
+				add_filter( 'https_ssl_verify', '__return_false' );
+			}
+
+			if ( $proDir && 'pro' === $version ) {
+				$this->pro         = true;
+				$this->versionPath = 'Pro';
+			}
 		}
 
 		/**
@@ -272,18 +313,43 @@ namespace AIOSEO\Plugin {
 		 * @return void
 		 */
 		private function preLoad() {
-			// Load core classes.
-			$this->db              = new Common\Utils\Database();
-			$this->cache           = new Common\Utils\Cache();
-			$this->cachePrune      = new Common\Utils\CachePrune();
-			$this->optionsCache    = new Common\Options\Cache();
-			$this->internalOptions = $this->pro ? new Pro\Options\InternalOptions() : new Lite\Options\InternalOptions();
+			$this->core = new Common\Core\Core();
 
-			// Backwards compatibility with addons. TODO: Remove this in the future.
-			$this->transients = $this->cache;
+			$this->backwardsCompatibility();
+
+			// Internal Options.
+			$this->internalOptions = $this->pro ? new Pro\Options\InternalOptions() : new Lite\Options\InternalOptions();
 
 			// Run pre-updates.
 			$this->preUpdates = $this->pro ? new Pro\Main\PreUpdates() : new Common\Main\PreUpdates();
+		}
+
+		/**
+		 * To prevent errors and bugs from popping up,
+		 * we will run this backwards compatibility method.
+		 *
+		 * @since 4.1.9
+		 *
+		 * @return void
+		 */
+		private function backwardsCompatibility() {
+			$this->db           = $this->core->db;
+			$this->cache        = $this->core->cache;
+			$this->transients   = $this->cache;
+			$this->cachePrune   = $this->core->cachePrune;
+			$this->optionsCache = $this->core->optionsCache;
+		}
+
+		/**
+		 * To prevent errors and bugs from popping up,
+		 * we will run this backwards compatibility method.
+		 *
+		 * @since 4.2.0
+		 *
+		 * @return void
+		 */
+		private function backwardsCompatibilityLoad() {
+			$this->postSettings->integrations = $this->standalone->pageBuilderIntegrations;
 		}
 
 		/**
@@ -315,7 +381,6 @@ namespace AIOSEO\Plugin {
 			$this->addons             = $this->pro ? new Pro\Utils\Addons() : new Common\Utils\Addons();
 			$this->tags               = $this->pro ? new Pro\Utils\Tags() : new Common\Utils\Tags();
 			$this->badBotBlocker      = new Common\Tools\BadBotBlocker();
-			$this->headlineAnalyzer   = new Common\HeadlineAnalyzer\HeadlineAnalyzer();
 			$this->breadcrumbs        = $this->pro ? new Pro\Breadcrumbs\Breadcrumbs() : new Common\Breadcrumbs\Breadcrumbs();
 			$this->dynamicBackup      = $this->pro ? new Pro\Options\DynamicBackup() : new Common\Options\DynamicBackup();
 			$this->options            = $this->pro ? new Pro\Options\Options() : new Lite\Options\Options();
@@ -341,7 +406,9 @@ namespace AIOSEO\Plugin {
 			$this->sitemap            = $this->pro ? new Pro\Sitemap\Sitemap() : new Common\Sitemap\Sitemap();
 			$this->htmlSitemap        = new Common\Sitemap\Html\Sitemap();
 			$this->templates          = new Common\Utils\Templates();
+			$this->categoryBase       = $this->pro ? new Pro\Main\CategoryBase() : null;
 			$this->postSettings       = $this->pro ? new Pro\Admin\PostSettings() : new Lite\Admin\PostSettings();
+			$this->standalone         = new Common\Standalone\Standalone;
 
 			if ( ! wp_doing_ajax() && ! wp_doing_cron() ) {
 				$this->rss       = new Common\Rss();
@@ -354,6 +421,8 @@ namespace AIOSEO\Plugin {
 				$this->filter    = new Common\Utils\Filter();
 				$this->help      = new Common\Help\Help();
 			}
+
+			$this->backwardsCompatibilityLoad();
 
 			if ( wp_doing_ajax() || wp_doing_cron() ) {
 				return;

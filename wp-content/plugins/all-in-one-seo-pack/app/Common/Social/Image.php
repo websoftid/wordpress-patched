@@ -74,37 +74,39 @@ class Image {
 			$imageSource = 'default';
 		}
 
-		switch ( $imageSource ) {
-			case 'featured':
-				$image = $this->getFeaturedImage();
-				break;
-			case 'attach':
-				$image = $this->getFirstAttachedImage();
-				break;
-			case 'content':
-				$image = $this->getFirstImageInContent();
-				break;
-			case 'author':
-				$image = $this->getAuthorAvatar();
-				break;
-			case 'auto':
-				$image = $this->getFirstAvailableImage();
-				break;
-			case 'custom':
-				$image = $this->getCustomFieldImage();
-				break;
-			case 'custom_image':
-				$metaData = aioseo()->meta->metaData->getMetaData();
-				if ( empty( $metaData ) ) {
+		if ( is_a( $this->post, 'WP_Post' ) ) {
+			switch ( $imageSource ) {
+				case 'featured':
+					$image = $this->getFeaturedImage();
 					break;
-				}
-				$image = 'facebook' === strtolower( $this->type )
-					? $metaData->og_image_custom_url
-					: $metaData->twitter_image_custom_url;
-				break;
-			case 'default':
-			default:
-				$image = aioseo()->options->social->{$this->type}->general->defaultImagePosts;
+				case 'attach':
+					$image = $this->getFirstAttachedImage();
+					break;
+				case 'content':
+					$image = $this->getFirstImageInContent();
+					break;
+				case 'author':
+					$image = $this->getAuthorAvatar();
+					break;
+				case 'auto':
+					$image = $this->getFirstAvailableImage();
+					break;
+				case 'custom':
+					$image = $this->getCustomFieldImage();
+					break;
+				case 'custom_image':
+					$metaData = aioseo()->meta->metaData->getMetaData();
+					if ( empty( $metaData ) ) {
+						break;
+					}
+					$image = 'facebook' === strtolower( $this->type )
+						? $metaData->og_image_custom_url
+						: $metaData->twitter_image_custom_url;
+					break;
+				case 'default':
+				default:
+					$image = aioseo()->options->social->{$this->type}->general->defaultImagePosts;
+			}
 		}
 
 		if ( empty( $image ) ) {
@@ -184,7 +186,7 @@ class Image {
 			return $cachedImage;
 		}
 
-		$postContent = aioseo()->helpers->getContent( $this->post );
+		$postContent = aioseo()->helpers->getPostContent( $this->post );
 		preg_match_all( '|<img.*?src=[\'"](.*?)[\'"].*?>|i', $postContent, $matches );
 
 		// Ignore cover block background image - WP >= 5.7.
