@@ -132,6 +132,7 @@ class Helpers {
 			}
 
 			$lastModified = 0;
+			$timestamp    = time();
 			foreach ( $additionalPages as $page ) {
 				if ( empty( $page['lastmod'] ) ) {
 					continue;
@@ -188,7 +189,6 @@ class Helpers {
 		$memory    = $this->performance['memory'];
 		$type      = aioseo()->sitemap->type;
 		$indexName = aioseo()->sitemap->indexName;
-		// @TODO: [V4+] Use dedicated logger class once available.
 		error_log( wp_json_encode( "$indexName index of $type sitemap generated in $time seconds using a maximum of $memory mb of memory." ) );
 	}
 
@@ -378,7 +378,7 @@ class Helpers {
 	 */
 	private function excludedObjects( $option ) {
 		$type = aioseo()->sitemap->type;
-		// The RSS Sitemap needs to exclude whatever's excluded in the general sitemap.
+		// The RSS Sitemap needs to exclude whatever is excluded in the general sitemap.
 		if ( 'rss' === $type ) {
 			$type = 'general';
 		}
@@ -425,9 +425,9 @@ class Helpers {
 			return $urls;
 		}
 
-		foreach ( aioseo()->sitemap->addons as $classes ) {
-			if ( ! empty( $classes['helpers'] ) ) {
-				$urls = array_merge( $urls, $classes['helpers']->getSitemapUrls() );
+		foreach ( aioseo()->addons->getLoadedAddons() as $loadedAddon ) {
+			if ( ! empty( $loadedAddon->helpers ) && method_exists( $loadedAddon->helpers, 'getSitemapUrls' ) ) {
+				$urls = array_merge( $urls, $loadedAddon->helpers->getSitemapUrls() );
 			}
 		}
 
@@ -472,5 +472,18 @@ class Helpers {
 		}
 
 		return $url;
+	}
+
+	/**
+	 * Returns if images should be excluded from the sitemap.
+	 *
+	 * @since 4.2.2
+	 *
+	 * @return bool
+	 */
+	public function excludeImages() {
+		$shouldExclude = aioseo()->options->sitemap->general->advancedSettings->enable && aioseo()->options->sitemap->general->advancedSettings->excludeImages;
+
+		return apply_filters( 'aioseo_sitemap_exclude_images', $shouldExclude );
 	}
 }

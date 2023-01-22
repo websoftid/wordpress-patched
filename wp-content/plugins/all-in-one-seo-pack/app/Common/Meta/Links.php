@@ -24,7 +24,8 @@ class Links {
 			'prev' => '',
 			'next' => '',
 		];
-		if ( is_home() || is_archive() || is_paged() || is_search() ) {
+
+		if ( is_home() || is_archive() || is_paged() ) {
 			$links = $this->getHomeLinks();
 		}
 
@@ -98,9 +99,9 @@ class Links {
 	private function getPostLinks( $post ) {
 		$prev     = '';
 		$next     = '';
-		$page     = aioseo()->helpers->getPageNumber();
 		$numpages = 1;
-		$content  = $post->post_content;
+		$page     = aioseo()->helpers->getPageNumber();
+		$content  = is_a( $post, 'WP_Post' ) ? $post->post_content : '';
 		if ( false !== strpos( $content, '<!--nextpage-->', 0 ) ) {
 			$content = str_replace( "\n<!--nextpage-->\n", '<!--nextpage-->', $content );
 			$content = str_replace( "\n<!--nextpage-->", '<!--nextpage-->', $content );

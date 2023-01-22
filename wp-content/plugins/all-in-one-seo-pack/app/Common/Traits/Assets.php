@@ -58,6 +58,42 @@ trait Assets {
 	private $noModuleTag = [];
 
 	/**
+	 * Core class instance.
+	 *
+	 * @since 4.2.7
+	 *
+	 * @var \AIOSEO\Plugin\Common\Core\Core
+	 */
+	protected $core = null;
+
+	/**
+	 * The LocalBusiness addon version.
+	 *
+	 * @since 4.2.7
+	 *
+	 * @var string
+	 */
+	protected $version = '';
+
+	/**
+	 * The development site domain.
+	 *
+	 * @since 4.2.7
+	 *
+	 * @var string
+	 */
+	protected $domain = '';
+
+	/**
+	 * The development server port.
+	 *
+	 * @since 4.2.7
+	 *
+	 * @var int
+	 */
+	protected $port = 0;
+
+	/**
 	 * The asset to load.
 	 *
 	 * @since 4.1.9
@@ -129,7 +165,7 @@ trait Assets {
 	 * @param  string $asset The script to load CSS for.
 	 * @return void
 	 */
-	private function loadCss( $asset ) {
+	public function loadCss( $asset ) {
 		if ( $this->shouldLoadDev() ) {
 			return;
 		}
@@ -345,8 +381,18 @@ trait Assets {
 			return $file;
 		}
 
-		require( $this->manifestFile );
-		$file = json_decode( $manifestJson, true ); // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UndefinedVariable
+		// Required for local business 1.2.5.
+		if ( preg_match( '/\.json$/', $this->manifestFile ) ) {
+			$content = $this->core->fs->getContents( $this->manifestFile );
+			$file    = json_decode( $content, true );
+
+			return $file;
+		}
+
+		$manifestJson = ''; // This is set in the view.
+		require $this->manifestFile;
+
+		$file = json_decode( $manifestJson, true );
 
 		return $file;
 	}
@@ -364,8 +410,18 @@ trait Assets {
 			return $file;
 		}
 
-		require( $this->assetManifestFile );
-		$file = json_decode( $manifestJson, true ); // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UndefinedVariable
+		// Required for local business 1.2.5.
+		if ( preg_match( '/\.json$/', $this->assetManifestFile ) ) {
+			$content = $this->core->fs->getContents( $this->assetManifestFile );
+			$file    = json_decode( $content, true );
+
+			return $file;
+		}
+
+		$manifestJson = ''; // This is set in the view.
+		require $this->assetManifestFile;
+
+		$file = json_decode( $manifestJson, true );
 
 		return $file;
 	}

@@ -73,9 +73,6 @@ class Activate {
 			aioseo()->internalOptions->internal->firstActivated = $time;
 		}
 
-		// Bust the tableExists and columnExists cache.
-		aioseo()->internalOptions->database->installedTables = '';
-
 		aioseo()->core->cache->clear();
 
 		$this->maybeRunSetupWizard();
@@ -90,7 +87,6 @@ class Activate {
 	 */
 	public function deactivate() {
 		aioseo()->access->removeCapabilities();
-		\AIOSEO\Plugin\Common\Sitemap\Rewrite::removeRewriteRules( [], true );
 	}
 
 	/**

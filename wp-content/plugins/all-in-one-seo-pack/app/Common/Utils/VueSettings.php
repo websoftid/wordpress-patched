@@ -85,6 +85,7 @@ class VueSettings {
 			'searchSchema'                 => true,
 			'searchMediaAttachments'       => true,
 			'searchAdvanced'               => true,
+			'searchAdvancedCrawlCleanup'   => true,
 			'authorArchives'               => true,
 			'dateArchives'                 => true,
 			'searchArchives'               => true,
@@ -112,19 +113,32 @@ class VueSettings {
 			'htmlSitemap'                  => true,
 			'htmlSitemapSettings'          => true,
 			'htmlSitemapAdvancedSettings'  => true,
-			'linkAssistantSettings'        => true
+			'linkAssistantSettings'        => true,
+			'domainActivations'            => true,
+			'404Settings'                  => true
 		],
 		'toggledRadio'    => [
 			'locationsShowOnWebsite'        => 'widget',
 			'breadcrumbsShowOnWebsite'      => 'shortcode',
 			'breadcrumbsShowMoreSeparators' => false,
-			'searchShowMoreSeparators'      => false
+			'searchShowMoreSeparators'      => false,
+			'overviewPostType'              => 'post',
 		],
 		'internalTabs'    => [
 			'authorArchives'    => 'title-description',
 			'dateArchives'      => 'title-description',
 			'searchArchives'    => 'title-description',
 			'seoAuditChecklist' => 'all-items'
+		],
+		'tablePagination' => [
+			'networkDomains'             => 20,
+			'redirects'                  => 20,
+			'redirectLogs'               => 20,
+			'redirect404Logs'            => 20,
+			'sitemapAdditionalPages'     => 20,
+			'linkAssistantLinksReport'   => 20,
+			'linkAssistantPostsReport'   => 20,
+			'linkAssistantDomainsReport' => 20
 		]
 	];
 
@@ -257,12 +271,12 @@ class VueSettings {
 	}
 
 	/**
-	 * Gets the default value for an settings.
+	 * Gets the default value for a setting.
 	 *
 	 * @since 4.0.0
 	 *
 	 * @param  string $name The settings name.
-	 * @return void
+	 * @return mixed        The default value.
 	 */
 	public function getDefault( $name ) {
 		return isset( $this->defaults[ $name ] ) ? $this->defaults[ $name ] : null;

@@ -74,6 +74,7 @@ class Notification extends Model {
 	protected $columns = [
 		'id',
 		'slug',
+		'addon',
 		'title',
 		'content',
 		'type',
@@ -87,6 +88,7 @@ class Notification extends Model {
 		'button2_label',
 		'button2_action',
 		'dismissed',
+		'new',
 		'created',
 		'updated'
 	];
@@ -199,13 +201,14 @@ class Notification extends Model {
 					}
 
 					$activated = aioseo()->internalOptions->internal->firstActivated( time() );
-					if ( $activated > strtotime( '-30 days' ) ) {
+					if ( $activated > strtotime( '-20 days' ) ) {
 						break;
 					}
 
+					$isV3                  = get_option( 'aioseop_options' ) || get_option( 'aioseo_options_v3' );
 					$staticNotifications[] = [
 						'slug'      => 'notification-' . $notification,
-						'component' => 'notifications-' . $notification
+						'component' => 'notifications-' . $notification . ( $isV3 ? '' : '2' )
 					];
 					break;
 				case 'unlicensed-addons':
@@ -342,6 +345,11 @@ class Notification extends Model {
 				! aioseo()->options->advanced->announcements &&
 				'success' === $notification->type
 			) {
+				continue;
+			}
+
+			// If this is an addon notification and the addon is disabled, skip adding it and move on.
+			if ( ! empty( $notification->addon ) && ! aioseo()->addons->getLoadedAddon( $notification->addon ) ) {
 				continue;
 			}
 

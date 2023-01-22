@@ -24,6 +24,42 @@ class Social {
 	private $bustOgCacheActionName = 'aioseo_og_cache_bust_post';
 
 	/**
+	 * Image class instance.
+	 *
+	 * @since 4.2.7
+	 *
+	 * @var Image
+	 */
+	public $image = null;
+
+	/**
+	 * Facebook class instance.
+	 *
+	 * @since 4.2.7
+	 *
+	 * @var Facebook
+	 */
+	public $facebook = null;
+
+	/**
+	 * Twitter class instance.
+	 *
+	 * @since 4.2.7
+	 *
+	 * @var Twitter
+	 */
+	public $twitter = null;
+
+	/**
+	 * Output class instance.
+	 *
+	 * @since 4.2.7
+	 *
+	 * @var Output
+	 */
+	public $output = null;
+
+	/**
 	 * Class constructor.
 	 *
 	 * @since 4.0.0
@@ -59,35 +95,8 @@ class Social {
 			return;
 		}
 
-		// Adds special filters.
-		add_filter( 'user_contactmethods', [ $this, 'addContactMethods' ] );
-
 		// Forces a refresh of the Facebook cache.
 		add_action( 'post_updated', [ $this, 'scheduleBustOgCachePost' ], 10, 2 );
-	}
-
-	/**
-	 * Returns the social media contact methods.
-	 *
-	 * @since 4.0.0
-	 *
-	 * @param  array $contactMethods The contact methods.
-	 * @return array $contactMethods The filtered contact methods.
-	 */
-	public function addContactMethods( $contactMethods ) {
-		if ( aioseo()->options->social->twitter->general->enable && aioseo()->options->social->twitter->general->showAuthor ) {
-			$contactMethods['aioseo_contact_methods_header'] = AIOSEO_PLUGIN_NAME;
-			$contactMethods['aioseo_twitter']                = 'Twitter'; // @TODO: Will need to migrate these from old installs. `twitter` becomes `aioseo_twitter`
-		}
-
-		if ( aioseo()->options->social->facebook->general->enable && aioseo()->options->social->facebook->general->showAuthor ) {
-			if ( ! isset( $contactMethods['aioseo_contact_methods_header'] ) ) {
-				$contactMethods['aioseo_contact_methods_header'] = AIOSEO_PLUGIN_NAME;
-			}
-			$contactMethods['aioseo_facebook'] = 'Facebook'; // @TODO: Will need to migrate these from old installs. `facebook` becomes `aioseo_facebook`
-		}
-
-		return $contactMethods;
 	}
 
 	/**
@@ -163,12 +172,12 @@ class Social {
 			return;
 		}
 
-		if ( aioseo()->helpers->isScheduledAction( $this->bustOgCacheActionName, [ 'postId' => $postId ] ) ) {
+		if ( aioseo()->actionScheduler->isScheduled( $this->bustOgCacheActionName, [ 'postId' => $postId ] ) ) {
 			return;
 		}
 
 		// Schedule the new ping.
-		aioseo()->helpers->scheduleAsyncAction( $this->bustOgCacheActionName, [ 'postId' => $postId ] );
+		aioseo()->actionScheduler->scheduleAsync( $this->bustOgCacheActionName, [ 'postId' => $postId ] );
 	}
 
 	/**
