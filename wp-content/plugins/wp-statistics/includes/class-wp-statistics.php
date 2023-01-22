@@ -20,13 +20,13 @@ final class WP_Statistics
     /**
      * The single instance of the class.
      *
-     * @var WP-Statistics
+     * @var WP Statistics
      */
     protected static $_instance = null;
 
     /**
-     * Main WP-Statistics Instance.
-     * Ensures only one instance of WP-Statistics is loaded or can be loaded.
+     * Main WP Statistics Instance.
+     * Ensures only one instance of WP Statistics is loaded or can be loaded.
      *
      */
     public static function instance()
@@ -112,6 +112,11 @@ final class WP_Statistics
             $this->includes();
 
             /**
+             * Display Admin Notices
+             */
+            add_action('admin_notices', array('\\WP_STATISTICS\\Helper', 'displayAdminNotices'));
+
+            /**
              * instantiate Plugin
              */
             $this->instantiate();
@@ -159,6 +164,8 @@ final class WP_Statistics
         require_once WP_STATISTICS_DIR . 'includes/class-wp-statistics-search-engine.php';
         require_once WP_STATISTICS_DIR . 'includes/class-wp-statistics-exclusion.php';
         require_once WP_STATISTICS_DIR . 'includes/class-wp-statistics-hits.php';
+        require_once WP_STATISTICS_DIR . 'includes/class-wp-statistics-privacy-exporter.php';
+        require_once WP_STATISTICS_DIR . 'includes/class-wp-statistics-privacy-erasers.php';
 
         // Ajax area
         require_once WP_STATISTICS_DIR . 'includes/admin/class-wp-statistics-admin-template.php';
@@ -176,6 +183,7 @@ final class WP_Statistics
             require_once WP_STATISTICS_DIR . 'includes/admin/class-wp-statistics-admin-post.php';
             require_once WP_STATISTICS_DIR . 'includes/admin/class-wp-statistics-admin-user.php';
             require_once WP_STATISTICS_DIR . 'includes/admin/class-wp-statistics-admin-taxonomy.php';
+            require_once WP_STATISTICS_DIR . 'includes/admin/class-wp-statistics-admin-privacy.php';
             require_once WP_STATISTICS_DIR . 'includes/admin/TinyMCE/class-wp-statistics-tinymce.php';
 
             // Admin Pages List
@@ -219,8 +227,8 @@ final class WP_Statistics
             require_once WP_STATISTICS_DIR . 'includes/class-wp-statistics-frontend.php';
         }
 
-        // WP-CLI
-        if (defined('WP_CLI') && WP_CLI && WP_STATISTICS\Option::get('wp_cli') == true) {
+        // WP-CLI Class.
+        if (defined('WP_CLI') && WP_CLI) {
             require_once WP_STATISTICS_DIR . 'includes/class-wp-statistics-cli.php';
         }
 
@@ -263,6 +271,14 @@ final class WP_Statistics
      */
     public function load_textdomain()
     {
+        // Compatibility with WordPress < 5.0
+        if (function_exists('determine_locale')) {
+            $locale = apply_filters('plugin_locale', determine_locale(), 'wp-statistics');
+
+            unload_textdomain('wp-statistics');
+            load_textdomain('wp-statistics', WP_LANG_DIR . '/wp-statistics-' . $locale . '.mo');
+        }
+
         load_plugin_textdomain('wp-statistics', false, basename(WP_STATISTICS_DIR) . '/languages');
     }
 
@@ -286,7 +302,7 @@ final class WP_Statistics
     function php_version_notice()
     {
         $error = __('Your installed PHP Version is: ', 'wp-statistics') . PHP_VERSION . '. ';
-        $error .= __('The <strong>WP-Statistics</strong> plugin requires PHP version <strong>', 'wp-statistics') . WP_STATISTICS_REQUIRE_PHP_VERSION . __('</strong> or greater.', 'wp-statistics');
+        $error .= __('The <strong>WP Statistics</strong> plugin requires PHP version <strong>', 'wp-statistics') . WP_STATISTICS_REQUIRE_PHP_VERSION . __('</strong> or greater.', 'wp-statistics');
         ?>
         <div class="error">
             <p><?php printf($error); ?></p>
@@ -373,7 +389,7 @@ final class WP_Statistics
         $option = get_option('wp_statistics_disable_addons', 'no');
 
         // Check
-        if ($option == "no" and version_compare(WP_STATISTICS_VERSION, '12.6.13', '>')) {
+        if ($option == "no" and version_compare(WP_STATISTICS_VERSION, '12.6.13', '<')) {
             $addOns = array(
                 'wp-statistics-actions/wp-statistics-actions.php',
                 'wp-statistics-advanced-reporting/wp-statistics-advanced-reporting.php',

@@ -8,8 +8,10 @@ use WP_Statistics_Mail;
 
 class Helper
 {
+    protected static $admin_notices = [];
+
     /**
-     * WP-Statistics WordPress Log
+     * WP Statistics WordPress Log
      *
      * @param $function
      * @param $message
@@ -76,8 +78,9 @@ class Helper
         if (empty($_SERVER['REQUEST_URI'])) {
             return false;
         }
+
         $rest_prefix = trailingslashit(rest_get_url_prefix());
-        return (false !== strpos($_SERVER['REQUEST_URI'], $rest_prefix));
+        return (false !== strpos($_SERVER['REQUEST_URI'], $rest_prefix)) or isset($_REQUEST['rest_route']);
     }
 
     /**
@@ -93,6 +96,11 @@ class Helper
         }
 
         if (defined('WP_CLI') && WP_CLI) {
+            return false;
+        }
+
+        // Backward compatibility
+        if (empty($_SERVER['SERVER_PROTOCOL']) or empty($_SERVER['HTTP_HOST'])) {
             return false;
         }
 
@@ -121,7 +129,7 @@ class Helper
      * @param string $style_extra
      * @return string
      */
-    public static function wp_admin_notice($text, $model = "info", $close_button = true, $id = false, $echo = true, $style_extra = 'padding:10px 0')
+    public static function wp_admin_notice($text, $model = "info", $close_button = true, $id = false, $echo = true, $style_extra = 'padding:6px 0')
     {
         $text = '
         <div class="notice notice-' . $model . '' . ($close_button === true ? " is-dismissible" : "") . '"' . ($id != false ? ' id="' . $id . '"' : '') . '>
@@ -130,7 +138,7 @@ class Helper
         ';
 
         if ($echo) {
-            echo $text;
+            echo wp_kses_post($text);
         } else {
             return $text;
         }
@@ -211,7 +219,7 @@ class Helper
      *
      * @param string $path
      * @return mixed
-     * @default For WP-Statistics Plugin is 'wp-statistics' dir
+     * @default For WP Statistics Plugin is 'wp-statistics' dir
      */
     public static function get_uploads_dir($path = '')
     {
@@ -732,7 +740,7 @@ class Helper
     }
 
     /**
-     * Send SMS With WP-SMS Plugin
+     * Send SMS With WP SMS Plugin
      *
      * @param $to
      * @param $text
@@ -1040,5 +1048,106 @@ class Helper
 
             return round($get_total_user / $days_spend, 2);
         }
+    }
+
+    /**
+     * Add notice to display in the admin area
+     *
+     * @param $message
+     * @param string $class
+     * @param bool $is_dismissible
+     * @since 13.2.5
+     */
+    public static function addAdminNotice($message, $class = 'info', $is_dismissible = true)
+    {
+        self::$admin_notices[] = array(
+            'message'        => $message,
+            'class'          => $class,
+            'is_dismissible' => (bool)$is_dismissible,
+        );
+    }
+
+    /**
+     * Display all notices in the admin area
+     *
+     * @return void
+     * @since 13.2.5
+     */
+    public static function displayAdminNotices()
+    {
+        foreach ((array)self::$admin_notices as $notice) :
+            $dismissible = $notice['is_dismissible'] ? 'is-dismissible' : '';
+            ?>
+
+            <div class="notice notice-<?php echo esc_attr($notice['class']); ?> <?php echo esc_attr($dismissible); ?>">
+                <p>
+                    <?php echo wp_kses_post($notice['message']); ?>
+                </p>
+            </div>
+
+        <?php
+        endforeach;
+    }
+
+    /**
+     * Returns default parameters for hits request
+     *
+     * @return array
+     */
+    public static function getHitsDefaultParams()
+    {
+        // Create Empty Params Object
+        $params = array();
+
+        //exclude
+        $exclude                    = Exclusion::check();
+        $params['exclusion_match']  = ($exclude['exclusion_match'] === true ? 'yes' : 'no');
+        $params['exclusion_reason'] = (string)$exclude['exclusion_reason'];
+
+        //track all page
+        $params['track_all'] = (Pages::is_track_all_page() === true ? 1 : 0);
+
+        //Set Page Type
+        $get_page_type               = Pages::get_page_type();
+        $params['current_page_type'] = $get_page_type['type'];
+        $params['current_page_id']   = $get_page_type['id'];
+        $params['search_query']      = (isset($get_page_type['search_query']) ? esc_html($get_page_type['search_query']) : '');
+
+        //page url
+        $params['page_uri'] = base64_encode(Pages::get_page_uri());
+
+        //return Json Data
+        return $params;
+    }
+
+    /**
+     * The version number will be anonymous using this function
+     *
+     * @param $version
+     * @return string
+     * @example 106.2.124.0 -> 106.0.0.0
+     *
+     */
+    public static function makeAnonymousVersion($version)
+    {
+        $mainVersion         = substr($version, 0, strpos($version, '.'));
+        $subVersion          = substr($version, strpos($version, '.') + 1);
+        $anonymousSubVersion = preg_replace('/[0-9]+/', '0', $subVersion);
+
+        return "{$mainVersion}.{$anonymousSubVersion}";
+    }
+
+    /**
+     * Do not track browser detection
+     *
+     * @return bool
+     */
+    public static function dntEnabled()
+    {
+        if (Option::get('do_not_track')) {
+            return (isset($_SERVER['HTTP_DNT']) && $_SERVER['HTTP_DNT'] == 1) or (function_exists('getallheaders') && isset(getallheaders()['DNT']) && getallheaders()['DNT'] == 1);
+        }
+
+        return false;
     }
 }

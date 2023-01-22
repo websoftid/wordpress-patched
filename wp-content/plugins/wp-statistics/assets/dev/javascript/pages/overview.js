@@ -45,7 +45,7 @@ if (wps_js.isset(wps_js.global, 'request_params', 'page') && wps_js.global.reque
         });
 
         // Fix Show Image Ads
-        jQuery('#wps_overview_ads_image').on('error', function(){
+        jQuery('#wps_overview_ads_image').on('error', function () {
             jQuery('#wps_overview_ads_postbox').remove();
         });
     }

@@ -29,12 +29,9 @@
             </th>
 
             <td>
-                <input type="text" class="small-text code" id="check_online" name="wps_check_online" value="<?php echo htmlentities(WP_STATISTICS\Option::get('check_online'),
-                    ENT_QUOTES); ?>"/>
+                <input type="text" class="small-text code" id="check_online" name="wps_check_online" value="<?php echo esc_attr(WP_STATISTICS\Option::get('check_online')); ?>"/>
                 <?php _e('Seconds', 'wp-statistics'); ?>
-                <p class="description"><?php echo sprintf(__('Time for checking out accurate online users on the site. Now: %s Seconds',
-                        'wp-statistics'),
-                        WP_STATISTICS\Option::get('check_online')); ?></p>
+                <p class="description"><?php echo sprintf(__('Time for checking out accurate online users on the site. Now: %s Seconds', 'wp-statistics'), WP_STATISTICS\Option::get('check_online')); ?></p>
             </td>
         </tr>
 
@@ -46,8 +43,7 @@
             <td>
                 <input id="allonline" type="checkbox" value="1" name="wps_all_online" <?php echo WP_STATISTICS\Option::get('all_online') == true ? "checked='checked'" : ''; ?>>
                 <label for="allonline"><?php _e('Enable', 'wp-statistics'); ?></label>
-                <p class="description"><?php _e('Enable this option to ignore the exclusion settings and record all online users (including self referrals and robots). Should only be used for troubleshooting.',
-                        'wp-statistics'); ?></p>
+                <p class="description"><?php _e('Enable this option to ignore the exclusion settings and record all online users (including self referrals and robots). Should only be used for troubleshooting.', 'wp-statistics'); ?></p>
             </td>
         </tr>
         </tbody>
@@ -113,16 +109,6 @@
                 <p class="description"><?php _e('Enable this option to show the list of user visits, link in the WordPress admin user list page.', 'wp-statistics'); ?></p>
             </td>
         </tr>
-
-        <tr valign="top" data-view="visitors_log_tr" <?php echo(WP_STATISTICS\Option::get('visitors') == false ? 'style="display:none;"' : '') ?>>
-            <th scope="row">
-                <label for="coefficient"><?php _e('Coefficient per Visitor:', 'wp-statistics'); ?></label>
-            </th>
-            <td>
-                <input type="text" class="small-text code" id="coefficient" name="wps_coefficient" value="<?php echo htmlentities(WP_STATISTICS\Option::get('coefficient'), ENT_QUOTES); ?>"/>
-                <p class="description"><?php echo sprintf(__('This feature multiplies the number of each visitor. Currently %s.', 'wp-statistics'), WP_STATISTICS\Option::get('coefficient')); ?></p>
-            </td>
-        </tr>
         </tbody>
     </table>
 </div>
@@ -152,7 +138,7 @@
                 <input id="all_pages" type="checkbox" value="1" name="wps_track_all_pages" <?php echo WP_STATISTICS\Option::get('track_all_pages') == true ? "checked='checked'" : ''; ?>>
                 <label for="all_pages"><?php _e('Enable', 'wp-statistics'); ?></label>
                 <p class="description"><?php _e('Enable or disable this feature', 'wp-statistics'); ?></p>
-                <p class="description"><?php echo sprintf(__('Track all WordPress pages, contains Category, Post Tags, Author, Custom Taxonomy, etc.', 'wp-statistics'), admin_url('options-permalink.php')); ?></p>
+                <p class="description"><?php echo sprintf(__('Track all WordPress pages, contains Category, Post Tags, Author, Custom Taxonomy, etc.', 'wp-statistics'), esc_url(admin_url('options-permalink.php'))); ?></p>
             </td>
         </tr>
 
@@ -259,7 +245,15 @@
                 <input id="use_cache_plugin" type="checkbox" value="1" name="wps_use_cache_plugin" <?php echo WP_STATISTICS\Option::get('use_cache_plugin') == true ? "checked='checked'" : ''; ?>>
                 <label for="use_cache_plugin"><?php _e('Enable', 'wp-statistics'); ?></label>
                 <p class="description"><?php _e('Enable this option if the Cache is enabled in your WordPress', 'wp-statistics'); ?></p>
-                <p class="description"><?php echo sprintf(__('To register WP-Statistics REST API endpoint ( %s ) , go to the <a href="%s">Permalink page</a> and update the permalink by pressing Save Changes and then clear the cache.', 'wp-statistics'), WP_STATISTICS\RestAPI::$namespace, admin_url('options-permalink.php')); ?></p>
+                <p class="description">
+                <ul>
+                    <li><?php echo sprintf(__('To register WP Statistics REST API endpoint ( %s ) , go to the <a href="%s">Permalink page</a> and update the permalink by pressing Save Changes and then clear the cache.', 'wp-statistics'), WP_STATISTICS\RestAPI::$namespace, admin_url('options-permalink.php')); ?></li>
+                    <li>
+                        <?php echo __('To prevent Google index the REST API endpoints, add the below code in <strong>robots.txt</strong>', 'wp-statistics'); ?>
+                        <pre>User-Agent: * <?php echo PHP_EOL; ?> Disallow: /wp-json</pre>
+                    </li>
+                </ul>
+                </p>
             </td>
         </tr>
         </tbody>
@@ -294,7 +288,7 @@
             <td>
                 <input id="hide_notices" type="checkbox" value="1" name="wps_hide_notices" <?php echo WP_STATISTICS\Option::get('hide_notices') == true ? "checked='checked'" : ''; ?>>
                 <label for="hide_notices"><?php _e('Enable', 'wp-statistics'); ?></label>
-                <p class="description"><?php _e('WP-Statistics displays an alert if any of the core features are disabled. To hide these notices, enable this option.', 'wp-statistics'); ?></p>
+                <p class="description"><?php _e('WP Statistics displays an alert if any of the core features are disabled. To hide these notices, enable this option.', 'wp-statistics'); ?></p>
             </td>
         </tr>
         </tbody>
@@ -335,12 +329,11 @@
 
             <tr valign="top">
                 <th scope="row">
-                    <label for="<?php echo $option_name; ?>"><?php _e($se['name'], 'wp-statistics'); ?>:</label>
+                    <label for="<?php echo esc_attr($option_name); ?>"><?php echo esc_attr($se['name']); ?>:</label>
                 </th>
                 <td>
-                    <input id="<?php echo $option_name; ?>" type="checkbox" value="1" name="<?php echo $option_name; ?>" <?php echo WP_STATISTICS\Option::get($store_name) == true ? "checked='checked'" : ''; ?>><label for="<?php echo $option_name; ?>"><?php _e('Disable',
-                            'wp-statistics'); ?></label>
-                    <p class="description"><?php echo sprintf(__('Disable %s from data collection and reporting.', 'wp-statistics'), $se['name']); ?></p>
+                    <input id="<?php echo esc_attr($option_name); ?>" type="checkbox" value="1" name="<?php echo esc_attr($option_name); ?>" <?php echo WP_STATISTICS\Option::get($store_name) == true ? "checked='checked'" : ''; ?>><label for="<?php echo esc_attr($option_name); ?>"><?php _e('Disable', 'wp-statistics'); ?></label>
+                    <p class="description"><?php echo sprintf(__('Disable %s from data collection and reporting.', 'wp-statistics'), esc_attr($se['name'])); ?></p>
                 </td>
             </tr>
         <?php } ?>

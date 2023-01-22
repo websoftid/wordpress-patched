@@ -11,9 +11,6 @@ class settings_page
         // Save Setting Action
         add_action('admin_init', array($this, 'save'));
 
-        // Admin Notice
-        add_action('admin_notices', array($this, 'notice'));
-
         // Check Access Level
         if (Menus::in_page('settings') and !User::Access('manage')) {
             wp_die(__('You do not have sufficient permissions to access this page.'));
@@ -83,7 +80,6 @@ class settings_page
                 'access_level',
                 'exclusion',
                 'external',
-                'wp_cli',
                 'maintenance',
                 'notification',
                 'dashboard',
@@ -99,14 +95,53 @@ class settings_page
             // Get tab name for redirect to the current tab
             $tab = isset($_POST['tab']) && $_POST['tab'] ? sanitize_text_field($_POST['tab']) : 'general-settings';
 
-            // Redirect User To Save Setting
-            wp_redirect(add_query_arg(array(
-                'save_setting' => 'yes',
-                'tab'          => $tab,
-            ), Menus::admin_url('settings')));
+            $redirectAfterSave = true;
 
-            // die
-            exit;
+            // Update Referrer Spam
+            if (isset($_POST['update-referrer-spam'])) {
+                $status = Referred::download_referrer_spam();
+                if (is_bool($status)) {
+                    if ($status === false) {
+                        Helper::addAdminNotice(__("Error Updating Referrer Spam Blacklist.", "wp-statistics"), "error");
+                    } else {
+                        Helper::addAdminNotice(__("Updated Referrer Spam Blacklist.", "wp-statistics"), "success");
+                    }
+                    $redirectAfterSave = false;
+                }
+            }
+
+            // Update GEO IP
+            if (Option::get('geoip') and isset($_POST['update_geoip']) and isset($_POST['geoip_name'])) {
+                //Check Geo ip Exist in Database
+                if (isset(GeoIP::$library[$_POST['geoip_name']])) {
+                    $result = GeoIP::download($_POST['geoip_name'], "update");
+                    if (is_array($result) and isset($result['status'])) {
+                        Helper::addAdminNotice($result['notice'], ($result['status'] === false ? "error" : "success"));
+                        $redirectAfterSave = false;
+                    }
+                }
+            }
+
+            if ($redirectAfterSave) {
+                // Redirect User To Save Setting
+                wp_redirect(add_query_arg(array(
+                    'save_setting' => 'yes',
+                    'tab'          => $tab,
+                ), Menus::admin_url('settings')));
+
+                // die
+                exit;
+            }
+        }
+
+        // Save Setting
+        if (isset($_GET['save_setting'])) {
+            Helper::addAdminNotice(__("Saved Settings.", "wp-statistics"), "success");
+        }
+
+        // Reset Setting
+        if (isset($_GET['reset_settings'])) {
+            Helper::addAdminNotice(__("All settings reset.", "wp-statistics"), "success");
         }
     }
 
@@ -134,6 +169,7 @@ class settings_page
             'wps_hash_ips',
             'wps_store_ua',
             'wps_all_online',
+            'wps_do_not_track',
         );
 
         // If the IP hash's are enabled, disable storing the complete user agent.
@@ -181,7 +217,18 @@ class settings_page
         );
 
         foreach ($wps_option_list as $option) {
-            $wp_statistics_options[self::input_name_to_option($option)] = (isset($_POST[$option]) ? stripslashes(sanitize_textarea_field($_POST[$option])) : '');
+
+            $value = '';
+
+            if (isset($_POST[$option])) {
+                if ($option == 'wps_content_report') {
+                    $value = stripslashes(wp_kses_post($_POST[$option]));
+                } else {
+                    $value = stripslashes(sanitize_textarea_field($_POST[$option]));
+                }
+            }
+
+            $wp_statistics_options[self::input_name_to_option($option)] = $value;
         }
 
         return $wp_statistics_options;
@@ -280,30 +327,6 @@ class settings_page
             if (is_bool($status) and $status === false) {
                 $wp_statistics_options['referrerspam'] = '';
             }
-        }
-
-        return $wp_statistics_options;
-    }
-
-    /**
-     * Save WP CLI Option
-     *
-     * @param $wp_statistics_options
-     * @return mixed
-     */
-    public static function save_wp_cli_option($wp_statistics_options)
-    {
-
-        // Save Exclusion
-        $wps_option_list = array(
-            'wps_wp_cli',
-            'wps_wp_cli_summary',
-            'wps_wp_cli_user_online',
-            'wps_wp_cli_visitors'
-        );
-
-        foreach ($wps_option_list as $option) {
-            $wp_statistics_options[self::input_name_to_option($option)] = (isset($_POST[$option]) ? $_POST[$option] : '');
         }
 
         return $wp_statistics_options;
@@ -498,7 +521,7 @@ class settings_page
     }
 
     /**
-     * Reset WP-Statistics Option
+     * Reset WP Statistics Option
      */
     public static function reset_option()
     {
@@ -515,50 +538,6 @@ class settings_page
 
         // Update Option
         update_option(Option::$opt_name, $default_options);
-    }
-
-    /**
-     * Admin Notice
-     */
-    public function notice()
-    {
-
-        // Update Referrer Spam
-        if (isset($_GET['update-referrer-spam'])) {
-            $status = Referred::download_referrer_spam();
-            if (is_bool($status)) {
-                if ($status === false) {
-                    Helper::wp_admin_notice(__("Error Updating Referrer Spam Blacklist.", "wp-statistics"), "error");
-                } else {
-                    Helper::wp_admin_notice(__("Updated Referrer Spam Blacklist.", "wp-statistics"), "success");
-                }
-                return;
-            }
-        }
-
-        // Update GEO IP
-        if (Option::get('geoip') and isset($_POST['update_geoip']) and isset($_POST['geoip_name'])) {
-
-            //Check Geo ip Exist in Database
-            if (isset(GeoIP::$library[$_POST['geoip_name']])) {
-                $result = GeoIP::download($_POST['geoip_name'], "update");
-                if (is_array($result) and isset($result['status'])) {
-                    Helper::wp_admin_notice($result['notice'], ($result['status'] === false ? "error" : "success"));
-                    return;
-                }
-            }
-        }
-
-        // Save Setting
-        if (isset($_GET['save_setting'])) {
-            Helper::wp_admin_notice(__("Saved Settings.", "wp-statistics"), "success");
-        }
-
-        // Reset Setting
-        if (isset($_GET['reset_settings'])) {
-            Helper::wp_admin_notice(__("All settings reset.", "wp-statistics"), "success");
-        }
-
     }
 }
 

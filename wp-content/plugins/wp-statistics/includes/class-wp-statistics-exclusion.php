@@ -54,7 +54,7 @@ class Exclusion
         // Create Default Object
         $exclude = array('exclusion_match' => false, 'exclusion_reason' => '');
 
-        // Get List Of Exclusion WP-Statistics
+        // Get List Of Exclusion WP Statistics
         $exclusion_list = apply_filters('wp_statistics_exclusion_list', array_keys(Exclusion::exclusion_list()));
 
         // Check Exclusion
@@ -71,7 +71,7 @@ class Exclusion
     }
 
     /**
-     * Record Exclusion in WP-Statistics DB.
+     * Record Exclusion in WP Statistics DB.
      *
      * @param array $exclusion
      */
@@ -151,7 +151,7 @@ class Exclusion
      */
     public static function exclusion_robot_threshold()
     {
-        $visitor = Visitor::exist_ip_in_day((IP::getHashIP() != false ? IP::getHashIP() : IP::StoreIP()));
+        $visitor = Visitor::exist_ip_in_day(IP::getStoreIP());
         return ($visitor != false and Option::get('robot_threshold') > 0 && $visitor->hits + 1 > Option::get('robot_threshold'));
     }
 
@@ -181,7 +181,7 @@ class Exclusion
     {
 
         if (Option::get('excluded_urls')) {
-            $script    = sanitize_text_field(wp_unslash($_SERVER['REQUEST_URI']));
+            $script    = sanitize_url(wp_unslash($_SERVER['REQUEST_URI']));
             $delimiter = strpos($script, '?');
 
             if ($delimiter > 0) {

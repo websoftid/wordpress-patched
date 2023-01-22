@@ -9,7 +9,7 @@
                         <div id="general-settings" class="tab-content current">
                             <?php include WP_STATISTICS_DIR . 'includes/admin/templates/settings/general.php'; ?>
                         </div>
-                        <div id="visitor-ip-settings" class="tab-content">
+                        <div id="ip-configuration-settings" class="tab-content">
                             <?php include WP_STATISTICS_DIR . 'includes/admin/templates/settings/visitor-ip.php'; ?>
                         </div>
                         <div id="privacy-settings" class="tab-content">
@@ -26,9 +26,6 @@
                         </div>
                         <div id="exclusions-settings" class="tab-content">
                             <?php include WP_STATISTICS_DIR . 'includes/admin/templates/settings/exclusions.php'; ?>
-                        </div>
-                        <div id="wp-cli-settings" class="tab-content">
-                            <?php include WP_STATISTICS_DIR . 'includes/admin/templates/settings/wp-cli.php'; ?>
                         </div>
                         <div id="externals-settings" class="tab-content">
                             <?php include WP_STATISTICS_DIR . 'includes/admin/templates/settings/externals.php'; ?>

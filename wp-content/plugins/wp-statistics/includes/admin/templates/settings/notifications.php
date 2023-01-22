@@ -19,7 +19,7 @@
                 <input dir="ltr" type="text" id="email_list" name="wps_email_list" size="30" value="<?php if (WP_STATISTICS\Option::get('email_list') == '') {
                     $wp_statistics_options['email_list'] = get_bloginfo('admin_email');
                 }
-                echo htmlentities(WP_STATISTICS\Option::get('email_list'), ENT_QUOTES); ?>"/>
+                echo esc_textarea(WP_STATISTICS\Option::get('email_list')); ?>"/>
                 <p class="description"><?php _e('Add email addresses you want to receive reports and separate them with a comma.', 'wp-statistics'); ?></p>
             </td>
         </tr>
@@ -107,7 +107,7 @@
 
                     foreach ($schedules as $key => $value) {
                         if (!in_array($value, $schedules_item)) {
-                            echo '<option value="' . $key . '" ' . selected(WP_STATISTICS\Option::get('time_report'), $key) . '>' . $value['display'] . '</option>';
+                            echo '<option value="' . esc_attr($key) . '" ' . selected(WP_STATISTICS\Option::get('time_report'), $key) . '>' . esc_attr($value['display']) . '</option>';
                             $schedules_item[] = $value;
                         }
                     }
@@ -134,7 +134,7 @@
 
                 <p class="description"><?php _e('Select delivery method for statistical report.', 'wp-statistics'); ?></p>
                 <?php if (!is_plugin_active('wp-sms/wp-sms.php')) { ?>
-                    <p class="description note"><?php echo sprintf(__('Note: To send SMS text messages please install the %s plugin.', 'wp-statistics'), '<a href="http://wordpress.org/extend/plugins/wp-sms/" target="_blank">' . __('WordPress SMS', 'wp-statistics') . '</a>'); ?></p>
+                    <p class="description note"><?php echo sprintf(__('Note: To send SMS text messages please install the %s plugin.', 'wp-statistics'), '<a href="http://wordpress.org/extend/plugins/wp-sms/" target="_blank">' . __('WP SMS', 'wp-statistics') . '</a>'); ?></p>
                 <?php } ?>
             </td>
         </tr>
@@ -145,7 +145,7 @@
             </td>
 
             <td>
-                <?php wp_editor(WP_STATISTICS\Option::get('content_report'), 'content-report', array('media_buttons' => false, 'textarea_name' => 'wps_content_report', 'textarea_rows' => 5,)); ?>
+                <?php wp_editor(WP_STATISTICS\Option::get('content_report'), 'content-report', array('media_buttons' => false, 'textarea_name' => 'wps_content_report', 'textarea_rows' => 5)); ?>
                 <p class="description"><?php _e('Enter the contents of the report.', 'wp-statistics'); ?></p>
 
                 <p class="description data">
@@ -188,7 +188,7 @@
             <td>
                 <input id="admin-notices" type="checkbox" value="1" name="wps_admin_notices" <?php echo WP_STATISTICS\Option::get('admin_notices') == true ? "checked='checked'" : ''; ?>>
                 <label for="admin-notices"><?php _e('Enable', 'wp-statistics'); ?></label>
-                <p class="description"><?php _e('Enable this option to show all notices and suggestions from WP-Statistics in the admin.', 'wp-statistics'); ?></p>
+                <p class="description"><?php _e('Enable this option to show all notices and suggestions from WP Statistics in the admin.', 'wp-statistics'); ?></p>
             </td>
         </tr>
         </tbody>

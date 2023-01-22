@@ -16,8 +16,7 @@ class Visitor
      */
     public static function getCoefficient()
     {
-        $coefficient = Option::get('coefficient', self::$coefficient);
-        return (is_numeric($coefficient) and $coefficient > 0) ? $coefficient : self::$coefficient;
+        return apply_filters('wp_statistics_coefficient_per_visitor', self::$coefficient);
     }
 
     /**
@@ -103,7 +102,7 @@ class Visitor
         if ($args['exclusion_match'] === false || $args['exclusion_reason'] == 'Honeypot') {
 
             // Get User IP
-            $user_ip = (IP::getHashIP() != false ? IP::getHashIP() : IP::StoreIP());
+            $user_ip = IP::getStoreIP();
 
             // Get User Agent
             $user_agent = UserAgent::getUserAgent();
@@ -121,6 +120,8 @@ class Visitor
                     'agent'        => $user_agent['browser'],
                     'platform'     => $user_agent['platform'],
                     'version'      => $user_agent['version'],
+                    'device'       => $user_agent['device'],
+                    'model'        => $user_agent['model'],
                     'ip'           => $user_ip,
                     'location'     => GeoIP::getCountry(IP::getIP()),
                     'user_id'      => User::get_user_id(),
@@ -196,7 +197,6 @@ class Visitor
      */
     public static function getTop($arg = array())
     {
-
         // Define the array of defaults
         $defaults = array(
             'day'      => 'today',
@@ -232,7 +232,6 @@ class Visitor
 
         // Define the array of defaults
         $defaults = array(
-            'sql'      => '',
             'per_page' => 10,
             'paged'    => 1,
             'fields'   => 'all',
@@ -241,13 +240,14 @@ class Visitor
         );
         $args     = wp_parse_args($arg, $defaults);
 
-        // Prepare Query
+        $limit = (($args['paged'] - 1) * $args['per_page']);
+
+        // Prepare the Query & Set Pagination
         if (empty($args['sql'])) {
             $args['sql'] = "SELECT * FROM `" . DB::table('visitor') . "` ORDER BY ID DESC";
         }
 
-        // Set Pagination
-        $args['sql'] = $args['sql'] . " LIMIT " . (($args['paged'] - 1) * $args['per_page']) . ", {$args['per_page']}";
+        $args['sql'] = $args['sql'] . " LIMIT {$limit}, {$args['per_page']}";
 
         // Send Request
         $result = $wpdb->get_results($args['sql']);
@@ -361,6 +361,27 @@ class Visitor
         }
 
         return $params;
+    }
+
+    /**
+     * Get Top Pages Visited by a visitor
+     *
+     * @param $visitor_ID
+     * @param $total
+     *
+     * @return mixed
+     */
+    public static function get_pages_by_visitor_id($visitor_ID, $total = 5)
+    {
+        global $wpdb;
+
+        $visitor_relationships_table = DB::table('visitor_relationships');
+        $pages_table                 = DB::table('pages');
+
+        // Get Result
+        $query = $wpdb->prepare("SELECT DISTINCT {$pages_table}.id, {$pages_table}.uri FROM {$pages_table} INNER JOIN {$visitor_relationships_table} ON {$pages_table}.page_id = {$visitor_relationships_table}.page_id WHERE {$visitor_relationships_table}.visitor_id = %d ORDER BY {$pages_table}.count DESC LIMIT %d", $visitor_ID, $total);
+
+        return $wpdb->get_results($query, ARRAY_N);
     }
 
     /**

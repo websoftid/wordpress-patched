@@ -5,21 +5,21 @@ namespace WP_STATISTICS;
 class Option
 {
     /**
-     * Get WP-Statistics Basic Option name
+     * Get WP Statistics Basic Option name
      *
      * @var string
      */
     public static $opt_name = 'wp_statistics';
 
     /**
-     * WP-Statistics Option name Prefix
+     * WP Statistics Option name Prefix
      *
      * @var string
      */
     public static $opt_prefix = 'wps_';
 
     /**
-     * Get Complete Option name with WP-Statistics Prefix
+     * Get Complete Option name with WP Statistics Prefix
      *
      * @param $name
      * @return mixed
@@ -30,7 +30,7 @@ class Option
     }
 
     /**
-     * WP-Statistics Default Option
+     * WP Statistics Default Option
      *
      * @return array
      */
@@ -39,7 +39,8 @@ class Option
 
         $options = array(
             'robotlist'             => Helper::get_robots_list(),
-            'anonymize_ips'         => false,
+            'anonymize_ips'         => true,
+            'hash_ips'              => true,
             'geoip'                 => false,
             'useronline'            => true,
             'visits'                => true,
@@ -47,13 +48,14 @@ class Option
             'pages'                 => true,
             'check_online'          => UserOnline::$reset_user_time,
             'menu_bar'              => false,
-            'coefficient'           => Visitor::$coefficient,
+            'coefficient'           => Visitor::getCoefficient(),
             'stats_report'          => false,
             'time_report'           => 'daily',
             'send_report'           => 'mail',
             'content_report'        => '',
             'update_geoip'          => true,
             'store_ua'              => false,
+            'do_not_track'          => true,
             'exclude_administrator' => true,
             'disable_se_clearch'    => true,
             'disable_se_qwant'      => true,
@@ -71,7 +73,7 @@ class Option
     }
 
     /**
-     * Get WP-Statistics All Options
+     * Get WP Statistics All Options
      *
      * @return mixed
      */
@@ -118,7 +120,7 @@ class Option
         }
 
         /**
-         * Filters a For Return WP-Statistics Option
+         * Filters a For Return WP Statistics Option
          *
          * @param string $option Option name.
          * @param string $value Option Value.
@@ -147,7 +149,7 @@ class Option
     }
 
     /**
-     * Get WP-Statistics User Meta
+     * Get WP Statistics User Meta
      *
      * @param      $option
      * @param null $default

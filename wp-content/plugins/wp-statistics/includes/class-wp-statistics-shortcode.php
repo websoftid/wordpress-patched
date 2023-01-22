@@ -16,7 +16,7 @@ class ShortCode
     }
 
     /**
-     * WP-Statistics ShortCode is in the format of:
+     * WP Statistics ShortCode is in the format of:
      * [wpstatistics stat=xxx time=xxxx provider=xxxx format=xxxxxx id=xxx]
      *
      * Where:

@@ -23,7 +23,7 @@ class Referred
      *
      * @var string
      */
-    public static $referrer_spam_link = 'https://raw.githubusercontent.com/matomo-org/referrer-spam-blacklist/master/spammers.txt';
+    public static $referrer_spam_link = 'https://cdn.jsdelivr.net/gh/matomo-org/referrer-spam-list@4.0.0/spammers.txt';
 
     /**
      * Referred constructor.
@@ -41,7 +41,7 @@ class Referred
      */
     public static function getRefererURL()
     {
-        return (isset($_SERVER['HTTP_REFERER']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_REFERER'])) : '');
+        return (isset($_SERVER['HTTP_REFERER']) ? sanitize_url(wp_unslash($_SERVER['HTTP_REFERER'])) : '');
     }
 
     /**
@@ -94,7 +94,7 @@ class Referred
      * @param string $referrer
      * @param string $title
      * @param bool $is_blank
-     * @return string
+     * @return string | void
      */
     public static function get_referrer_link($referrer, $title = '', $is_blank = false)
     {
@@ -107,14 +107,18 @@ class Referred
             $html_referrer = '//' . $html_referrer;
         }
 
+        $html_referrer = esc_url($html_referrer);
+
         // Parse Url
         $base_url = @parse_url($html_referrer);
 
         // Get Page title
         $title = (trim($title) == "" ? $html_referrer : $title);
 
-        // Get Html Link
-        return "<a href='{$html_referrer}' title='{$title}'" . ($is_blank === true ? ' target="_blank"' : '') . ">{$base_url['host']}</a>";
+        if (isset($base_url['host'])) {
+            // Get Html Link
+            return "<a href='{$html_referrer}' title='{$title}'" . ($is_blank === true ? ' target="_blank"' : '') . ">{$base_url['host']}</a>";
+        }
     }
 
     /**
@@ -140,7 +144,7 @@ class Referred
             $referrer = substr($referrer, 0, $length);
         }
 
-        return htmlentities($referrer, ENT_QUOTES);
+        return $referrer;
     }
 
     /**
@@ -244,7 +248,9 @@ class Referred
         //Get Top Referring
         if (false === ($get_urls = get_transient(self::$top_referring_transient))) {
 
-            $result = $wpdb->get_results(self::GenerateReferSQL("ORDER BY `number` DESC LIMIT $number", ''));
+            $sql = $wpdb->prepare("ORDER BY `number` DESC LIMIT %d", $number);
+
+            $result = $wpdb->get_results(self::GenerateReferSQL($sql, ''));
             foreach ($result as $items) {
                 $get_urls[$items->domain] = self::get_referer_from_domain($items->domain);
             }

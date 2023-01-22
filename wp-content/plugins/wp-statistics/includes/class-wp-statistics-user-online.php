@@ -52,7 +52,7 @@ class UserOnline
     {
         global $wpdb;
 
-        //Check User Online is Active in this Wordpress
+        //Check User Online is Active in this WordPress
         if (self::active()) {
 
             //Get Not timestamp
@@ -95,7 +95,7 @@ class UserOnline
     {
 
         # Get User IP
-        $user_ip = (IP::getHashIP() != false ? IP::getHashIP() : IP::StoreIP());
+        $user_ip = IP::getStoreIP();
 
         # Check Current Use Exist online list
         $user_online = self::is_ip_online($user_ip);
@@ -144,7 +144,7 @@ class UserOnline
 
         //Prepare User online Data
         $user_online = array(
-            'ip'        => IP::getHashIP() ? IP::getHashIP() : IP::StoreIP(),
+            'ip'        => IP::getStoreIP(),
             'timestamp' => TimeZone::getCurrentTimestamp(),
             'created'   => TimeZone::getCurrentTimestamp(),
             'date'      => TimeZone::getCurrentDate(),
@@ -202,7 +202,9 @@ class UserOnline
         $user_online = apply_filters('wp_statistics_update_user_online_data', $user_online);
 
         # Update the database with the new information.
-        $wpdb->update(DB::table('useronline'), $user_online, array('ip' => IP::getHashIP() ? IP::getHashIP() : IP::StoreIP()));
+        $wpdb->update(DB::table('useronline'), $user_online, array(
+            'ip' => IP::getStoreIP()
+        ));
 
         # Action After Update User Online
         do_action('wp_statistics_update_user_online', $user_id, $user_online);
@@ -231,7 +233,8 @@ class UserOnline
         $args     = wp_parse_args($arg, $defaults);
 
         // Prepare SQL
-        $SQL = "SELECT";
+        $args['sql'] = null;
+        $SQL         = "SELECT";
 
         // Check Fields
         if ($args['fields'] == "count") {
@@ -254,7 +257,7 @@ class UserOnline
         }
 
         // Set Pagination
-        $args['sql'] = $args['sql'] . " LIMIT {$args['offset']}, {$args['per_page']}";
+        $args['sql'] = esc_sql($args['sql']) . $wpdb->prepare(" LIMIT %d, %d", $args['offset'], $args['per_page']);
 
         // Send Request
         $result = $wpdb->get_results($args['sql']);

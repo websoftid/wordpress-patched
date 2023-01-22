@@ -1,10 +1,10 @@
 === WP Statistics ===
-Contributors: mostafa.s1990, kashani, veronalabs, mehrshaddarzi, GregRoss
+Contributors: mostafa.s1990, kashani, veronalabs, GregRoss
 Donate link: https://wp-statistics.com/donate/
 Tags: analytics, wordpress analytics, stats, statistics, visit, visitors, hits, chart, browser, today, yesterday, week, month, year, total, post, page, sidebar, google, live visit, search word, agent, google analytics, webmasters, google webmasters, geoip, location
-Requires at least: 3.0
-Tested up to: 5.9
-Stable tag: 13.2.1
+Requires at least: 4.4
+Tested up to: 6.1
+Stable tag: 13.2.15
 Requires PHP: 5.6
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -12,7 +12,7 @@ License URI: http://www.gnu.org/licenses/gpl-3.0.html
 This plugin gives you the complete information on your website's visitors.
 
 == Description ==
-= WP statistics: THE #1 WORDPRESS STATISTICS PLUGIN =
+= WP Statistics: THE #1 WORDPRESS STATISTICS PLUGIN =
 Do you need a simple tool to know your website statistics? Do you need to represent these statistics? Are you caring about your users’ privacy while analyzing who are interested in your business or website? With WP Statistics you can know your website statistics without any need to send your users’ data anywhere. You can know how many people visit your personal or business website, where they’re coming from, what browsers and search engines they use, and which of your contents, categories, tags and users get more visits.
 
 All these data are recorded in your server, and YES! WP Statistics is [GDPR compliant](http://bit.ly/2x0AFgT).
@@ -32,6 +32,7 @@ All these data are recorded in your server, and YES! WP Statistics is [GDPR comp
 * Widget Support for showing Statistics
 * Data Export in TSV, XML, and CSV formats
 * Statistical Reporting Emails
+* Statistical of pages with query strings and UTM parameters
 * [Premium] [Real-time stats](http://bit.ly/2Mj4Nss)
 * [Premium] [More Advanced reporting](http://bit.ly/2MjZE3l)
 * And much more information represented in graphs & charts along with data filtering
@@ -90,18 +91,26 @@ Services that use centralized databases for spam and robot detections , such as 
 = Not all referrals are showing up in the search words list, why? =
 Search Engine Referrals and Words are highly dependent on the search engines providing the information to us. Unfortunately, we can’t do anything about it; we report everything we receive.
 
+= Does WP Statistics support the UTM parameters? =
+Yes, It does! WP Statistics logs all query strings in the URL such as UTM parameters.
+
 = PHP 7 Support? =
 WP Statistics is PHP 7 compliant; however, some versions of PHP 7 have bugs that can cause issues. One known issue is that PHP 7.0.4 cause memory exhaustion errors. Newer versions of PHP 7 do not have this issue.
-At this time (September, 2018) WP Statistics seems to run fine with PHP 7.2.6. But  you may experience issues that we haven’t found yet. If you do, feel free to report it after you make sure it is not a problem with PHP.
+At this time (September 2018) WP Statistics seems to run fine with PHP 7.2.6. But  you may experience issues that we haven’t found yet. If you do, feel free to report it after you make sure it is not a problem with PHP.
 
 = IPv6 Support? =
 WP Statistics supports IPv6 as of version 11.0; however, PHP must be compiled with IPv6 support enabled; otherwise you may see warnings when a visitor from an IPv6 address hits your site.
 
 You can check if IPv6 support is enabled in PHP by visiting the Optimization > Resources/Information->Version Info > PHP IPv6 Enabled section.
 
-If IPv6 is not enabled, you may see an warning like:
+If IPv6 is not enabled, you may see a warning like:
 
 	Warning: inet_pton() [function.inet-pton]: Unrecognized address 2003:0006:1507:5d71:6114:d8bd:80c2:1090
+
+= What 3rd party services does the plugin use? =
+IP location services are provided by data created by [MaxMind](https://www.maxmind.com/), to detect the Visitor's location (Country & City) the plugin downloads the GeoLite2 Database created by [MaxMind](https://www.maxmind.com/) on your server locally and use it.
+
+Referrer spam blacklist is provided by Matomo, available from https://github.com/matomo-org/referrer-spam-blacklist
 
 == Screenshots ==
 1. Overview
@@ -116,16 +125,101 @@ If IPv6 is not enabled, you may see an warning like:
 10. Theme widget
 
 == Upgrade Notice ==
-
 = 13.0 =
 **IMPORTANT NOTE**
-Welcome to WP-Statistics v13.0, our biggest update!
-Thank you for being part of our community. We’ve been working hard for one year to develop this version and make WP-Statistics better for you.
+Welcome to WP Statistics v13.0, our biggest update!
+Thank you for being part of our community. We’ve been working hard for one year to develop this version and make WP Statistics better for you.
 Before updating, make sure you disabled all your add-ons, then after that, try to update add-ons.
 
 If you encounter any bug, please create an issue on [GitHub](https://github.com/wp-statistics/wp-statistics/issues/new) where we can act upon them more efficiently. Since [GitHub](https://github.com/wp-statistics/wp-statistics) is not a support forum, just bugs are welcomed, and any other request will be closed.
 
 == Changelog ==
+= v13.2.15 - 13.01.2023 =
+* Bugfix: The exclusion issue when user is logged-in
+* Bugfix: The issue the API request to hit endpoint when permalink is default
+
+= v13.2.14 - 10.01.2023 =
+* Improvement: Compatibility with WordPress < 5.0
+
+= v13.2.13 - 09.01.2023 =
+* Bugfix: Fix recent, Top Visitor and Visitor page timeout & querying issue
+
+= v13.2.12 - 08.01.2023 =
+* Bugfix: Get top 10 visitor issue has been fixed
+* Bugfix: Changing the current language in admin has been fixed
+
+= v13.2.11 - 01.01.2023 =
+* Feature: A privacy setting has been added that allows customers to enable Do Not Track mode.
+* Improvement: Hardened plugin security and improvement
+
+= v13.2.10 - 24.12.2022 =
+* Bugfix: Logs the pages with query strings and UTM parameters
+
+= v13.2.9 - 17.12.2022 =
+* Bugfix: The include issue in CLI mode
+* Improvement: Error handler for referred that doesn't have any URL
+* Improvement: Hardened plugin security and improvement
+* Enhancement: Minor Improvements
+
+= v13.2.8 - 03.12.2022 =
+* Feature: Respect and compatibility with [Do Not Track](https://en.wikipedia.org/wiki/Do_Not_Track) browsers setting.
+* Feature: Add filter `wp_statistics_top_pages_arguments` to change the arguments of top pages.
+* Bugfix: Fix the Add-On notice constraint issue.
+* Bugfix: Sanitize the input of the URLs in the pages list
+* Improvement: Dynamic sending referred in the frontend by JavaScript while Cache is enabled.
+* Improvement: Remove `time` and `_nonce` parameters from the URL of the frontend while Cache is enabled.
+* Improvement: Compatibility with PHP v8.1
+* Improvement: Support method `Helper::get_pages_by_visitor_id()` to get pages by visitor id.
+
+= v13.2.7 - 23.10.2022 =
+* Bugfix: The error message while purging all databases
+* Update: The ChartJs library updated to v3.9.1
+* Improvement: Compatibility with PHP v8.0
+* Improvement: Add index for user online & visitor tables
+* Improvement: Make anonymous the browser version
+* Improvement: Enable Hash & Anonymous IP by default and make anonymize it before hashing
+
+= v13.2.6 - 07.09.2022 =
+* Improvement: Compatibility with Apache `security_mode`
+* Improvement: Remove coefficient per visitor field from general/visitors settings
+* Improvement: Hardened plugin security and improvement
+* Improvement: Avoid printing visitor data to the page while caching compatibility
+
+= v13.2.5 - 27.07.2022 =
+* Feature: Support plugin in the Privacy Policy content
+* Feature: Support plugin in Data Privacy Exporter and Data Eraser
+* Bugfix: The Top 5 Trending Pages Error has been fixed
+* Bugfix: The URL parameter issue in platform and browsers pages has been fixed
+* Bugfix: Total referrers issue has been fixed
+* Improvement: Crawler-Detect library has been updated to v1.2.111
+* Improvement: Compatibility with PHP v8.0, minor bugfix, and improvement
+* Improvement: Prevent showing Unknown entities
+
+= v13.2.4.1 - 25.06.2022 =
+* Bugfix: An issue to modify the visitors' table to add type and device model has been fixed
+
+= v13.2.4 - 11.06.2022 =
+* Feature: The new device type & device model meta boxes has been added in Overview!
+* Bugfix: Enhancements and CSRF protection added to the settings and optimization pages
+* Improvement: REST API status checking
+* Improvement: The WP-CLI commands is enabled by default and remove Its tab from Settings page
+* Improvement: Moved out "Top Referring" & "Online Users" from Overview side to right column
+
+= v13.2.3 - 12.05.2022 =
+* Bugfix: Rendering the email reporting with HTML tags has been fixed
+* Bugfix: The browser version issue has been fixed
+* Update: WhichBrowser library has been updated to v2.1.7
+* Update: Requires WordPress version is set to at least v4.4
+
+= v13.2.2.1 - 08.05.2022 =
+* Bugfix: Compatibility & fixed the UTF-8 permalinks issue
+* Bugfix: Showing the right hits of Total Page Views in the widget
+
+= v13.2.2 - 08.05.2022 =
+* Improvement: Downloading 3rd party services, the GeoIP & Referrer Spammer databases now is on [jsDelivr](https://www.jsdelivr.com/)
+* Bugfix: Storing & sending HTML tags allowed for notification message body
+* Bugfix: Hardened plugin security and improvement
+
 = v13.2.1 - 25.04.2022 =
 * Bugfix: Compatibility with PHP version lower than v7.4
 
@@ -240,7 +334,7 @@ If you encounter any bug, please create an issue on [GitHub](https://github.com/
 **We're very sorry regarding the previous update because we had a lot of changes on v13.0, we worked almost 1 year for this update and considered all situations and many tests, anyway try to update and enjoy the new features!**
 
 - Fixed critical issue when some PHP modules such as bcmath are not enabled. it caused a fatal error, the purpose flag `platform-check` from Composer has been disabled.
-- Fixed the "Connect to WordPress RestAPI" message while loading the admin statistics' widgets, the uBlock browser extension was blocking the WP-Statistics's requests.
+- Fixed the "Connect to WordPress RestAPI" message while loading the admin statistics' widgets, the uBlock browser extension was blocking the WP Statistics's requests.
 - Fixed the upgrade process issue, one of the previous action was calling and that caused the issue, that's now disabled.
 - Disabled some repair and optimization table queries during the initial request.
 - Minor Improvements.
@@ -532,7 +626,7 @@ If you encounter any bug, please create an issue on [GitHub](https://github.com/
 * Release Date: April 6, 2017
 * Fixed: Referrers, that are not search engines, are missing from the referrers widget/page.
 * Fixed: Additional XSS fixes, thanks Gen Sato who submitted to JPCERT/CC Vulnerability Handling Team.
-* Fixed: Updated CSS definition for widgets to avoid overflow only for WP Statistics widgets instead of all active widgets to avoid conflicts with other plugins.
+* Fixed: Updated CSS definition for widgets to avoid overflow only for WP-Statistics widgets instead of all active widgets to avoid conflicts with other plugins.
 
 = 12.0.4 =
 * Release Date: April 1, 2017

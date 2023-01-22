@@ -31,11 +31,13 @@ class Frontend
     }
 
     /*
-     * Create Comment support Wappalyzer
+     * Create HTML Comment to support Wappalyzer
      */
     public function html_comment()
     {
-        echo '<!-- Analytics by WP-Statistics v' . WP_STATISTICS_VERSION . ' - ' . WP_STATISTICS_SITE . ' -->' . "\n";
+        if (apply_filters('wp_statistics_html_comment', true)) {
+            echo '<!-- Analytics by WP Statistics v' . WP_STATISTICS_VERSION . ' - ' . WP_STATISTICS_SITE . ' -->' . "\n";
+        }
     }
 
     /**
@@ -62,73 +64,40 @@ class Frontend
     }
 
     /*
-     * Inline Js
+     * Inline Js for client-side request
      */
     public function add_inline_rest_js()
     {
         if (Option::get('use_cache_plugin')) {
 
-            // Wp-Statistics HTML comment
+            /**
+             * Print out the WP Statistics HTML comment
+             */
             $this->html_comment();
 
-            // Prepare Params
-            $params = array_merge(array(
-                '_'                  => time(),
-                '_wpnonce'           => wp_create_nonce('wp_rest'),
+            $params = array(
                 Hits::$rest_hits_key => 'yes',
-            ), self::set_default_params());
+            );
 
-            // Return Script
-            echo '<script>var WP_Statistics_http = new XMLHttpRequest();WP_Statistics_http.open(\'GET\', \'' . add_query_arg($params, get_rest_url(null, RestAPI::$namespace . '/' . Api\v2\Hit::$endpoint)) . '\', true);WP_Statistics_http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");WP_Statistics_http.send(null);</script>' . "\n";
+            /**
+             * Merge parameters
+             */
+            $params = array_merge($params, Helper::getHitsDefaultParams());
+
+            /**
+             * Build request URL
+             */
+            $apiUrl     = RestAPI::$namespace . '/' . Api\v2\Hit::$endpoint;
+            $requestUrl = add_query_arg($params, get_rest_url(null, $apiUrl));
+
+            /**
+             * Print Script
+             */
+            Admin_Template::get_template(array('tracker-js'), array(
+                'requestUrl' => $requestUrl,
+                'dntEnabled' => Option::get('do_not_track'),
+            ));
         }
-    }
-
-    /*
-     * Set Default Params Rest Api
-     */
-    public static function set_default_params()
-    {
-
-        // Create Empty Params Object
-        $params = array();
-
-        //Set UserAgent [browser|platform|version]
-        $params = wp_parse_args($params, UserAgent::getUserAgent());
-
-        //Set Referred
-        $params['referred'] = urlencode(Referred::get());
-
-        //Set IP
-        $params['ip'] = esc_html(IP::getIP());
-
-        //exclude
-        $exclude                    = Exclusion::check();
-        $params['exclusion_match']  = ($exclude['exclusion_match'] === true ? 'yes' : 'no');
-        $params['exclusion_reason'] = (string)$exclude['exclusion_reason'];
-
-        //User Agent String
-        $params['ua'] = urlencode(esc_html(UserAgent::getHttpUserAgent()));
-
-        //track all page
-        $params['track_all'] = (Pages::is_track_all_page() === true ? 1 : 0);
-
-        //timestamp
-        $params['timestamp'] = Timezone::getCurrentTimestamp();
-
-        //Set Page Type
-        $get_page_type               = Pages::get_page_type();
-        $params['current_page_type'] = $get_page_type['type'];
-        $params['current_page_id']   = $get_page_type['id'];
-        $params['search_query']      = (isset($get_page_type['search_query']) ? esc_html($get_page_type['search_query']) : '');
-
-        //page url
-        $params['page_uri'] = Pages::get_page_uri();
-
-        //Get User id
-        $params['user_id'] = User::get_user_id();
-
-        //return Json Data
-        return $params;
     }
 
     /**

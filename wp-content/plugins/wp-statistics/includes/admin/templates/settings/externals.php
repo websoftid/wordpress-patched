@@ -22,10 +22,8 @@
                     <input id="geoip-enable" type="checkbox" name="wps_geoip" <?php echo(WP_STATISTICS\Option::get('geoip') === 'on' ? "checked='checked'" : ''); ?>>
                     <label for="geoip-enable">
                         <?php _e('Enable', 'wp-statistics'); ?>
-                        <form action="" method="post" style="display: inline;">
-                            <input type="hidden" name="geoip_name" value="country">
-                            <?php submit_button(__("Update Database", 'wp-statistics'), "secondary", "update_geoip", false); ?>
-                        </form>
+                        <input type="hidden" name="geoip_name" value="country">
+                        <?php submit_button(__("Update Database", 'wp-statistics'), "secondary", "update_geoip", false); ?>
                     </label>
 
                     <p class="description"><?php _e('Enable this option to get more information and location (country) from a visitor.', 'wp-statistics'); ?></p>
@@ -41,10 +39,8 @@
                     <input id="geoip-city" type="checkbox" name="wps_geoip_city" <?php echo(WP_STATISTICS\Option::get('geoip_city') == 'on' ? "checked='checked'" : ''); ?>>
                     <label for="geoip-city">
                         <?php _e('Enable', 'wp-statistics'); ?>
-                        <form action="" method="post" style="display: inline;">
-                            <input type="hidden" name="geoip_name" value="city">
-                            <?php submit_button(__("Update Database", 'wp-statistics'), "secondary", "update_geoip", false); ?>
-                        </form>
+                        <input type="hidden" name="geoip_name" value="city">
+                        <?php submit_button(__("Update Database", 'wp-statistics'), "secondary", "update_geoip", false); ?>
                     </label>
                     <p class="description"><?php _e('Enable this option to see visitors\'city name', 'wp-statistics'); ?></p>
                 </td>
@@ -107,7 +103,7 @@
                 </th>
 
                 <td>
-                    <input type="text" size="3" id="geoip-private-country-code" name="wps_private_country_code" value="<?php echo htmlentities(WP_STATISTICS\Option::get('private_country_code', \WP_STATISTICS\GeoIP::$private_country), ENT_QUOTES); ?>">
+                    <input type="text" size="3" id="geoip-private-country-code" name="wps_private_country_code" value="<?php echo esc_attr(WP_STATISTICS\Option::get('private_country_code', \WP_STATISTICS\GeoIP::$private_country)); ?>">
                     <p class="description"><?php echo __('The international standard two letter country code (ie. US = United States, CA = Canada, etc.) for private (non-routable) IP addresses (ie. 10.0.0.1, 192.158.1.1, 127.0.0.1, etc.).', 'wp-statistics') . ' ' . __('Use "000" (three zeros) to use "Unknown" as the country code.', 'wp-statistics'); ?></p>
                 </td>
             </tr>
@@ -179,7 +175,8 @@
             </th>
 
             <td>
-                <a href="<?php echo WP_STATISTICS\Menus::admin_url('settings', array('tab' => 'externals-settings', 'update-referrer-spam' => 'yes')) ?>" class="button"><?php _e('Update', 'wp-staitsitcs'); ?></a>
+                <button type="submit" name="update-referrer-spam" value="1" class="button"><?php _e('Update', 'wp-staitsitcs'); ?></button>
+                <!--                <a href="--><?php //echo WP_STATISTICS\Menus::admin_url('settings', array('tab' => 'externals-settings', 'update-referrer-spam' => 'yes')) ?><!--" class="button">--><?php //_e('Update', 'wp-staitsitcs'); ?><!--</a>-->
                 <p class="description"><?php _e('Click button to download the update.', 'wp-statistics'); ?></p>
             </td>
         </tr>
@@ -200,10 +197,10 @@
                     $next_schedule = wp_next_scheduled('wp_statistics_referrerspam_hook');
 
                     if ($next_schedule) {
-                        echo date(get_option('date_format'), $next_schedule) . ' @ ' . date(get_option('time_format'), $next_schedule);
+                        echo esc_attr(date(get_option('date_format'), $next_schedule) . ' @ ' . date(get_option('time_format'), $next_schedule));
                     } else {
                         $next_update = time() + (86400 * 7);
-                        echo date(get_option('date_format'), $next_update) . ' @ ' . date(get_option('time_format'), time());
+                        echo esc_attr(date(get_option('date_format'), $next_update) . ' @ ' . date(get_option('time_format'), time()));
                     }
 
                     echo '</code></p>';

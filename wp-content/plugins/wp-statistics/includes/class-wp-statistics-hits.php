@@ -33,16 +33,10 @@ class Hits
             $this->rest_hits = (object)self::rest_params();
 
             # Filter Data
-            add_filter('wp_statistics_user_agent', array($this, 'set_user_agent'));
             add_filter('wp_statistics_user_referer', array($this, 'set_user_referer'));
-            add_filter('wp_statistics_user_ip', array($this, 'set_user_ip'));
-            add_filter('wp_statistics_hash_ip', array($this, 'set_hash_ip'));
             add_filter('wp_statistics_exclusion', array($this, 'set_exclusion'));
-            add_filter('wp_statistics_user_http_agent', array($this, 'set_user_http_agent'));
-            add_filter('wp_statistics_current_timestamp', array($this, 'set_current_timestamp'));
             add_filter('wp_statistics_current_page', array($this, 'set_current_page'));
             add_filter('wp_statistics_page_uri', array($this, 'set_page_uri'));
-            add_filter('wp_statistics_user_id', array($this, 'set_user_id'));
             add_filter('wp_statistics_track_all_pages', array($this, 'set_track_all'));
         }
 
@@ -53,26 +47,6 @@ class Hits
 
         # Record WordPress Front Page Hits
         add_action('wp', array($this, 'record_wp_hits'));
-    }
-
-    /**
-     * Set User Agent
-     *
-     * @param $agent
-     * @return array
-     */
-    public function set_user_agent($agent)
-    {
-
-        if (isset($this->rest_hits->browser) and isset($this->rest_hits->platform) and isset($this->rest_hits->version)) {
-            return array(
-                'browser'  => esc_sql(sanitize_text_field($this->rest_hits->browser)),
-                'platform' => esc_sql(sanitize_text_field($this->rest_hits->platform)),
-                'version'  => esc_sql(sanitize_text_field($this->rest_hits->version)),
-            );
-        }
-
-        return $agent;
     }
 
     /**
@@ -87,33 +61,6 @@ class Hits
     }
 
     /**
-     * Set User IP
-     *
-     * @param $ip
-     * @return string
-     */
-    public function set_user_ip($ip)
-    {
-        return isset($this->rest_hits->ip) ? esc_sql($this->rest_hits->ip) : esc_sql($ip);
-    }
-
-    /**
-     * Set Hash IP
-     *
-     * @param $hash_ip
-     * @return mixed
-     */
-    public function set_hash_ip($hash_ip)
-    {
-        if (isset($this->rest_hits->ua) and trim($this->rest_hits->ua) != "") {
-            $key = $this->rest_hits->ua;
-        } else {
-            $key = 'Unknown';
-        }
-        return $hash_ip = '#hash#' . sha1($this->rest_hits->ip . $key);
-    }
-
-    /**
      * Set Exclusion
      *
      * @param $exclude
@@ -122,7 +69,7 @@ class Hits
     public function set_exclusion($exclude)
     {
 
-        if (isset($this->rest_hits->exclusion_match) and isset($this->rest_hits->exclusion_reason) and in_array($this->rest_hits->exclusion_reason, Exclusion::exclusion_list()) == true) {
+        if (isset($this->rest_hits->exclusion_match) and isset($this->rest_hits->exclusion_reason) and array_key_exists($this->rest_hits->exclusion_reason, Exclusion::exclusion_list()) == true) {
             return array(
                 'exclusion_match'  => $this->rest_hits->exclusion_match == 'yes',
                 'exclusion_reason' => $this->rest_hits->exclusion_reason,
@@ -130,28 +77,6 @@ class Hits
         }
 
         return $exclude;
-    }
-
-    /**
-     * Set User Http Agent
-     *
-     * @param $http_agent
-     * @return string
-     */
-    public function set_user_http_agent($http_agent)
-    {
-        return isset($this->rest_hits->ua) ? $this->rest_hits->ua : $http_agent;
-    }
-
-    /**
-     * Set Current timeStamp
-     *
-     * @param $timestamp
-     * @return mixed
-     */
-    public function set_current_timestamp($timestamp)
-    {
-        return isset($this->rest_hits->timestamp) ? $this->rest_hits->timestamp : $timestamp;
     }
 
     /**
@@ -197,18 +122,7 @@ class Hits
      */
     public function set_page_uri($page_uri)
     {
-        return isset($this->rest_hits->page_uri) ? $this->rest_hits->page_uri : $page_uri;
-    }
-
-    /**
-     * Set Current User ID
-     *
-     * @param $user_id
-     * @return int
-     */
-    public function set_user_id($user_id)
-    {
-        return isset($this->rest_hits->user_id) ? $this->rest_hits->user_id : $user_id;
+        return isset($this->rest_hits->page_uri) ? base64_decode($this->rest_hits->page_uri) : $page_uri;
     }
 
     /**
@@ -232,9 +146,7 @@ class Hits
         $data = array();
         if (Helper::is_rest_request() and isset($_REQUEST[Hits::$rest_hits_key])) {
             foreach ($_REQUEST as $key => $value) {
-                if (!in_array($key, array('_', '_wpnonce'))) {
-                    $data[$key] = $value;
-                }
+                $data[$key] = $value;
             }
 
             return ($params === false ? $data : (isset($data[$params]) ? $data[$params] : false));
@@ -310,7 +222,7 @@ class Hits
      */
     public static function record_wp_hits()
     {
-        if (!Option::get('use_cache_plugin')) {
+        if (!Option::get('use_cache_plugin') and !Helper::dntEnabled()) {
             Hits::record();
         }
     }

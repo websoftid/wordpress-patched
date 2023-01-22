@@ -364,7 +364,11 @@
             }
         }
 
-        <?php if ($is_rtl ===true) { ?>
+        <?php
+
+         do_action('wp_statistics_css_after_email');
+
+         if ($is_rtl ===true) { ?>
         /* -------------------------------------
             Rtl Version
         ------------------------------------- */
@@ -397,12 +401,12 @@
                                         if (trim($logo) != "") {
                                             ?>
                                             <p align="center">
-                                                <img src="<?php echo $logo; ?>" style="display: block;margin: 20px auto">
+                                                <img src="<?php echo esc_url($logo); ?>" style="display: block;margin: 20px auto">
                                             </p>                                            <br/>
                                             <?php
                                         }
                                         ?>
-                                        <?php echo $content; ?>
+                                        <?php echo wp_kses_post($content); ?>
                                     </td>
                                 </tr>
                             </table>
@@ -417,12 +421,12 @@
                     <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                         <tr>
                             <td class="content-block" style="padding-bottom:0px;">
-                                <span class="apple-link"><?php echo $footer_text; ?></span>
+                                <span class="apple-link"><?php echo wp_kses_post($footer_text); ?></span>
                             </td>
                         </tr>
                         <tr>
                             <td class="content-block powered-by">
-                                <a href="<?php echo $site_url; ?>" target="_blank"><?php echo $site_title; ?></a>
+                                <a href="<?php echo esc_url($site_url); ?>" target="_blank"><?php echo esc_attr($site_title); ?></a>
                             </td>
                         </tr>
                     </table>
