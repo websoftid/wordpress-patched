@@ -432,7 +432,7 @@ trait ThirdParty {
 			return $accessToken;
 		}
 
-		$sbFacebookDataEncryptionInstance = new \CustomFacebookFeed\SB_Facebook_Data_Encryption;
+		$sbFacebookDataEncryptionInstance = new \CustomFacebookFeed\SB_Facebook_Data_Encryption();
 		$accessToken                      = $sbFacebookDataEncryptionInstance->maybe_decrypt( $oembedTokenData['access_token'] );
 
 		return $accessToken;
@@ -596,5 +596,21 @@ trait ThirdParty {
 
 		// This URL param is set when using plain permalinks.
 		return isset( $_GET['amp'] ) || preg_match( '/amp$/', untrailingslashit( $wp->request ) );
+	}
+
+	/**
+	 * If we're in a LearnPress lesson page, return the lesson ID.
+	 *
+	 * @since 4.3.1
+	 *
+	 * @return int|false
+	 */
+	public function getLearnPressLesson() {
+		global $lp_course_item;
+		if ( $lp_course_item && method_exists( $lp_course_item, 'get_id' ) ) {
+			return $lp_course_item->get_id();
+		}
+
+		return false;
 	}
 }

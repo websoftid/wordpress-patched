@@ -14,6 +14,24 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 trait WpContext {
 	/**
+	 * The original main query.
+	 *
+	 * @since 4.3.0
+	 *
+	 * @var WP_Query
+	 */
+	public $originalQuery;
+
+	/**
+	 * The original main post variable.
+	 *
+	 * @since 4.3.0
+	 *
+	 * @var WP_Post
+	 */
+	public $originalPost;
+
+	/**
 	 * Get the home page object.
 	 *
 	 * @since 4.1.1
@@ -173,6 +191,12 @@ trait WpContext {
 			}
 		}
 
+		// Learnpress lessons load the course. So here we need to switch to the lesson.
+		$learnPressLesson = aioseo()->helpers->getLearnPressLesson();
+		if ( ! $postId && $learnPressLesson ) {
+			$postId = $learnPressLesson;
+		}
+
 		// We need to check these conditions and cannot always return get_post() because we'll return the first post on archive pages (dynamic homepage, term pages, etc.).
 		if (
 			$this->isScreenBase( 'post' ) ||
@@ -183,6 +207,19 @@ trait WpContext {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Returns the current post ID.
+	 *
+	 * @since 4.3.1
+	 *
+	 * @return int|null The post ID.
+	 */
+	public function getPostId() {
+		$post = $this->getPost();
+
+		return is_object( $post ) && property_exists( $post, 'ID' ) ? $post->ID : null;
 	}
 
 	/**
@@ -550,15 +587,21 @@ trait WpContext {
 	/**
 	 * Checks whether we're on the given screen.
 	 *
-	 * @since 4.0.7
+	 * @since   4.0.7
+	 * @version 4.3.1
 	 *
 	 * @param  string $screenName The screen name.
+	 * @param  string $comparison Check as a prefix.
 	 * @return bool               Whether we're on the given screen.
 	 */
-	public function isScreenBase( $screenName ) {
+	public function isScreenBase( $screenName, $comparison = '' ) {
 		$screen = $this->getCurrentScreen();
 		if ( ! $screen || ! isset( $screen->base ) ) {
 			return false;
+		}
+
+		if ( 'prefix' === $comparison ) {
+			return 0 === stripos( $screen->base, $screenName );
 		}
 
 		return $screen->base === $screenName;
@@ -721,5 +764,86 @@ trait WpContext {
 		}
 
 		return $type;
+	}
+
+	/**
+	 * Sets the given post as the queried object of the main query.
+	 *
+	 * @since 4.3.0
+	 *
+	 * @param  \WP_Post $post The post object.
+	 * @return void
+	 */
+	public function setWpQueryPost( $wpPost ) {
+		global $wp_query, $post;
+		$this->originalQuery = clone $wp_query;
+		$this->originalPost  = $post;
+
+		$wp_query->posts                 = [ $wpPost ];
+		$wp_query->post                  = $wpPost;
+		$wp_query->post_count            = 1;
+		$wp_query->get_queried_object_id = (int) $wpPost->ID;
+		$wp_query->queried_object        = $wpPost;
+		$wp_query->is_single             = true;
+		$wp_query->is_singular           = true;
+
+		if ( 'page' === $wpPost->post_type ) {
+			$wp_query->is_page = true;
+		}
+
+		$post = $wpPost;
+	}
+
+	/**
+	 * Sets the given term as the queried object of the main query.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param  \WP_Term $term The term object.
+	 * @return void
+	 */
+	public function setWpQueryTerm( $term ) {
+		global $wp_query;
+		$this->originalQuery = clone $wp_query;
+
+		$term->term_id = $term->id;
+
+		$wp_query->get_queried_object_id = (int) $term->id;
+		$wp_query->queried_object        = $term;
+		$wp_query->is_tax                = true;
+
+		switch ( $term->taxonomy ) {
+			case 'category':
+				$wp_query->is_category = true;
+				break;
+			case 'post_tag':
+				$wp_query->is_tag = true;
+				break;
+			default:
+				break;
+		}
+	}
+
+	/**
+	 * Restores the main query back to the original query.
+	 *
+	 * @since 4.3.0
+	 *
+	 * @return void
+	 */
+	public function restoreWpQuery() {
+		if ( null === $this->originalQuery ) {
+			return;
+		}
+
+		global $wp_query, $post;
+		$wp_query = clone $this->originalQuery;
+
+		if ( null !== $this->originalPost ) {
+			$post = $this->originalPost;
+		}
+
+		$this->originalQuery = null;
+		$this->originalPost = null;
 	}
 }

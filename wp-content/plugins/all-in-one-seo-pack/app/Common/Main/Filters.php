@@ -61,7 +61,9 @@ abstract class Filters {
 		add_action( 'dp_duplicate_page', [ $this, 'duplicatePost' ], 10, 2 );
 		add_action( 'woocommerce_product_duplicate_before_save', [ $this, 'scheduleDuplicateProduct' ], 10, 2 );
 
+		// BBpress compatibility.
 		add_action( 'init', [ $this, 'resetUserBBPress' ], -1 );
+		add_filter( 'the_title', [ $this, 'maybeRemoveBBPressReplyFilter' ], 0, 2 );
 
 		// Bypass the JWT Auth plugin's unnecessary restrictions. https://wordpress.org/plugins/jwt-auth/
 		add_filter( 'jwt_auth_default_whitelist', [ $this, 'allowRestRoutes' ] );
@@ -93,6 +95,28 @@ abstract class Filters {
 			global $current_user;
 			$current_user = null;
 		}
+	}
+
+	/**
+	 * Removes the bbPress title filter when adding a new reply with empty title to avoid fatal error.
+	 *
+	 *
+	 * @since 4.3.1
+	 *
+	 * @param  string $title The post title.
+	 * @param  int    $id    The post ID (optional - in order to fix an issue where other plugins/themes don't pass in the second arg).
+	 * @return string        The post title.
+	 */
+	public function maybeRemoveBBPressReplyFilter( $title, $id = 0 ) {
+		if (
+			function_exists( 'bbp_get_reply_post_type' ) &&
+			get_post_type( $id ) === bbp_get_reply_post_type() &&
+			aioseo()->helpers->isScreenBase( 'post' )
+		) {
+			remove_filter( 'the_title', 'bbp_get_reply_title_fallback', 2 );
+		}
+
+		return $title;
 	}
 
 	/**
@@ -341,5 +365,50 @@ abstract class Filters {
 		unset( $active['sitemaps'] );
 
 		return $active;
+	}
+
+	/**
+	 * Dequeues third-party scripts from the other plugins or themes that crashes our menu pages.
+	 *
+	 * @since   4.1.9
+	 * @version 4.3.1
+	 *
+	 * @return void
+	 */
+	public function dequeueThirdPartyAssets() {
+		// TagDiv Opt-in Builder plugin.
+		wp_dequeue_script( 'tds_js_vue_files_last' );
+
+		// MyListing theme.
+		if ( function_exists( 'mylisting' ) ) {
+			wp_dequeue_script( 'vuejs' );
+			wp_dequeue_script( 'theme-script-vendor' );
+			wp_dequeue_script( 'theme-script-main' );
+		}
+
+		// Voxel theme.
+		if ( class_exists( '\Voxel\Controllers\Assets_Controller' ) ) {
+			wp_dequeue_script( 'vue' );
+			wp_dequeue_script( 'vx:backend.js' );
+		}
+	}
+
+	/**
+	 * Dequeues third-party scripts from the other plugins or themes that crashes our menu pages.
+	 *
+	 * @version 4.3.2
+	 *
+	 * @return void
+	 */
+	public function dequeueThirdPartyAssetsEarly() {
+		// Disables scripts for plugins StmMotorsExtends and StmPostType.
+		if ( class_exists( 'STM_Metaboxes' ) ) {
+			remove_action( 'admin_enqueue_scripts', [ 'STM_Metaboxes', 'wpcfto_scripts' ] );
+		}
+
+		// Disables scripts for LearnPress plugin.
+		if ( function_exists( 'learn_press_admin_assets' ) ) {
+			remove_action( 'admin_enqueue_scripts', [ learn_press_admin_assets(), 'load_scripts' ] );
+		}
 	}
 }

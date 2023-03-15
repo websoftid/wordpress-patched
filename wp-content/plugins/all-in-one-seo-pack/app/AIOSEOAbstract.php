@@ -99,9 +99,18 @@ abstract class AIOSEOAbstract {
 	 *
 	 * @since 4.2.7
 	 *
-	 * @var \AIOSEO\Plugin\Lite\Admin\PostSettings|\AIOSEO\Plugin\Pro\Admin\PostSettings
+	 * @var AIOSEO\Plugin\Common\Standalone
 	 */
 	public $standalone = null;
+
+	/**
+	 * Search Statistics class instance.
+	 *
+	 * @since 4.3.0
+	 *
+	 * @var \AIOSEO\Plugin\Common\SearchStatistics\SearchStatistics|\AIOSEO\Plugin\Pro\SearchStatistics\SearchStatistics
+	 */
+	public $searchStatistics = null;
 
 	/**
 	 * ThirdParty class instance.
@@ -462,6 +471,15 @@ abstract class AIOSEOAbstract {
 	 * @var \AIOSEO\Plugin\Common\Utils\Addons|\AIOSEO\Plugin\Pro\Utils\Addons
 	 */
 	public $addons = null;
+
+	/**
+	 * Addons class instance.
+	 *
+	 * @since 4.3.0
+	 *
+	 * @var \AIOSEO\Plugin\Common\Utils\Features|\AIOSEO\Plugin\Pro\Utils\Features
+	 */
+	public $features = null;
 
 	/**
 	 * Options class instance.

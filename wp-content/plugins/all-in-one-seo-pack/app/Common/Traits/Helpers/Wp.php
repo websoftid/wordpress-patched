@@ -562,6 +562,23 @@ trait Wp {
 	}
 
 	/**
+	 * Get the edit link for the given Post ID.
+	 *
+	 * @since 4.3.1
+	 *
+	 * @param  int         $postId The Post ID.
+	 * @return bool|string         The edit link or false if not built with page builders.
+	 */
+	public function getPostEditLink( $postId ) {
+		$pageBuilder = $this->getPostPageBuilderName( $postId );
+		if ( ! empty( $pageBuilder ) ) {
+			return aioseo()->standalone->pageBuilderIntegrations[ $pageBuilder ]->getEditUrl( $postId );
+		}
+
+		return get_edit_post_link( $postId );
+	}
+
+	/**
 	 * Checks if the current user can edit posts of the given post type.
 	 *
 	 * @since 4.1.9
@@ -709,5 +726,28 @@ trait Wp {
 		}
 
 		return $json;
+	}
+
+	/**
+	 * Returns the post title or a placeholder if there isn't one.
+	 *
+	 * @since 4.3.0
+	 *
+	 * @param  int    $postId The post ID.
+	 * @return string         The post title.
+	 */
+	public function getPostTitle( $postId ) {
+		static $titles = [];
+		if ( isset( $titles[ $postId ] ) ) {
+			return $titles[ $postId ];
+		}
+
+		$post  = aioseo()->helpers->getPost( $postId );
+		$title = $post->post_title;
+		$title = $title ? $title : __( '(no title)' ); // phpcs:ignore WordPress.WP.I18n.MissingArgDomain
+
+		$titles[ $postId ] = aioseo()->helpers->decodeHtmlEntities( $title );
+
+		return $titles[ $postId ];
 	}
 }
