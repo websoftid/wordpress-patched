@@ -137,7 +137,7 @@ class Menus
     {
 
         // Get the read/write capabilities.
-        $manage_cap = User::ExistCapability(Option::get('manage_capability', 'manage_options'));
+        $manage_cap     = User::ExistCapability(Option::get('manage_capability', 'manage_options'));
 
         /**
          * List of WP Statistics Admin Menu
@@ -222,19 +222,12 @@ class Menus
                 'page_url' => 'countries',
                 'method'   => 'country'
             ),
-            'categories'   => array(
+            'taxonomies'   => array(
                 'require'  => array('pages' => true),
                 'sub'      => 'overview',
-                'title'    => __('Categories', 'wp-statistics'),
-                'page_url' => 'categories',
-                'method'   => 'category',
-            ),
-            'tags'         => array(
-                'require'  => array('pages' => true),
-                'sub'      => 'overview',
-                'title'    => __('Tags', 'wp-statistics'),
-                'page_url' => 'tags',
-                'method'   => 'tags',
+                'title'    => __('Taxonomies', 'wp-statistics'),
+                'page_url' => 'taxonomies',
+                'method'   => 'taxonomies',
             ),
             'authors'      => array(
                 'require'  => array('pages' => true),
@@ -257,7 +250,7 @@ class Menus
                 'page_url' => 'platform',
                 'method'   => 'platform'
             ),
-            'top.visotors' => array(
+            'top.visitors' => array(
                 'require'  => array('visitors' => true),
                 'sub'      => 'overview',
                 'title'    => __('Top Visitors Today', 'wp-statistics'),
