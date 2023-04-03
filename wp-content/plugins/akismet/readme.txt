@@ -36,6 +36,19 @@ Upload the Akismet plugin to your blog, activate it, and then enter your Akismet
 * Improved compatibility with themes that hide or show UI elements based on mouse movements.
 * Increased security of API keys by sending them in request bodies instead of subdomains.
 
+= 5.1 =
+*Release Date - 20 March 2023*
+
+* Removed unnecessary limit notices from admin page.
+* Improved spam detection by including post taxonomies in the comment-check call.
+* Removed API keys from stats iframes to avoid possible inadvertant exposure.
+
+= 5.0.2 =
+*Release Date - 1 December 2022*
+
+* Improved compatibility with themes that hide or show UI elements based on mouse movements.
+* Increased security of API keys by sending them in request bodies instead of subdomains.
+
 = 5.0.1 =
 *Release Date - 28 September 2022*
 
