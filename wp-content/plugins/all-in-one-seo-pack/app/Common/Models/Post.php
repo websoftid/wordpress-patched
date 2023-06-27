@@ -38,7 +38,8 @@ class Post extends Model {
 		'videos',
 		'open_ai',
 		'options',
-		'local_seo'
+		'local_seo',
+		'primary_term'
 	];
 
 	/**
@@ -98,7 +99,6 @@ class Post extends Model {
 			$post->post_id = $postId;
 			$post          = self::setDynamicDefaults( $post, $postId );
 		} else {
-			$post = self::migrateRemovedQaSchema( $post );
 			$post = self::runDynamicMigrations( $post );
 		}
 
@@ -177,6 +177,7 @@ class Post extends Model {
 	 * @return Post       The modified Post object.
 	 */
 	private static function runDynamicMigrations( $post ) {
+		$post = self::migrateRemovedQaSchema( $post );
 		$post = self::migrateImageTypes( $post );
 		$post = self::runDynamicSchemaMigration( $post );
 
@@ -201,8 +202,17 @@ class Post extends Model {
 			$post = aioseo()->updates->migratePostSchemaHelper( $post );
 		}
 
-		if ( ! property_exists( $post->schema, 'default' ) ) {
-			$post->schema = self::getDefaultSchemaOptions( $post->schema );
+		// If the schema prop isn't set yet, we want to set it here.
+		// We also want to run this regardless of whether it is already set to make sure the default schema graph
+		// is correctly propagated on the frontend after changing it.
+		$post->schema = self::getDefaultSchemaOptions( $post->schema );
+
+		foreach ( $post->schema->graphs as $graph ) {
+			// If the first character of the graph ID isn't a pound, add one.
+			// We have to do this because the schema migration in 4.2.5 didn't add the pound for custom graphs.
+			if ( '#' !== substr( $graph->id, 0, 1 ) ) {
+				$graph->id = '#' . $graph->id;
+			}
 		}
 
 		return $post;
@@ -268,6 +278,9 @@ class Post extends Model {
 		if ( ! empty( $lastError ) ) {
 			return $lastError;
 		}
+
+		// Fires once an AIOSEO post has been saved.
+		do_action( 'aioseo_insert_post', $postId );
 	}
 
 	/**
@@ -393,8 +406,8 @@ class Post extends Model {
 		$thePost->page_analysis               = ! empty( $data['page_analysis'] ) ? wp_json_encode( self::sanitizePageAnalysis( $data['page_analysis'] ) ) : null;
 		$thePost->seo_score                   = ! empty( $data['seo_score'] ) ? sanitize_text_field( $data['seo_score'] ) : 0;
 		// Sitemap
-		$thePost->priority                    = ! empty( $data['priority'] ) ? sanitize_text_field( $data['priority'] ) : null;
-		$thePost->frequency                   = ! empty( $data['frequency'] ) ? sanitize_text_field( $data['frequency'] ) : null;
+		$thePost->priority                    = isset( $data['priority'] ) ? ( 'default' === sanitize_text_field( $data['priority'] ) ? null : (float) $data['priority'] ) : null;
+		$thePost->frequency                   = ! empty( $data['frequency'] ) ? sanitize_text_field( $data['frequency'] ) : 'default';
 		// Robots Meta
 		$thePost->robots_default              = isset( $data['default'] ) ? rest_sanitize_boolean( $data['default'] ) : 1;
 		$thePost->robots_noindex              = isset( $data['noindex'] ) ? rest_sanitize_boolean( $data['noindex'] ) : 0;
@@ -439,6 +452,7 @@ class Post extends Model {
 			? wp_json_encode( self::getDefaultOpenAiOptions( $data['open_ai'] ) )
 			: wp_json_encode( self::getDefaultOpenAiOptions() );
 		$thePost->updated                     = gmdate( 'Y-m-d H:i:s' );
+		$thePost->primary_term                = ! empty( $data['primary_term'] ) ? $data['primary_term'] : null;
 
 		// Before we determine the OG/Twitter image, we need to set the meta data cache manually because the changes haven't been saved yet.
 		aioseo()->meta->metaData->bustPostCache( $thePost->post_id, $thePost );
@@ -622,7 +636,9 @@ class Post extends Model {
 		}
 
 		// Reset the default graph type to make sure it's accurate.
-		$existingOptions['default']['graphName'] = $defaultGraphName;
+		if ( $defaultGraphName ) {
+			$existingOptions['default']['graphName'] = $defaultGraphName;
+		}
 
 		return json_decode( wp_json_encode( $existingOptions ) );
 	}
@@ -678,9 +694,12 @@ class Post extends Model {
 	 */
 	public static function setOptionsDefaults( $post ) {
 		$defaults = [
-			'linkFormat' => [
+			'linkFormat'  => [
 				'internalLinkCount'      => 0,
 				'linkAssistantDismissed' => false
+			],
+			'primaryTerm' => [
+				'productEducationDismissed' => false
 			]
 		];
 

@@ -24,7 +24,7 @@ abstract class AIOSEOAbstract {
 	 *
 	 * @since 4.2.7
 	 *
-	 * @var Object
+	 * @var \AIOSEO\Plugin\Lite\Utils\Helpers|\AIOSEO\Plugin\Pro\Utils\Helpers
 	 */
 	public $helpers = null;
 
@@ -561,4 +561,13 @@ abstract class AIOSEOAbstract {
 	 * @var null|\AIOSEO\Plugin\Pro\Ai\Ai
 	 */
 	public $ai = null;
+
+	/**
+	 * SeoRevisions class instance.
+	 *
+	 * @since 4.4.0
+	 *
+	 * @var null|\AIOSEO\Plugin\Pro\SeoRevisions\SeoRevisions
+	 */
+	public $seoRevisions = null;
 }

@@ -48,7 +48,7 @@ class KgPerson extends Graphs\Graph {
 			$data['image'] = $avatar;
 		}
 
-		$socialUrls = $this->getUserProfiles( $person );
+		$socialUrls = array_values( $this->getUserProfiles( $person ) );
 		if ( $socialUrls ) {
 			$data['sameAs'] = $socialUrls;
 		}
@@ -75,7 +75,7 @@ class KgPerson extends Graphs\Graph {
 			$data['image'] = $logo;
 		}
 
-		$socialUrls = $this->getOrganizationProfiles();
+		$socialUrls = array_values( $this->getOrganizationProfiles() );
 		if ( $socialUrls ) {
 			$data['sameAs'] = $socialUrls;
 		}
