@@ -5,8 +5,9 @@
  * @package WPSEO\Admin
  */
 
-use Yoast\WP\SEO\Config\Schema_Types;
+use Yoast\WP\SEO\Integrations\Academy_Integration;
 use Yoast\WP\SEO\Integrations\Settings_Integration;
+use Yoast\WP\SEO\Integrations\Support_Integration;
 
 /**
  * Class WPSEO_Admin_Pages.
@@ -43,8 +44,8 @@ class WPSEO_Admin_Pages {
 	public function init() {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reason: We are not processing form information.
 		$page = isset( $_GET['page'] ) && is_string( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
-		if ( $page === Settings_Integration::PAGE ) {
-			// Bail, this is managed in the Settings_Integration.
+		if ( \in_array( $page, [ Settings_Integration::PAGE, Academy_Integration::PAGE, Support_Integration::PAGE ], true ) ) {
+			// Bail, this is managed in the applicable integration.
 			return;
 		}
 
@@ -87,7 +88,7 @@ class WPSEO_Admin_Pages {
 			'isRtl'                          => is_rtl(),
 			'isPremium'                      => YoastSEO()->helpers->product->is_premium(),
 			'webinarIntroSettingsUrl'        => WPSEO_Shortlinker::get( 'https://yoa.st/webinar-intro-settings' ),
-			'webinarIntroFirstTimeConfigUrl' => WPSEO_Shortlinker::get( 'https://yoa.st/webinar-intro-first-time-config' ),
+			'webinarIntroFirstTimeConfigUrl' => $this->get_webinar_shortlink(),
 		];
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reason: We are not processing form information.
@@ -149,5 +150,18 @@ class WPSEO_Admin_Pages {
 		if ( $tool === 'bulk-editor' ) {
 			$this->asset_manager->enqueue_script( 'bulk-editor' );
 		}
+	}
+
+	/**
+	 * Returns the appropriate shortlink for the Webinar.
+	 *
+	 * @return string The shortlink for the Webinar.
+	 */
+	private function get_webinar_shortlink() {
+		if ( YoastSEO()->helpers->product->is_premium() ) {
+			return WPSEO_Shortlinker::get( 'https://yoa.st/webinar-intro-first-time-config-premium' );
+		}
+
+		return WPSEO_Shortlinker::get( 'https://yoa.st/webinar-intro-first-time-config' );
 	}
 }
