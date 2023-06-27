@@ -6,7 +6,7 @@ Description: Protect WordPress website forms from spam entries with Google Captc
 Author: BestWebSoft
 Text Domain: google-captcha
 Domain Path: /languages
-Version: 1.70
+Version: 1.72
 Author URI: https://bestwebsoft.com/
 License: GPLv3 or later
 */
@@ -175,6 +175,14 @@ if ( ! function_exists( 'gglcptch_add_admin_script_styles' ) ) {
 			bws_enqueue_settings_scripts();
 			bws_plugins_include_codemirror();
 		}
+	}
+}
+/* Add reCaptcha styles for login page */
+if ( ! function_exists( 'gglcptch_add_login_styles' ) ) {
+	function gglcptch_add_login_styles() {
+		global $gglcptch_plugin_info, $gglcptch_options;
+
+		wp_enqueue_style( 'gglcptch_stylesheet', plugins_url( 'css/login-style.css', __FILE__ ), array(), $gglcptch_plugin_info['Version'] );
 	}
 }
 
@@ -651,7 +659,7 @@ if ( ! function_exists( 'gglcptch_display' ) ) {
 				</noscript>';
 				$deps = ( ! empty( $gglcptch_options['disable_submit'] ) ) ? array( 'gglcptch_pre_api' ) : array( 'jquery' );
 			} elseif ( isset( $gglcptch_options['recaptcha_version'] ) &&  'v3' == $gglcptch_options['recaptcha_version'] ) {
-			    $content .= '<input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response" />';
+			    $content .= '<input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response" /><br /><div class="gglcptch_error_text">' . __( 'The reCAPTCHA verification period has expired. Please reload the page.', 'google-captcha' ) . '</div>';
             }
 			$content .= '</div>';
 			$gglcptch_count++;
@@ -749,13 +757,21 @@ if ( ! function_exists( 'gglcptch_check' ) ) {
 	function gglcptch_check( $form = 'general', $debug = false ) {
 		global $gglcptch_options;
 
-        if ( gglcptch_allowlisted_ip() && 'gglcptch_test' != $form ) {
-            $result = array(
-                    'response' => true,
-                    'reason' => ''
-                );
-            return $result;
-        }
+		if ( 'reset_pwd_form' === $form && empty( $_REQUEST ) && empty( $_SERVER['REQUEST_URI'] ) ) {
+			$result = array(
+				'response' => true,
+				'reason' => ''
+			);
+			return $result;
+		}
+
+		if ( gglcptch_allowlisted_ip() && 'gglcptch_test' != $form ) {
+			$result = array(
+				'response' => true,
+				'reason' => ''
+			);
+			return $result;
+		}
 
 		if ( empty( $gglcptch_options ) ) {
 			register_gglcptch_settings();
@@ -1031,11 +1047,11 @@ if ( ! function_exists( 'gglcptch_get_message' ) ) {
 				__( 'Check your domain configurations', 'google-captcha' ),
 				__( 'and enter it again', 'google-captcha' )
 			),
-			'incorrect-captcha-sol'		=> __( 'User response is invalid', 'google-captcha' ),
-			'incorrect'					=> __( 'You have entered an incorrect reCAPTCHA value.', 'google-captcha' ),
-			'multiple_blocks'			=> __( 'More than one reCAPTCHA has been found in the current form. Please remove all unnecessary reCAPTCHA fields to make it work properly.', 'google-captcha' ),
-            /* v3 error */
-            'RECAPTCHA_SMALL_SCORE'     => __( 'reCaptcha v3 test failed', 'google-captcha' )
+			'incorrect-captcha-sol' => __( 'User response is invalid', 'google-captcha' ),
+			'incorrect'             => __( 'The reCaptcha verification failed. Please try again.', 'google-captcha' ),
+			'multiple_blocks'       => __( 'More than one reCAPTCHA has been found in the current form. Please remove all unnecessary reCAPTCHA fields to make it work properly.', 'google-captcha' ),
+			/* v3 error */
+			'RECAPTCHA_SMALL_SCORE' => __( 'reCaptcha v3 test failed', 'google-captcha' )
 		);
 
 		if ( isset( $messages[ $message_code ] ) ) {
@@ -1214,6 +1230,7 @@ add_action( 'admin_init', 'gglcptch_admin_init' );
 add_action( 'plugins_loaded', 'gglcptch_plugins_loaded' );
 
 add_action( 'admin_enqueue_scripts', 'gglcptch_add_admin_script_styles' );
+add_action( 'login_enqueue_scripts', 'gglcptch_add_login_styles' );
 add_filter( 'script_loader_tag', 'gglcptch_add_async_attribute', 10, 2 );
 add_action( 'admin_footer', 'gglcptch_admin_footer' );
 add_filter( 'pgntn_callback', 'gglcptch_pagination_callback' );
