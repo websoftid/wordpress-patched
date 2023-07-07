@@ -223,7 +223,7 @@ class Admin {
 			'aioseo-monsterinsights'   => [
 				'menu_title'          => esc_html__( 'Analytics', 'all-in-one-seo-pack' ),
 				'parent'              => 'aioseo-monsterinsights',
-				'hide_admin_bar_menu' => true,
+				'hide_admin_bar_menu' => true
 			],
 			'aioseo-about'             => [
 				'menu_title' => esc_html__( 'About Us', 'all-in-one-seo-pack' ),
@@ -232,7 +232,7 @@ class Admin {
 			'aioseo-seo-revisions'     => [
 				'menu_title'          => esc_html__( 'SEO Revisions', 'all-in-one-seo-pack' ),
 				'parent'              => 'aioseo-seo-revisions',
-				'hide_admin_bar_menu' => true,
+				'hide_admin_bar_menu' => true
 			],
 		];
 	}

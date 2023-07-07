@@ -210,7 +210,7 @@ class Post extends Model {
 		foreach ( $post->schema->graphs as $graph ) {
 			// If the first character of the graph ID isn't a pound, add one.
 			// We have to do this because the schema migration in 4.2.5 didn't add the pound for custom graphs.
-			if ( '#' !== substr( $graph->id, 0, 1 ) ) {
+			if ( property_exists( $graph, 'id' ) && '#' !== substr( $graph->id, 0, 1 ) ) {
 				$graph->id = '#' . $graph->id;
 			}
 		}
