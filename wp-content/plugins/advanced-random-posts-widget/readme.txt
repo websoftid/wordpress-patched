@@ -1,15 +1,19 @@
 === Advanced Random Posts Widget ===
-Contributors: idenovasi, satrya
+Contributors: satrya
 Tags: random posts, thumbnail, widget, widgets, sidebar, excerpt, category, post tag, post type, taxonomy, shortcode, multiple widgets, random posts widget
 Requires at least: 4.5
-Tested up to: 5.1
-Stable tag: 2.2.0
+Tested up to: 6.1
+Stable tag: 2.2.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Provides flexible and advanced random posts. Display it via shortcode or widget with thumbnails, post excerpt, and much more!
 
 == Description ==
+
+= Notice =
+
+This plugin is no longer supported, please use [Recent posts widget Extended](https://wordpress.org/plugins/recent-posts-widget-extended/) instead.
 
 This plugin will enable a custom, flexible and advanced random posts. It allows you to display a list of random posts via shortcode or widget with thumbnail, excerpt and post date, also you can display it from all or specific or multiple taxonomy.
 
