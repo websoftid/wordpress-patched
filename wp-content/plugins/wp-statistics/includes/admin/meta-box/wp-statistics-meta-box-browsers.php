@@ -19,7 +19,17 @@ class browsers extends MetaBoxAbstract
      */
     public static function get($args = array())
     {
+        /**
+         * Filters the args used from metabox for query stats
+         *
+         * @param array $args The args passed to query stats
+         * @since 14.2.1
+         *
+         */
+        $args = apply_filters('wp_statistics_meta_box_browsers_args', $args);
+
         global $wpdb;
+
 
         // Set Default Params
         $defaults = array(
@@ -68,10 +78,22 @@ class browsers extends MetaBoxAbstract
             }
 
             //Add Unknown Agent to total
+            $browsers     = Helper::prepareArrayToStringForQuery($Browsers);
+            $visitorTable = DB::table('visitor');
+
             if (empty($args['from']) and empty($args['to']) and $args['ago'] == "all") {
-                $total += $other_agent_count = $wpdb->get_var('SELECT COUNT(*) FROM `' . DB::table('visitor') . '` WHERE `agent` NOT IN (\'' . implode("','", $Browsers) . '\')');
+                $total += $other_agent_count = $wpdb->get_var("SELECT COUNT(*) FROM `{$visitorTable}` WHERE `agent` NOT IN ($browsers)");
             } else {
-                $total += $other_agent_count = $wpdb->get_var($wpdb->prepare('SELECT COUNT(*) FROM `' . DB::table('visitor') . '` WHERE `agent` NOT IN (\'' . implode("','", $Browsers) . '\') AND `last_counter` BETWEEN %s AND %s', reset($days_time_list), end($days_time_list)));
+
+                $browsersWhere = '';
+                if ($browsers) {
+                    $browsersWhere = "`agent` NOT IN ($browsers) AND";
+                }
+
+                $total += $other_agent_count = $wpdb->get_var(
+                    $wpdb->prepare("SELECT COUNT(*) FROM `{$visitorTable}` WHERE {$browsersWhere} `last_counter` BETWEEN %s AND %s", reset($days_time_list), end($days_time_list))
+                );
+
             }
 
             //Sort Browser List By Visitor ASC
@@ -100,15 +122,14 @@ class browsers extends MetaBoxAbstract
             }
 
         } else {
-
             // Set Browser info
             $lists_keys[] = strtolower($args['browser']);
             $lists_logo[] = UserAgent::getBrowserLogo($args['browser']);
 
-            $sql = $wpdb->prepare("SELECT version, COUNT(*) as count FROM " . DB::table('visitor') . " WHERE agent = %s AND `last_counter` BETWEEN '" . reset($days_time_list) . "' AND '" . end($days_time_list) . "' GROUP BY version", $args['browser']);
-
             // Get List Of Version From Custom Browser
-            $list = $wpdb->get_results($sql, ARRAY_A);
+            $list = $wpdb->get_results(
+                $wpdb->prepare("SELECT version, COUNT(*) as count FROM `" . DB::table('visitor') . "` WHERE agent = %s AND `last_counter` BETWEEN %s AND %s GROUP BY version", $args['browser'], reset($days_time_list), end($days_time_list)),
+                ARRAY_A);
 
             // Sort By Count
             Helper::SortByKeyValue($list, 'count');
@@ -138,9 +159,9 @@ class browsers extends MetaBoxAbstract
         // Set Title
         $subtitle = ($args['browser'] == "all" ? __('Browser', 'wp-statistics') : UserAgent::BrowserList(strtolower($args['browser'])));
         if (end($days_time_list) == TimeZone::getCurrentDate("Y-m-d")) {
-            $title = sprintf(__('%s Statistics in the last %s days', 'wp-statistics'), $subtitle, self::$countDays);
+            $title = sprintf(__('Statistics for %1$s in the Past %2$s Days', 'wp-statistics'), $subtitle, self::$countDays);
         } else {
-            $title = sprintf(__('%s Statistics from %s to %s', 'wp-statistics'), $subtitle, $args['from'], $args['to']);
+            $title = sprintf(__('Statistics for %1$s Between %2$s and %3$s', 'wp-statistics'), $subtitle, $args['from'], $args['to']);
         }
 
         // Prepare Response

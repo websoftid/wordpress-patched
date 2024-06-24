@@ -2,6 +2,8 @@
 
 namespace WP_STATISTICS;
 
+use WP_Statistics\Service\Analytics\VisitorProfile;
+
 class Visitor
 {
     /**
@@ -33,9 +35,10 @@ class Visitor
      * Save new Visitor To DB
      *
      * @param array $visitor
+     * @param $visitorProfile VisitorProfile
      * @return INT
      */
-    public static function save_visitor($visitor = array())
+    public static function save_visitor($visitor, $visitorProfile)
     {
         global $wpdb;
 
@@ -60,7 +63,7 @@ class Visitor
         remove_filter('query', array('\WP_STATISTICS\DB', 'insert_ignore'), 10);
 
         # Do Action After Save New Visitor
-        do_action('wp_statistics_save_visitor', $visitor_id, $visitor, Pages::get_page_type());
+        do_action('wp_statistics_save_visitor', $visitor_id, $visitor, $visitorProfile->getCurrentPageType());
 
         return $visitor_id;
     }
@@ -70,15 +73,18 @@ class Visitor
      *
      * @param $ip
      * @param $date
-     * @return bool
+     * @param array $fields
+     * @return bool|object
      */
-    public static function exist_ip_in_day($ip, $date = false)
+    public static function exist_ip_in_day($ip, $date = false, $fields = [])
     {
         global $wpdb;
 
+        $columns      = (empty($fields) ? '*' : Helper::prepareArrayToStringForQuery($fields));
         $last_counter = ($date === false ? TimeZone::getCurrentDate('Y-m-d') : $date);
-        $sql          = $wpdb->prepare("SELECT * FROM `" . DB::table('visitor') . "` WHERE `last_counter` = %s AND `ip` = %s", $last_counter, $ip);
-        $visitor      = $wpdb->get_row($sql);
+        $visitor      = $wpdb->get_row(
+            $wpdb->prepare("SELECT $columns FROM `" . DB::table('visitor') . "` WHERE `last_counter` = %s AND `ip` = %s", $last_counter, $ip)
+        );
 
         return (!$visitor ? false : $visitor);
     }
@@ -87,10 +93,11 @@ class Visitor
      * Record Uniq Visitor Detail in DB
      *
      * @param array $arg
+     * @param VisitorProfile $visitorProfile
      * @return bool|INT
      * @throws \Exception
      */
-    public static function record($arg = array())
+    public static function record($visitorProfile, $arg = array())
     {
         global $wpdb;
 
@@ -105,14 +112,8 @@ class Visitor
         // Check User Exclusion
         if ($args['exclusion_match'] === false || $args['exclusion_reason'] == 'Honeypot') {
 
-            // Get User IP
-            $user_ip = IP::getStoreIP();
-
-            // Get User Agent
-            $user_agent = UserAgent::getUserAgent();
-
-            //Check Exist This User in Current Day
-            $same_visitor = self::exist_ip_in_day($user_ip);
+            $user_agent   = $visitorProfile->getUserAgent();
+            $same_visitor = $visitorProfile->isIpActiveToday();
 
             // If we have a new Visitor in Day
             if (!$same_visitor) {
@@ -120,23 +121,26 @@ class Visitor
                 // Prepare Visitor information
                 $visitor = array(
                     'last_counter' => TimeZone::getCurrentDate('Y-m-d'),
-                    'referred'     => Referred::get(),
+                    'referred'     => $visitorProfile->getReferrer(),
                     'agent'        => $user_agent['browser'],
                     'platform'     => $user_agent['platform'],
                     'version'      => $user_agent['version'],
                     'device'       => $user_agent['device'],
                     'model'        => $user_agent['model'],
-                    'ip'           => $user_ip,
-                    'location'     => GeoIP::getCountry(IP::getIP()),
-                    'user_id'      => User::get_user_id(),
-                    'UAString'     => (Option::get('store_ua') == true ? UserAgent::getHttpUserAgent() : ''),
+                    'ip'           => $visitorProfile->getProcessedIPForStorage(),
+                    'location'     => $visitorProfile->getCountry(),
+                    'city'         => $visitorProfile->getCity(),
+                    'region'       => $visitorProfile->getRegion(),
+                    'continent'    => $visitorProfile->getContinent(),
+                    'user_id'      => $visitorProfile->getUserId(),
+                    'UAString'     => (Option::get('store_ua') == true ? $visitorProfile->getHttpUserAgent() : ''),
                     'hits'         => 1,
                     'honeypot'     => ($args['exclusion_reason'] == 'Honeypot' ? 1 : 0),
                 );
                 $visitor = apply_filters('wp_statistics_visitor_information', $visitor);
 
                 //Save Visitor TO DB
-                $visitor_id = self::save_visitor($visitor);
+                $visitor_id = self::save_visitor($visitor, $visitorProfile);
 
             } else {
 
@@ -149,17 +153,31 @@ class Visitor
                     // Action Before Visitor Update
                     do_action('wp_statistics_update_visitor_hits', $visitor_id, $same_visitor);
 
+                    $visitorTable = DB::table('visitor');
+
                     // Update Visitor Count in DB
-                    $wpdb->query($wpdb->prepare('UPDATE `' . DB::table('visitor') . '` SET `hits` = `hits` + %d WHERE `ID` = %d', 1, $visitor_id));
+                    $wpdb->query(
+                        $wpdb->prepare(
+                            "UPDATE `" . $visitorTable . "` SET `hits` = `hits` + %d, user_id = %s WHERE `ID` = %d",
+                            1,
+                            $visitorProfile->getUserId(),
+                            $visitor_id
+                        )
+                    );
                 }
             }
         }
 
-        return (isset($visitor_id) ? $visitor_id : false);
+        $visitor_id = (isset($visitor_id) ? $visitor_id : false);
+
+        // Do Action After Record New Visitor
+        do_action('wp_statistics_record_visitor', $visitor_id);
+
+        return $visitor_id;
     }
 
     /**
-     * Save visitor relationShip
+     * Saves or updates a visitor relationship entry in the database.
      *
      * @param $page_id
      * @param $visitor_id
@@ -169,24 +187,55 @@ class Visitor
     {
         global $wpdb;
 
-        // Save To DB
-        $insert = $wpdb->insert(
-            DB::table('visitor_relationships'),
-            array(
-                'visitor_id' => $visitor_id,
-                'page_id'    => $page_id,
-                'date'       => current_time('mysql')
-            ),
-            array('%d', '%d', '%s')
+        $tableName   = DB::table('visitor_relationships');
+        $currentDate = TimeZone::getCurrentDate('Y-m-d');
+
+        /**
+         * Check if a record already exists for the same visitor_id, page_id, and current date.
+         * The query counts the number of matching records.
+         *
+         * Note: Ideally, this operation should be handled with a REPLACE INTO or INSERT OR REPLACE query.
+         * However, since the table was not considered a unique key at first for these fields, As they say, "Fools tie knots, and wise men loose them :)" we manually check for the record's existence,
+         *
+         */
+        $exist = $wpdb->get_var(
+            $wpdb->prepare("SELECT COUNT(*) FROM `" . $tableName . "` WHERE `visitor_id` = %d AND `page_id` = %d AND DATE(`date`) = %s", $visitor_id, $page_id, $currentDate)
         );
-        if (!$insert) {
+
+        /**
+         * If a record exists, update its date to the current date.
+         * Otherwise, insert a new record with the visitor ID, page ID, and current date.
+         */
+        if ($exist) {
+
+            $result = $wpdb->query(
+                $wpdb->prepare("UPDATE `" . $tableName . "` SET `date` = %s WHERE DATE(`date`) = %s AND `visitor_id` = %d AND `page_id` = %d", TimeZone::getCurrentDate(), $currentDate, $visitor_id, $page_id)
+            );
+
+        } else {
+
+            $result = $wpdb->insert($tableName,
+                array(
+                    'visitor_id' => $visitor_id,
+                    'page_id'    => $page_id,
+                    'date'       => TimeZone::getCurrentDate()
+                ),
+                array('%d', '%d', '%s')
+            );
+        }
+
+        if (!$result) {
             if (!empty($wpdb->last_error)) {
                 \WP_Statistics::log($wpdb->last_error);
             }
         }
+
         $insert_id = $wpdb->insert_id;
 
-        // Save visitor Relationship Action
+        /**
+         * Trigger a WordPress action hook after saving the visitor relationship.
+         * This allows for custom actions to be executed.
+         */
         do_action('wp_statistics_save_visitor_relationship', $page_id, $visitor_id, $insert_id);
 
         return $insert_id;
@@ -215,7 +264,7 @@ class Visitor
         if ($args['day'] == 'today') {
             $sql_time = TimeZone::getCurrentDate('Y-m-d');
         } else {
-            $sql_time = date('Y-m-d', strtotime($args['day']));
+            $sql_time = date('Y-m-d', strtotime($args['day'])); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date	
         }
 
         // Prepare Query
@@ -256,10 +305,10 @@ class Visitor
         $args['sql'] = $args['sql'] . $wpdb->prepare(" LIMIT %d, %d", $limit, $args['per_page']);
 
         // Send Request
-        $result = $wpdb->get_results($args['sql']);
+        $result = $wpdb->get_results($args['sql']); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared	
 
         // Get Visitor Data
-        return self::PrepareData($result);
+        return self::prepareData($result);
     }
 
     /**
@@ -269,7 +318,7 @@ class Visitor
      * @return array
      * @throws \Exception
      */
-    public static function PrepareData($result = array())
+    public static function prepareData($result = array())
     {
 
         // Prepare List
@@ -280,17 +329,22 @@ class Visitor
 
             $ip       = esc_html($items->ip);
             $agent    = esc_html($items->agent);
+            $version  = esc_html($items->version);
             $platform = esc_html($items->platform);
 
             $item = array(
                 'hits'     => (int)$items->hits,
                 'referred' => Referred::get_referrer_link($items->referred),
                 'refer'    => $items->referred,
-                'date'     => date_i18n(apply_filters('wp_statistics_visitor_date_format', 'F j'), strtotime($items->last_counter)),
+                'date'     => date_i18n(get_option('date_format'), strtotime($items->last_counter)),
                 'agent'    => $agent,
                 'platform' => $platform,
                 'version'  => esc_html($items->version)
             );
+
+            if (isset($items->date)) {
+                $item['date'] = date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($items->date));
+            }
 
             // Push User Data
             if ($items->user_id > 0 and User::exists($items->user_id)) {
@@ -303,14 +357,15 @@ class Visitor
 
             // Push Browser
             $item['browser'] = array(
-                'name' => $agent,
-                'logo' => UserAgent::getBrowserLogo($agent),
-                'link' => Menus::admin_url('visitors', array('agent' => $agent))
+                'name'    => $agent,
+                'version' => $version,
+                'logo'    => UserAgent::getBrowserLogo($agent),
+                'link'    => Menus::admin_url('visitors', array('agent' => $agent))
             );
 
             // Push IP
             if (IP::IsHashIP($ip)) {
-                $item['hash_ip'] = IP::$hash_ip_prefix;
+                $item['ip'] = array('value' => substr($ip, 6, 10), 'link' => Menus::admin_url('visitors', array('ip' => urlencode($ip))));
             } else {
                 $item['ip']  = array('value' => $ip, 'link' => Menus::admin_url('visitors', array('ip' => $ip)));
                 $item['map'] = GeoIP::geoIPTools($ip);
@@ -323,17 +378,13 @@ class Visitor
 
             // Push City
             if (GeoIP::active('city')) {
-                $item['city'] = GeoIP::getCity($ip);
-            }
-
-            // Check If Search Word
-            if (isset($items->words)) {
-                $item['word'] = $items->words;
+                $item['city']   = !empty($items->city) ? $items->city : GeoIP::getCity($ip);
+                $item['region'] = $items->region;
             }
 
             // Get What is Page
-            if (Option::get('visitors_log')) {
-                $item['page'] = self::get_page_by_visitor_id($items->ID);
+            if (isset($items->page_id)) {
+                $item['page'] = self::get_page_by_id($items->page_id);
             }
 
             $list[] = $item;
@@ -343,27 +394,27 @@ class Visitor
     }
 
     /**
-     * Get Page Information By visitor ID
+     * Get Page Information By page ID
      *
-     * @param $visitor_ID
+     * @param $page_id
      * @return mixed
      */
-    public static function get_page_by_visitor_id($visitor_ID)
+    public static function get_page_by_id($page_id)
     {
         global $wpdb;
 
         // Default Params
         $params = array('link' => '', 'title' => '');
 
-        // Check Active Visitors Log
-        if (!Option::get('visitors_log')) {
-            return $params;
-        }
+        $pageTable = DB::table('pages');
 
         // Get Row
-        $item = $wpdb->get_row(" SELECT " . DB::table('pages') . ".* FROM `" . DB::table('pages') . "` INNER JOIN `" . DB::table('visitor_relationships') . "` ON `" . DB::table('pages') . "`.`page_id` = `" . DB::table('visitor_relationships') . "`.`page_id` INNER JOIN `" . DB::table('visitor') . "` ON `" . DB::table('visitor_relationships') . "`.`visitor_id` = `" . DB::table('visitor') . "`.`ID` WHERE `" . DB::table('visitor') . "`.`ID` = {$visitor_ID};", ARRAY_A);
+        $item = $wpdb->get_row(
+            $wpdb->prepare("SELECT * FROM `" . $pageTable . "` WHERE page_id = %s", $page_id),
+            ARRAY_A);
+
         if ($item !== null) {
-            $params = Pages::get_page_info($item['id'], $item['type']);
+            $params = Pages::get_page_info($item['id'], $item['type'], $item['uri']);
         }
 
         return $params;
@@ -385,9 +436,10 @@ class Visitor
         $pages_table                 = DB::table('pages');
 
         // Get Result
-        $query = $wpdb->prepare("SELECT DISTINCT {$pages_table}.id, {$pages_table}.uri FROM {$pages_table} INNER JOIN {$visitor_relationships_table} ON {$pages_table}.page_id = {$visitor_relationships_table}.page_id WHERE {$visitor_relationships_table}.visitor_id = %d ORDER BY {$pages_table}.count DESC LIMIT %d", $visitor_ID, $total);
-
-        return $wpdb->get_results($query, ARRAY_N);
+        return $wpdb->get_results(
+            $wpdb->prepare("SELECT DISTINCT {$pages_table}.id, {$pages_table}.uri FROM {$pages_table} INNER JOIN {$visitor_relationships_table} ON {$pages_table}.page_id = {$visitor_relationships_table}.page_id WHERE {$visitor_relationships_table}.visitor_id = %d ORDER BY {$pages_table}.count DESC LIMIT %d", $visitor_ID, $total), // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared	 
+            ARRAY_N
+        );
     }
 
     /**
@@ -412,13 +464,15 @@ class Visitor
     public static function get_users_visitor()
     {
         global $wpdb;
-        $query = $wpdb->get_results("SELECT `user_id` FROM `" . DB::table('visitor') . "` WHERE `user_id` >0 AND EXISTS (SELECT `ID` FROM `{$wpdb->users}` WHERE " . DB::table('visitor') . ".user_id = {$wpdb->users}.ID) GROUP BY `user_id` ORDER BY `user_id` DESC", ARRAY_A);
+        $query = $wpdb->get_results(
+            "SELECT visitors.user_id, users.user_login, users.user_email FROM `" . DB::table('visitor') . "` AS visitors JOIN `" . $wpdb->users . "` AS users ON visitors.user_id = users.ID WHERE visitors.user_id > 0 GROUP BY visitors.user_id ORDER BY visitors.user_id DESC;",
+            ARRAY_A
+        );
         $item  = array();
         foreach ($query as $row) {
-            $user_data             = User::get($row['user_id']);
             $item[$row['user_id']] = array(
-                'user_login' => $user_data['user_login'],
-                'user_email' => $user_data['user_email']
+                'user_login' => $row['user_login'],
+                'user_email' => $row['user_email']
             );
         }
 

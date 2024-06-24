@@ -2,6 +2,8 @@
 
 namespace WP_STATISTICS;
 
+use WP_Statistics\Service\Analytics\VisitorProfile;
+
 class Pages
 {
     /**
@@ -11,7 +13,7 @@ class Pages
      */
     public static function active()
     {
-        return (has_filter('wp_statistics_active_pages')) ? apply_filters('wp_statistics_active_pages', true) : Option::get('pages');
+        return (has_filter('wp_statistics_active_pages')) ? apply_filters('wp_statistics_active_pages', true) : 1;
     }
 
     /**
@@ -33,6 +35,16 @@ class Pages
         if (class_exists('WooCommerce')) {
             if (is_product()) {
                 return wp_parse_args(array("type" => "product"), $current_page);
+            }
+            if (is_shop()) {
+                // Get Shop Page ID
+                $shopPageID = wc_get_page_id('shop');
+
+                // Set current page id
+                $current_page['id'] = $shopPageID;
+
+                // Return Page Type
+                return wp_parse_args(array("type" => "page"), $current_page);
             }
         }
 
@@ -86,7 +98,7 @@ class Pages
         }
 
         //is search page
-        $search_query = sanitize_url(get_search_query(false));
+        $search_query = sanitize_text_field(get_search_query(false));
         if (trim($search_query) != "") {
             return array("type" => "search", "id" => 0, "search_query" => $search_query);
         }
@@ -110,16 +122,6 @@ class Pages
     }
 
     /**
-     * Check Track All Page WP Statistics
-     *
-     * @return bool
-     */
-    public static function is_track_all_page()
-    {
-        return apply_filters('wp_statistics_track_all_pages', Option::get('track_all_pages') || is_single() || is_page() || is_front_page());
-    }
-
-    /**
      * Get Page Url
      *
      * @return bool|mixed|string
@@ -128,11 +130,11 @@ class Pages
     {
 
         // Get the site's path from the URL.
-        $site_uri     = parse_url(site_url(), PHP_URL_PATH);
+        $site_uri     = wp_parse_url(site_url(), PHP_URL_PATH);
         $site_uri_len = strlen($site_uri ? $site_uri : '');
 
         // Get the site's path from the URL.
-        $home_uri     = parse_url(home_url(), PHP_URL_PATH);
+        $home_uri     = wp_parse_url(home_url(), PHP_URL_PATH);
         $home_uri_len = strlen($home_uri ? $home_uri : '');
 
         // Get the current page URI.
@@ -175,12 +177,13 @@ class Pages
 
     /**
      * Sanitize Page Url For Push to Database
+     * @param $visitorProfile VisitorProfile
      */
-    public static function sanitize_page_uri()
+    public static function sanitize_page_uri($visitorProfile)
     {
 
         // Get Current WordPress Page
-        $current_page = self::get_page_type();
+        $current_page = $visitorProfile->getCurrentPageType();
 
         // Get the current page URI.
         $page_uri = Pages::get_page_uri();
@@ -196,12 +199,15 @@ class Pages
         }
 
         // Check Strip Url Parameter
-        if (Option::get('strip_uri_parameters') and array_key_exists("search_query", $current_page) === false) {
+        if (array_key_exists("search_query", $current_page) === false) {
             $temp = explode('?', $page_uri);
             if ($temp !== false) {
                 $page_uri = $temp[0];
             }
         }
+
+        // Filter query parameters based on allowed query params list
+        $page_uri = Helper::FilterQueryStringUrl($page_uri, Helper::get_query_params_allow_list());
 
         // Limit the URI length to 255 characters, otherwise we may overrun the SQL field size.
         return substr($page_uri, 0, 255);
@@ -209,13 +215,14 @@ class Pages
 
     /**
      * Record Page in Database
+     * @param VisitorProfile $visitorProfile
      */
-    public static function record()
+    public static function record($visitorProfile)
     {
         global $wpdb;
 
         // Get Current WordPress Page
-        $current_page = self::get_page_type();
+        $current_page = $visitorProfile->getCurrentPageType();
 
         // If we didn't find a page id, we don't have anything else to do.
         if ($current_page['type'] == "unknown" || !isset($current_page['id'])) {
@@ -223,15 +230,35 @@ class Pages
         }
 
         // Get Page uri
-        $page_uri = self::sanitize_page_uri();
+        $page_uri = self::sanitize_page_uri($visitorProfile);
+
+        // If the length of URI is more than 190 characters
+        // Crop it, so it can be stored in the database
+        if (strlen($page_uri) > 190) {
+            $page_uri = substr($page_uri, 0, 190);
+        }
 
         // Check if we have already been to this page today.
-        $exist = $wpdb->get_row("SELECT `page_id` FROM `" . DB::table('pages') . "` WHERE `date` = '" . TimeZone::getCurrentDate('Y-m-d') . "' " . (array_key_exists("search_query", $current_page) === true ? "AND `uri` = '" . esc_sql($page_uri) . "'" : "") . "AND `type` = '{$current_page['type']}' AND `id` = '{$current_page['id']}'", ARRAY_A);
+        $search_query = array_key_exists("search_query", $current_page) === true ? $wpdb->prepare("AND `uri` = %s", $page_uri) : "";
+        $tablePage    = DB::table('pages');
+
+        $query = $wpdb->prepare(
+            "SELECT `page_id` FROM `{$tablePage}` WHERE `date` = %s {$search_query} AND `type` = %s AND `id` = %d",
+            TimeZone::getCurrentDate('Y-m-d'),
+            $current_page['type'],
+            $current_page['id']
+        );
+        $exist = $wpdb->get_row($query, ARRAY_A);
 
         // Update Exist Page
         if (null !== $exist) {
+            $query = $wpdb->prepare("UPDATE `{$tablePage}` SET `count` = `count` + 1 WHERE `date` = %s {$search_query} AND `type` = %s AND `id` = %d",
+                TimeZone::getCurrentDate('Y-m-d'),
+                $current_page['type'],
+                $current_page['id']
+            );
 
-            $wpdb->query($wpdb->prepare("UPDATE `" . DB::table('pages') . "` SET `count` = `count` + 1 WHERE `date` = '" . TimeZone::getCurrentDate('Y-m-d') . "' " . (array_key_exists("search_query", $current_page) === true ? "AND `uri` = '" . esc_sql($page_uri) . "'" : "") . "AND `type` = '{$current_page['type']}' AND `id` = %d", $current_page['id']));
+            $wpdb->query($query);
             $page_id = $exist['page_id'];
 
         } else {
@@ -343,7 +370,7 @@ class Pages
                     break;
                 case "home":
                     $arg = array(
-                        'title' => __('Home Page', 'wp-statistics'),
+                        'title' => $page_id ? sprintf(__('Home Page: %s', 'wp-statistics'), get_the_title($page_id)) : __('Home Page', 'wp-statistics'),
                         'link'  => get_site_url()
                     );
                     break;
@@ -365,7 +392,7 @@ class Pages
                     $arg['title'] = __('Search Page', 'wp-statistics');
                     break;
                 case "404":
-                    $arg['title'] = __('404 not found', 'wp-statistics');
+                    $arg['title'] = sprintf(__('404 not found (%s)', 'wp-statistics'), esc_html(substr($slug, 0, 20)));
                     break;
                 case "archive":
                     if ($slug) {
@@ -374,8 +401,10 @@ class Pages
 
                         if ($post_object instanceof \WP_Post_Type) {
                             $arg['title'] = sprintf(__('Post Archive: %s', 'wp-statistics'), $post_object->labels->name);
+                            $arg['link']  = get_post_type_archive_link($post_type);
                         } else {
                             $arg['title'] = sprintf(__('Post Archive: %s', 'wp-statistics'), $slug);
+                            $arg['link']  = home_url($slug);
                         }
                     } else {
                         $arg['title'] = __('Post Archive', 'wp-statistics');
@@ -455,30 +484,43 @@ class Pages
         $days_time_list = array_keys($days_list);
 
         // Date Time SQL
-        $DateTimeSql = "WHERE (`pages`.`date` BETWEEN '" . reset($days_time_list) . "' AND '" . end($days_time_list) . "')";
+        $DateTimeSql = $wpdb->prepare("WHERE (`pages`.`date` BETWEEN %s AND %s)", reset($days_time_list), end($days_time_list));
 
         // Post Type SQL
         $postTypeSql = '';
+
         if (!empty($args['type'])) {
-            $postTypeSql = $wpdb->prepare(" AND `pages`.`type`=%s", $args['type']);
+            if ($args['type'] == 'page') {
+                $postTypeSql = $wpdb->prepare(" AND `pages`.`type` IN (%s, %s)", $args['type'], 'home');
+            } else {
+                $postTypeSql = $wpdb->prepare(" AND `pages`.`type` = %s", $args['type']);
+            }
         }
 
         // Generate SQL
-        $sql = "SELECT `pages`.`date`,`pages`.`uri`,`pages`.`id`,`pages`.`type`, SUM(`pages`.`count`) + IFNULL(`historical`.`value`, 0) AS `count_sum` FROM `" . DB::table('pages') . "` `pages` LEFT JOIN `" . DB::table('historical') . "` `historical` ON `pages`.`uri`=`historical`.`uri` AND `historical`.`category`='uri' {$DateTimeSql} {$postTypeSql} GROUP BY `pages`.`id` ORDER BY `count_sum` DESC";
+        $selectSql = "SELECT `pages`.`date`,`pages`.`uri`,`pages`.`id`,`pages`.`type`, SUM(`pages`.`count`) AS `count_sum` FROM `" . DB::table('pages') . "` `pages` {$DateTimeSql} {$postTypeSql}";
+
+        // Group pages with ID of 0 by type and URI, and group the rest of pages by ID
+        $sql = "
+            ($selectSql AND `pages`.`id` != 0 GROUP BY `pages`.`id`)
+            UNION
+            ($selectSql AND `pages`.`id` = 0 GROUP BY `pages`.`uri`, `pages`.`type`)
+            ORDER BY `count_sum` DESC
+        ";
 
         // Get List Of Pages
         $list   = array();
-        $result = $wpdb->get_results($sql . " LIMIT " . ($args['paged'] - 1) * $args['per_page'] . "," . $args['per_page']);
-        foreach ($result as $item) {
+        $result = $wpdb->get_results($sql . " LIMIT " . ($args['paged'] - 1) * $args['per_page'] . "," . $args['per_page']); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared	
 
+        foreach ($result as $item) {
             // Lookup the post title.
             $page_info = Pages::get_page_info($item->id, $item->type, $item->uri);
 
             // Push to list
             $list[] = array(
-                'title'     => $page_info['title'],
+                'title'     => esc_html($page_info['title']),
                 'link'      => $page_info['link'],
-                'str_url'   => urldecode(sanitize_text_field($item->uri)),
+                'str_url'   => esc_url(urldecode($item->uri)),
                 'hits_page' => Menus::admin_url('pages', array('ID' => $item->id, 'type' => $item->type)),
                 'number'    => number_format_i18n($item->count_sum)
             );
@@ -510,10 +552,8 @@ class Pages
 
         $where = !empty($where) ? "WHERE " . implode(" AND ", $where) : "";
 
-        $query = "SELECT COUNT(*) FROM (SELECT COUNT(page_id) FROM `" . DB::table('pages') . "` `pages` {$where} GROUP BY `{$group_by}`) AS totalCount";
-
         // Return
-        return $wpdb->get_var($query);
+        return $wpdb->get_var("SELECT COUNT(*) FROM (SELECT COUNT(page_id) FROM `" . DB::table('pages') . "` `pages` {$where} GROUP BY `{$group_by}`) AS totalCount"); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
     }
 
     /**
@@ -537,8 +577,39 @@ class Pages
     public static function uri_to_id($uri)
     {
         global $wpdb;
-        $sql    = $wpdb->prepare("SELECT id FROM `" . DB::table('pages') . "` WHERE `uri` = %s and id > 0 ORDER BY date DESC", $uri);
-        $result = $wpdb->get_var($sql);
+        $result = $wpdb->get_var(
+            $wpdb->prepare("SELECT id FROM `" . DB::table('pages') . "` WHERE `uri` = %s and id > 0 ORDER BY date DESC", $uri)
+        );
+        if ($result == 0) {
+            $result = 0;
+        }
+
+        return $result;
+    }
+
+    public static function checkIfPageIsHome($postID = false)
+    {
+        if (get_option('show_on_front') == 'page') {
+            if (get_option('page_on_front') == $postID or get_option('page_for_posts') == $postID) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Get Page ID record in DB Table by Type and ID
+     *
+     * @param $type
+     * @param $id
+     * @return int
+     */
+    public static function getPageId($type, $id)
+    {
+        global $wpdb;
+        $result = $wpdb->get_var(
+            $wpdb->prepare("SELECT page_id FROM `" . DB::table('pages') . "` WHERE `type` = %s and `id` = %d ORDER BY date DESC", $type, $id)
+        );
         if ($result == 0) {
             $result = 0;
         }

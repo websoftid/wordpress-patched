@@ -57,14 +57,14 @@ class WP_STATISTICS_CLI extends \WP_CLI_Command
                 'Time' => $time
             );
 
-            foreach (array("Visitors", "Visits") as $state) {
+            foreach (array("Visitors", "Views") as $state) {
                 $item[$state] = number_format((strtolower($state) == "visitors" ? wp_statistics_visitor(strtolower($time), null, true) : wp_statistics_visit(strtolower($time))));
             }
 
             $items[] = $item;
         }
 
-        \WP_CLI\Utils\format_items($assoc_args['format'], $items, array('Time', 'Visitors', 'Visits'));
+        \WP_CLI\Utils\format_items($assoc_args['format'], $items, array('Time', 'Visitors', 'Views'));
     }
 
     /**
@@ -179,7 +179,7 @@ class WP_STATISTICS_CLI extends \WP_CLI_Command
         }
 
         // Set Column
-        $column = array('IP', 'Date', 'Browser', 'Referrer', 'Platform', 'User ID');
+        $column = array('IP', 'Date', 'Browser', 'Referrer', 'Operating System', 'User ID');
         if (GeoIP::active() === true) {
             $column[] = 'Country';
         }
@@ -192,7 +192,7 @@ class WP_STATISTICS_CLI extends \WP_CLI_Command
                 'Date'     => $row['date'],
                 'Browser'  => $row['browser']['name'],
                 'Referrer' => wp_strip_all_tags($row['referred']),
-                'Platform' => $row['platform'],
+                'Operating System' => $row['platform'],
                 'User ID'  => ((isset($row['user']) and isset($row['user']['ID']) and $row['user']['ID'] > 0) ? $row['user']['ID'] : '-')
             );
 
@@ -206,6 +206,27 @@ class WP_STATISTICS_CLI extends \WP_CLI_Command
         \WP_CLI\Utils\format_items($assoc_args['format'], $items, $column);
     }
 
+    /**
+    * Reinitialize
+    *
+    * ## OPTIONS
+    * ---
+    * ## EXAMPLES
+    *
+    *      # Reinitialize WP Statistics plugin
+    *      $ wp statistics reinitialize
+    *
+    * @throws \Exception
+    */
+
+    public function reinitialize($args, $assoc_args)
+    {
+	    require_once WP_STATISTICS_DIR . 'includes/class-wp-statistics-db.php';
+        require_once WP_STATISTICS_DIR . 'includes/class-wp-statistics-install.php';
+	    global $wpdb;
+	    Install::create_table(false);
+	    \WP_CLI::Success('Reinitialized WP Statistics Database!');
+    }
 }
 
 /**

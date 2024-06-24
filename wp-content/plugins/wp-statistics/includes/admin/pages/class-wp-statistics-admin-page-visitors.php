@@ -1,8 +1,9 @@
 <?php
 
 namespace WP_STATISTICS;
+use WP_Statistics\Components\Singleton;
 
-class visitors_page
+class visitors_page extends Singleton
 {
     public function __construct()
     {
@@ -16,7 +17,7 @@ class visitors_page
             // Is Validate Date Request
             $DateRequest = Admin_Template::isValidDateRequest();
             if (!$DateRequest['status']) {
-                wp_die($DateRequest['message']);
+                wp_die(esc_html($DateRequest['message']));
             }
         }
     }
@@ -28,9 +29,9 @@ class visitors_page
      */
     public static function view()
     {
-        // Page title
-        $args['title'] = (count($_GET) > 1 ? __('Visitors', 'wp-statistics') : __('Recent Visitors', 'wp-statistics'));
 
+        // Page title
+        $args['title'] = (count($_GET) > 1 ? __('Visitors', 'wp-statistics') : __('Latest Visitor Activity', 'wp-statistics'));
         // Get Current Page Url
         $args['pageName'] = Menus::get_page_slug('visitors');
         $args['paged']    = Admin_Template::getCurrentPaged();
@@ -39,7 +40,7 @@ class visitors_page
         $order = ((isset($_GET['order']) and ($_GET['order'] == "asc" || $_GET['order'] == "desc")) ? $_GET['order'] : 'desc');
 
         // Get Date-Range
-        $args['DateRang'] = Admin_Template::DateRange();
+        $args['DateRang']    = Admin_Template::DateRange();
 
         // Default Parameter Link
         $data_link = array('from' => $args['DateRang']['from'], 'to' => $args['DateRang']['to']);
@@ -102,7 +103,7 @@ class visitors_page
         }
 
         /**
-         * Platform Filter
+         * Operating System Filter
          */
         if (isset($_GET['platform']) and !empty($_GET['platform'])) {
             // Add Params To SQL
@@ -165,8 +166,19 @@ class visitors_page
         $args['total'] = $CurrentView[key($CurrentView)]['count'];
         $args['list']  = array();
         if ($args['total'] > 0) {
+
+            $condition         = Helper::getConditionSQL($sql);
+            $visitorTable      = DB::table('visitor');
+            $relationshipTable = DB::table('visitor_relationships');
+
+            if (isset($_GET['ip'])) {
+                $sql = "SELECT v.*, r.* FROM `{$visitorTable}` v JOIN `{$relationshipTable}` r ON v.ID = r.visitor_id {$condition} ORDER BY r.date DESC";
+            } else {
+                $sql = "SELECT v.*, r.* FROM `{$visitorTable}` v LEFT JOIN (SELECT visitor_id, page_id, date FROM {$relationshipTable} WHERE (visitor_id, date) IN (SELECT visitor_id, MAX(date) FROM {$relationshipTable} GROUP BY visitor_id)) r ON v.id = r.visitor_id {$condition} ORDER BY r.date DESC, v.last_counter DESC";
+            }
+
             $args['list'] = Visitor::get(array(
-                'sql'      => "SELECT * FROM `" . DB::table('visitor') . "` " . Helper::getConditionSQL($sql) . " ORDER BY `last_counter` {$order}, `ID` {$order}",
+                'sql'      => $sql,
                 'per_page' => Admin_Template::$item_per_page,
                 'paged'    => $args['paged'],
             ));
@@ -181,7 +193,7 @@ class visitors_page
             ));
         }
 
-        Admin_Template::get_template(array('layout/header', 'layout/title', 'layout/date.range', 'pages/visitors', 'layout/visitors.filter', 'layout/footer'), $args);
+        Admin_Template::get_template(array('layout/header', 'layout/title', 'pages/visitors', 'layout/visitors.filter', 'layout/footer'), $args);
     }
 
     /**
@@ -205,7 +217,6 @@ class visitors_page
         // Return Data
         return $filter;
     }
-
 }
 
-new visitors_page;
+visitors_page::instance();

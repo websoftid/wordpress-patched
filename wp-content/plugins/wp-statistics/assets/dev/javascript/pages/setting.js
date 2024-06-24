@@ -17,7 +17,7 @@ function wp_statistics_getParameterValue(name) {
  * @param tab_id
  */
 function wp_statistics_enableTab(tab_id) {
-    jQuery('.wp-statistics-settings ul.tabs li').removeClass('current');
+    jQuery('.wp-statistics-settings .wps-optionsMenu .wps-optionsMenuItem').removeClass('current');
     jQuery('.wp-statistics-settings .tab-content').removeClass('current');
 
     jQuery("[data-tab=" + tab_id + "]").addClass('current');
@@ -38,7 +38,7 @@ if (jQuery('.wp-statistics-settings').length) {
         wp_statistics_enableTab(current_tab);
     }
 
-    jQuery('.wp-statistics-settings ul.tabs li').click(function () {
+    jQuery('.wp-statistics-settings .wps-optionsMenu .wps-optionsMenuItem').click(function () {
         var tab_id = jQuery(this).attr('data-tab');
         wp_statistics_enableTab(tab_id);
     });

@@ -22,6 +22,14 @@ class pages_chart
      */
     public static function get($arg = array())
     {
+        /**
+         * Filters the args used from metabox for query stats
+         *
+         * @param array $args The args passed to query stats
+         * @since 14.2.1
+         *
+         */
+        $arg = apply_filters('wp_statistics_meta_box_pages_chart_args', $arg);
 
         // Set Default Params
         $defaults = array(
@@ -32,6 +40,7 @@ class pages_chart
             'to'   => ''
         );
         $args     = wp_parse_args($arg, $defaults);
+
 
         // Set Default Params
         $date = $stats = array();
@@ -67,9 +76,9 @@ class pages_chart
 
         // Set Title
         if (end($days_time_list) == TimeZone::getCurrentDate("Y-m-d")) {
-            $title = sprintf(__('Hits in the in the last %s days', 'wp-statistics'), $count_day);
+            $title = sprintf(__('Views in the in the last %s days', 'wp-statistics'), $count_day);
         } else {
-            $title = sprintf(__('Hits from %s to %s', 'wp-statistics'), $args['from'], $args['to']);
+            $title = sprintf(__('Views from %1$s to %2$s', 'wp-statistics'), $args['from'], $args['to']);
         }
 
         // Check Type For Custom Type and ID

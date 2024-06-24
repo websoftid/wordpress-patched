@@ -10,7 +10,7 @@ use WP_STATISTICS\TimeZone;
 class platforms extends MetaBoxAbstract
 {
     /**
-     * Get Platforms Chart
+     * Get Operating Systems Chart
      *
      * @param array $arg
      * @return array
@@ -18,6 +18,15 @@ class platforms extends MetaBoxAbstract
      */
     public static function get($arg = array())
     {
+        /**
+         * Filters the args used from metabox for query stats
+         *
+         * @param array $args The args passed to query stats
+         * @since 14.2.1
+         *
+         */
+        $arg = apply_filters('wp_statistics_meta_box_platforms_args', $arg);
+
         global $wpdb;
 
         // Set Default Params
@@ -49,10 +58,11 @@ class platforms extends MetaBoxAbstract
             $order_by = "ORDER BY `count` " . esc_sql($args['order']);
         }
 
-        $sql = $wpdb->prepare("SELECT platform, COUNT(*) as count FROM " . DB::table('visitor') . " WHERE platform != '" . _x('Unknown', 'Platform', 'wp-statistics') . "' AND `last_counter` BETWEEN %s AND %s GROUP BY platform {$order_by}", reset($days_time_list), end($days_time_list));
-
-        // Get List All Platforms
-        $list = $wpdb->get_results($sql, ARRAY_A);
+        // Get List All Operating Systems
+        $list = $wpdb->get_results(
+            $wpdb->prepare("SELECT platform, COUNT(*) as count FROM `" . DB::table('visitor') . "` WHERE platform != %s AND `last_counter` BETWEEN %s AND %s GROUP BY platform {$order_by}", _x('Unknown', 'Operating System', 'wp-statistics'), reset($days_time_list), end($days_time_list)),
+            ARRAY_A
+        );
 
         // Sort By Count
         Helper::SortByKeyValue($list, 'count');
@@ -78,9 +88,9 @@ class platforms extends MetaBoxAbstract
 
         // Set Title
         if (end($days_time_list) == TimeZone::getCurrentDate("Y-m-d")) {
-            $title = sprintf(__('%s Statistics in the last %s days', 'wp-statistics'), __('Platforms', 'wp-statistics'), self::$countDays);
+            $title = sprintf(__('Statistics for %1$s in the Past %2$s Days', 'wp-statistics'), __('Operating Systems', 'wp-statistics'), self::$countDays);
         } else {
-            $title = sprintf(__('%s Statistics from %s to %s', 'wp-statistics'), __('Platforms', 'wp-statistics'), $args['from'], $args['to']);
+            $title = sprintf(__('Statistics for %1$s Between %2$s and %3$s', 'wp-statistics'), __('Operating Systems', 'wp-statistics'), $args['from'], $args['to']);
         }
 
         // Prepare Response

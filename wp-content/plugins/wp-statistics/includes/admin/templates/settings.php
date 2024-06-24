@@ -1,6 +1,8 @@
 <div id="poststuff">
-    <div id="post-body" class="metabox-holder columns-2">
-        <div class="wp-list-table widefat widefat">
+    <div id="post-body" class="metabox-holder wps-settingsPageFlex">
+        <?php include WP_STATISTICS_DIR . 'includes/admin/templates/layout/menu-settings.php'; ?>
+
+        <div class="wp-list-table widefat wps-settingsBox">
             <form id="wp-statistics-settings-form" method="post">
                 <?php wp_nonce_field('update-options', 'wp-statistics-nonce'); ?>
 
@@ -36,6 +38,27 @@
                         <div id="reset-settings" class="tab-content">
                             <?php include WP_STATISTICS_DIR . 'includes/admin/templates/settings/reset.php'; ?>
                         </div>
+                        <div id="data-plus-settings" class="tab-content">
+                            <?php include WP_STATISTICS_DIR . 'includes/admin/templates/settings/add-ons/data-plus.php'; ?>
+                        </div>
+                        <div id="realtime-stats-settings" class="tab-content">
+                            <?php include WP_STATISTICS_DIR . 'includes/admin/templates/settings/add-ons/realtime-stats.php'; ?>
+                        </div>
+                        <div id="customization-settings" class="tab-content">
+                            <?php include WP_STATISTICS_DIR . 'includes/admin/templates/settings/add-ons/customization.php'; ?>
+                        </div>
+                        <div id="advanced-reporting-settings" class="tab-content">
+                            <?php include WP_STATISTICS_DIR . 'includes/admin/templates/settings/add-ons/advanced-reporting.php'; ?>
+                        </div>
+                        <div id="mini-chart-settings" class="tab-content">
+                            <?php include WP_STATISTICS_DIR . 'includes/admin/templates/settings/add-ons/mini-chart.php'; ?>
+                        </div>
+                        <div id="rest-api-settings" class="tab-content">
+                            <?php include WP_STATISTICS_DIR . 'includes/admin/templates/settings/add-ons/rest-api.php'; ?>
+                        </div>
+                        <div id="widgets-settings" class="tab-content">
+                            <?php include WP_STATISTICS_DIR . 'includes/admin/templates/settings/add-ons/widgets.php'; ?>
+                        </div>
                     <?php } ?>
                     <div id="about" class="tab-content">
                         <?php include WP_STATISTICS_DIR . 'includes/admin/templates/settings/about.php'; ?>
@@ -45,6 +68,5 @@
                 <input type="hidden" name="tab" id="wps_current_tab" value=""/>
             </form>
         </div>
-        <?php include WP_STATISTICS_DIR . 'includes/admin/templates/postbox.php'; ?>
     </div>
 </div>

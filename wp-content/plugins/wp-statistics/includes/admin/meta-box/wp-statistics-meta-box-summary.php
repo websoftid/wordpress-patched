@@ -2,6 +2,7 @@
 
 namespace WP_STATISTICS\MetaBox;
 
+use Exception;
 use WP_STATISTICS\Helper;
 use WP_STATISTICS\Menus;
 use WP_STATISTICS\Option;
@@ -15,25 +16,20 @@ class summary
      *
      * @param array $args
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public static function get($args = array())
     {
-        return self::getSummaryHits(array('user-online', 'visitors', 'visits'));
-    }
+        /**
+         * Filters the args used from metabox for query stats
+         *
+         * @param array $args The args passed to query stats
+         * @since 14.2.1
+         *
+         */
+        $args = apply_filters('wp_statistics_meta_box_summary_args', $args);
 
-    /**
-     * Summary Meta Box Lang
-     *
-     * @return array
-     */
-    public static function lang()
-    {
-        return array(
-            'search_engine'     => __('Search Engine Referrals', 'wp-statistics'),
-            'current_time_date' => __('Current Time and Date', 'wp-statistics'),
-            'adjustment'        => __('(Adjustment)', 'wp-statistics')
-        );
+        return self::getSummaryHits(array('user-online', 'visitors', 'visits'));
     }
 
     /**
@@ -41,7 +37,7 @@ class summary
      *
      * @param array $component
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public static function getSummaryHits($component = array())
     {
@@ -63,6 +59,17 @@ class summary
             }
         }
 
+        $is_realtime_active = Helper::isAddOnActive('realtime-stats');
+        $realtime_button_class       = $is_realtime_active ? 'wps-realtime-btn' : 'wps-realtime-btn disabled';
+        $realtime_button_title       = $is_realtime_active ? 'Real-time stats are available! Click here to view.' : 'Real-Time add-on required to enable this feature';
+        $realtime_button_href        = $is_realtime_active ? Menus::admin_url('wp_statistics_realtime_stats') : WP_STATISTICS_SITE_URL . '/product/wp-statistics-realtime-stats/?utm_source=wp-statistics&utm_medium=link&utm_campaign=realtime';
+
+        $data['real_time_button'] = array(
+            'class' => esc_html__($realtime_button_class,'wp-statistics'),
+            'title' => esc_html__($realtime_button_title,'wp-statistics'),
+            'link'  => esc_url($realtime_button_href)
+        );
+
         // Get Visitors
         if (in_array('visitors', $component)) {
             if (Option::get('visitors')) {
@@ -76,7 +83,7 @@ class summary
 
                 // Yesterday
                 $data['visitors']['yesterday'] = array(
-                    'link'  => Menus::admin_url('visitors', array('from' => TimeZone::getTimeAgo(1), 'to' => TimeZone::getCurrentDate("Y-m-d"))),
+                    'link'  => Menus::admin_url('visitors', array('from' => TimeZone::getTimeAgo(1), 'to' => TimeZone::getTimeAgo(1))),
                     'value' => number_format_i18n(wp_statistics_visitor('yesterday', null, true))
                 );
 
@@ -118,13 +125,13 @@ class summary
 
                 // This Year
                 $data['visitors']['this-year'] = array(
-                    'link'  => Menus::admin_url('visitors', array('from' => TimeZone::getLocalDate('Y-m-d', strtotime(date('Y-01-01'))), 'to' => TimeZone::getCurrentDate("Y-m-d"))),
+                    'link'  => Menus::admin_url('visitors', array('from' => TimeZone::getLocalDate('Y-m-d', strtotime(date('Y-01-01'))), 'to' => TimeZone::getCurrentDate("Y-m-d"))),  // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
                     'value' => number_format_i18n(wp_statistics_visitor('this-year', null, true))
                 );
 
                 // Last Year
                 $data['visitors']['last-year'] = array(
-                    'link'  => Menus::admin_url('visitors', array('from' => TimeZone::getTimeAgo((365 * 2)), 'to' => TimeZone::getTimeAgo(365))),
+                    'link'  => Menus::admin_url('visitors', array('from' => TimeZone::getTimeAgo(365, 'Y-01-01'), 'to' => TimeZone::getTimeAgo(365, 'Y-12-31'))),
                     'value' => number_format_i18n(wp_statistics_visitor('last-year', null, true))
                 );
 
@@ -137,7 +144,7 @@ class summary
             }
         }
 
-        // Get Visits
+        // Get Views
         if (in_array('visits', $component)) {
             if (Option::get('visits')) {
                 $data['visits'] = array();
@@ -150,7 +157,7 @@ class summary
 
                 // Yesterday
                 $data['visits']['yesterday'] = array(
-                    'link'  => Menus::admin_url('hits', array('from' => TimeZone::getTimeAgo(1), 'to' => TimeZone::getCurrentDate("Y-m-d"))),
+                    'link'  => Menus::admin_url('hits', array('from' => TimeZone::getTimeAgo(1), 'to' => TimeZone::getTimeAgo(1))),
                     'value' => number_format_i18n(wp_statistics_visit('yesterday'))
                 );
 
@@ -192,13 +199,13 @@ class summary
 
                 // This Year
                 $data['visits']['this-year'] = array(
-                    'link'  => Menus::admin_url('hits', array('from' => TimeZone::getLocalDate('Y-m-d', strtotime(date('Y-01-01'))), 'to' => TimeZone::getCurrentDate("Y-m-d"))),
+                    'link'  => Menus::admin_url('hits', array('from' => TimeZone::getLocalDate('Y-m-d', strtotime(date('Y-01-01'))), 'to' => TimeZone::getCurrentDate("Y-m-d"))),  // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
                     'value' => number_format_i18n(wp_statistics_visit('this-year'))
                 );
 
                 // Last Year
                 $data['visits']['last-year'] = array(
-                    'link'  => Menus::admin_url('hits', array('from' => TimeZone::getTimeAgo((365 * 2)), 'to' => TimeZone::getTimeAgo(365))),
+                    'link'  => Menus::admin_url('hits', array('from' => TimeZone::getTimeAgo(365, 'Y-01-01'), 'to' => TimeZone::getTimeAgo(365, 'Y-12-31'))),
                     'value' => number_format_i18n(wp_statistics_visit('last-year'))
                 );
 
@@ -223,7 +230,7 @@ class summary
 
                 // Push to List
                 $data['search-engine'][$key] = array(
-                    'name'      => __($value['name'], 'wp-statistics'),
+                    'name'      => sprintf(__('%s', 'wp-statistics'), $value['name']),
                     'logo'      => $value['logo_url'],
                     'today'     => number_format_i18n($today),
                     'yesterday' => number_format_i18n($yesterday)
@@ -255,6 +262,20 @@ class summary
         }
 
         return $data;
+    }
+
+    /**
+     * Summary Meta Box Lang
+     *
+     * @return array
+     */
+    public static function lang()
+    {
+        return array(
+            'search_engine'     => __('Overview of Search Engine Referrals', 'wp-statistics'),
+            'current_time_date' => __('Current Time and Date', 'wp-statistics'),
+            'adjustment'        => __('(Adjustment)', 'wp-statistics')
+        );
     }
 
 }
