@@ -75,16 +75,23 @@ class Helpers {
 	 * @since 4.2.7
 	 *
 	 * @param  array  $schema      The schema data.
-	 * @param  bool   $isValidator Whether we're grabbing the output for the validator.
 	 * @param  bool   $replaceTags Whether the smart tags should be replaced.
 	 * @return string              The schema as JSON.
 	 */
-	public function getOutput( $schema, $isValidator = false, $replaceTags = true ) {
+	public function getOutput( $schema, $replaceTags = true ) {
 		$schema['@graph'] = apply_filters( 'aioseo_schema_output', $schema['@graph'] );
 		$schema['@graph'] = $this->cleanAndParseData( $schema['@graph'], '', $replaceTags );
 
 		// Sort the graphs alphabetically.
 		usort( $schema['@graph'], function ( $a, $b ) {
+			if ( is_array( $a['@type'] ) ) {
+				return 1;
+			}
+
+			if ( is_array( $b['@type'] ) ) {
+				return -1;
+			}
+
 			return strcmp( $a['@type'], $b['@type'] );
 		} );
 
@@ -92,7 +99,7 @@ class Helpers {
 		// Some users report better SEO performance when non-Latin unicode characters are not escaped.
 		$jsonFlags = apply_filters( 'aioseo_schema_json_flags', 0 );
 
-		$json = isset( $_GET['aioseo-dev'] ) || $isValidator
+		$json = isset( $_GET['aioseo-dev'] ) || aioseo()->schema->generatingValidatorOutput // phpcs:ignore HM.Security.NonceVerification.Recommended
 			? aioseo()->helpers->wpJsonEncode( $schema, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE )
 			: aioseo()->helpers->wpJsonEncode( $schema, $jsonFlags );
 

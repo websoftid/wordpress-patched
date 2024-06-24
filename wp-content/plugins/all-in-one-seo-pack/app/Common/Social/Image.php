@@ -28,7 +28,7 @@ class Image {
 	 *
 	 * @since 4.1.6.2
 	 *
-	 * @var WP_Post
+	 * @var \WP_Post
 	 */
 	private $post;
 
@@ -55,16 +55,16 @@ class Image {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @param  string       $type        The type ("Facebook" or "Twitter").
-	 * @param  string       $imageSource The image source.
-	 * @param  WP_Post      $post        The post object.
-	 * @return string|array              The image data.
+	 * @param  string        $type        The type ("Facebook" or "Twitter").
+	 * @param  string        $imageSource The image source.
+	 * @param  \WP_Post|null $post        The post object.
+	 * @return string|array               The image data.
 	 */
-	public function getImage( $type, $imageSource, $post ) {
+	public function getImage( $type, $imageSource, $post = null ) {
 		$this->type          = $type;
 		$this->post          = $post;
 		$this->thumbnailSize = apply_filters( 'aioseo_thumbnail_size', 'fullsize' );
-		$hash                = md5( $this->type . $imageSource );
+		$hash                = md5( wp_json_encode( [ $type, $imageSource, $post ] ) );
 
 		static $images = [];
 		if ( isset( $images[ $hash ] ) ) {
@@ -294,8 +294,8 @@ class Image {
 	 *
 	 * @since 4.1.6.2
 	 *
-	 * @param  WP_term      The object for which we need to get the cached image.
-	 * @return string|array The image URL or data.
+	 * @param  \WP_Term     $object The object for which we need to get the cached image.
+	 * @return string|array         The image URL or data.
 	 */
 	protected function getCachedImage( $object = null ) {
 		if ( null === $object ) {

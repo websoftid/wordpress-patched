@@ -48,27 +48,15 @@ class GeneralSettings {
 		$this->migrateRssContentSettings();
 		$this->migrateRedirectToParent();
 		$this->migrateDisabledPosts();
-		$this->migrateGoogleAnalytics();
+		$this->migrateNoPaginationForCanonicalUrls();
 
 		$settings = [
-			'aiosp_no_paged_canonical_links'   => [ 'type' => 'boolean', 'newOption' => [ 'searchAppearance', 'advanced', 'noPaginationForCanonical' ] ],
 			'aiosp_admin_bar'                  => [ 'type' => 'boolean', 'newOption' => [ 'advanced', 'adminBarMenu' ] ],
 			'aiosp_google_verify'              => [ 'type' => 'string', 'newOption' => [ 'webmasterTools', 'google' ] ],
 			'aiosp_bing_verify'                => [ 'type' => 'string', 'newOption' => [ 'webmasterTools', 'bing' ] ],
 			'aiosp_pinterest_verify'           => [ 'type' => 'string', 'newOption' => [ 'webmasterTools', 'pinterest' ] ],
 			'aiosp_yandex_verify'              => [ 'type' => 'string', 'newOption' => [ 'webmasterTools', 'yandex' ] ],
 			'aiosp_baidu_verify'               => [ 'type' => 'string', 'newOption' => [ 'webmasterTools', 'baidu' ] ],
-			'aiosp_google_analytics_id'        => [ 'type' => 'string', 'newOption' => [ 'deprecated', 'webmasterTools', 'googleAnalytics', 'id' ] ],
-			'aiosp_ga_advanced_options'        => [ 'type' => 'boolean', 'newOption' => [ 'deprecated', 'webmasterTools', 'googleAnalytics', 'advanced' ] ],
-			'aiosp_ga_domain'                  => [ 'type' => 'string', 'newOption' => [ 'deprecated', 'webmasterTools', 'googleAnalytics', 'trackingDomain' ] ],
-			'aiosp_ga_multi_domain'            => [ 'type' => 'boolean', 'newOption' => [ 'deprecated', 'webmasterTools', 'googleAnalytics', 'multipleDomains' ] ],
-			'aiosp_ga_addl_domains'            => [ 'type' => 'string', 'newOption' => [ 'deprecated', 'webmasterTools', 'googleAnalytics', 'additionalDomains' ] ],
-			'aiosp_ga_anonymize_ip'            => [ 'type' => 'boolean', 'newOption' => [ 'deprecated', 'webmasterTools', 'googleAnalytics', 'anonymizeIp' ] ],
-			'aiosp_ga_display_advertising'     => [ 'type' => 'boolean', 'newOption' => [ 'deprecated', 'webmasterTools', 'googleAnalytics', 'displayAdvertiserTracking' ] ],
-			'aiosp_ga_exclude_users'           => [ 'type' => 'array', 'newOption' => [ 'deprecated', 'webmasterTools', 'googleAnalytics', 'excludeUsers' ] ],
-			'aiosp_ga_track_outbound_links'    => [ 'type' => 'boolean', 'newOption' => [ 'deprecated', 'webmasterTools', 'googleAnalytics', 'trackOutboundLinks' ] ],
-			'aiosp_ga_link_attribution'        => [ 'type' => 'boolean', 'newOption' => [ 'deprecated', 'webmasterTools', 'googleAnalytics', 'enhancedLinkAttribution' ] ],
-			'aiosp_ga_enhanced_ecommerce'      => [ 'type' => 'boolean', 'newOption' => [ 'deprecated', 'webmasterTools', 'googleAnalytics', 'enhancedEcommerce' ] ],
 			'aiosp_schema_site_represents'     => [ 'type' => 'string', 'newOption' => [ 'searchAppearance', 'global', 'schema', 'siteRepresents' ] ],
 			'aiosp_schema_organization_name'   => [ 'type' => 'string', 'newOption' => [ 'searchAppearance', 'global', 'schema', 'organizationName' ] ],
 			'aiosp_schema_person_manual_name'  => [ 'type' => 'string', 'newOption' => [ 'searchAppearance', 'global', 'schema', 'personName' ] ],
@@ -250,7 +238,7 @@ class GeneralSettings {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @param  WP_Post $post The post object.
+	 * @param  \WP_Post $post The post object.
 	 * @return void
 	 */
 	private function maybeShowHomePageTitleNotice( $post ) {
@@ -332,7 +320,7 @@ class GeneralSettings {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @param  WP_Post $post The post object.
+	 * @param  \WP_Post $post The post object.
 	 * @return void
 	 */
 	private function maybeShowHomePageDescriptionNotice( $post ) {
@@ -652,6 +640,7 @@ class GeneralSettings {
 			'facebook.com'   => 'facebookPageUrl',
 			'twitter.com'    => 'twitterUrl',
 			'instagram.com'  => 'instagramUrl',
+			'tiktok.com'     => 'tiktokUrl',
 			'pinterest.com'  => 'pinterestUrl',
 			'youtube.com'    => 'youtubeUrl',
 			'linkedin.com'   => 'linkedinUrl',
@@ -660,6 +649,7 @@ class GeneralSettings {
 			'soundcloud.com' => 'soundCloudUrl',
 			'wikipedia.org'  => 'wikipediaUrl',
 			'myspace.com'    => 'myspaceUrl',
+			'wordpress.org'  => 'wordpressUrl',
 		];
 
 		$found = false;
@@ -704,11 +694,6 @@ class GeneralSettings {
 			} else {
 				aioseo()->options->searchAppearance->global->schema->person = intval( $this->oldOptions['aiosp_schema_person_user'] );
 			}
-		}
-
-		if ( ! empty( $this->oldOptions['aiosp_schema_contact_type'] ) ) {
-			aioseo()->options->searchAppearance->global->schema->contactType       = 'manual';
-			aioseo()->options->searchAppearance->global->schema->contactTypeManual = aioseo()->helpers->sanitizeOption( $this->oldOptions['aiosp_schema_contact_type'] );
 		}
 	}
 
@@ -875,21 +860,23 @@ class GeneralSettings {
 	}
 
 	/**
-	 * Enables deprecated Google Analytics if there is an existing GA id.
+	 * Migrates the deprecated "No Pagination for Canonical URLs" setting.
 	 *
-	 * @since 4.0.6
+	 * @since 4.5.9
 	 *
 	 * @return void
 	 */
-	private function migrateGoogleAnalytics() {
-		if ( empty( $this->oldOptions['aiosp_google_analytics_id'] ) ) {
+	private function migrateNoPaginationForCanonicalUrls() {
+		if ( empty( $this->oldOptions['aiosp_no_paged_canonical_links'] ) ) {
 			return;
 		}
 
-		$deprecatedOptions = aioseo()->internalOptions->internal->deprecatedOptions;
-		if ( ! in_array( 'googleAnalytics', $deprecatedOptions, true ) ) {
-			array_push( $deprecatedOptions, 'googleAnalytics' );
-			aioseo()->internalOptions->internal->deprecatedOptions = $deprecatedOptions;
+		$deprecatedOptions = aioseo()->internalOptions->deprecatedOptions;
+		if ( ! in_array( 'noPaginationForCanonical', $deprecatedOptions, true ) ) {
+			$deprecatedOptions[]                         = 'noPaginationForCanonical';
+			aioseo()->internalOptions->deprecatedOptions = $deprecatedOptions;
 		}
+
+		aioseo()->options->deprecated->searchAppearance->advanced->noPaginationForCanonical = true;
 	}
 }

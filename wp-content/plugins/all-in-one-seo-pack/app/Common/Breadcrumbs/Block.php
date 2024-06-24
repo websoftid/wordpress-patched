@@ -60,7 +60,9 @@ class Block {
 	 * @return string                  The output from the output buffering.
 	 */
 	public function render( $blockAttributes ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
-		$postId = ! empty( $_GET['post_id'] ) ? wp_unslash( $_GET['post_id'] ) : false; // phpcs:ignore HM.Security.ValidatedSanitizedInput.InputNotSanitized
+		// phpcs:disable HM.Security.ValidatedSanitizedInput.InputNotSanitized, HM.Security.NonceVerification.Recommended
+		$postId = ! empty( $_GET['post_id'] ) ? (int) wp_unslash( $_GET['post_id'] ) : false;
+		// phpcs:enable
 
 		if ( ! empty( $blockAttributes['primaryTerm'] ) ) {
 			$this->primaryTerm = json_decode( $blockAttributes['primaryTerm'], true );
@@ -72,6 +74,21 @@ class Block {
 			$breadcrumbs = aioseo()->breadcrumbs->frontend->sideDisplay( false, 'post' === get_post_type( $postId ) ? 'post' : 'single', get_post( $postId ) );
 			remove_filter( 'aioseo_post_primary_term', [ $this, 'changePrimaryTerm' ], 10 );
 			remove_filter( 'get_object_terms', [ $this, 'temporarilyAddTerm' ], 10 );
+
+			if (
+				in_array( 'breadcrumbsEnable', aioseo()->internalOptions->deprecatedOptions, true ) &&
+				! aioseo()->options->deprecated->breadcrumbs->enable
+			) {
+				return '<p>' .
+						sprintf(
+							// Translators: 1 - The plugin short name ("AIOSEO"), 2 - Opening HTML link tag, 3 - Closing HTML link tag.
+							__( 'Breadcrumbs are currently disabled, so this block will be rendered empty. You can enable %1$s\'s breadcrumb functionality under %2$sGeneral Settings > Breadcrumbs%3$s.', 'all-in-one-seo-pack' ), // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+							AIOSEO_PLUGIN_SHORT_NAME,
+							'<a href="' . esc_url( admin_url( 'admin.php?page=aioseo-settings#/breadcrumbs' ) ) . '" target="_blank">',
+							'</a>'
+						) .
+						'</p>';
+			}
 
 			return $breadcrumbs;
 		}
@@ -108,9 +125,9 @@ class Block {
 	 *
 	 * @since 4.3.6
 	 *
-	 * @param  WP_Term $term     The term object.
-	 * @param  string  $taxonomy The taxonomy name.
-	 * @return WP_Term           The term object.
+	 * @param  \WP_Term $term     The term object.
+	 * @param  string   $taxonomy The taxonomy name.
+	 * @return \WP_Term           The term object.
 	 */
 	public function changePrimaryTerm( $term, $taxonomy ) {
 		if ( empty( $this->primaryTerm ) || empty( $this->primaryTerm[ $taxonomy ] ) ) {

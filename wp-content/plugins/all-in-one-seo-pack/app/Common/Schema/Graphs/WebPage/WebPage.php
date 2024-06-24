@@ -45,10 +45,9 @@ class WebPage extends Graphs\Graph {
 			'breadcrumb'  => [ '@id' => aioseo()->schema->context['url'] . '#breadcrumblist' ]
 		];
 
-		if ( is_singular() && ! is_page() ) {
+		if ( is_singular() && 'page' !== get_post_type() ) {
 			$post = aioseo()->helpers->getPost();
-
-			if ( is_a( $post, 'WP_Post' ) ) {
+			if ( is_a( $post, 'WP_Post' ) && post_type_supports( $post->post_type, 'author' ) ) {
 				$author = get_author_posts_url( $post->post_author );
 				if ( ! empty( $author ) ) {
 					if ( ! in_array( 'PersonAuthor', aioseo()->schema->graphs, true ) ) {
@@ -67,6 +66,8 @@ class WebPage extends Graphs\Graph {
 
 		if ( is_singular() ) {
 			if ( ! isset( aioseo()->schema->context['object'] ) || ! aioseo()->schema->context['object'] ) {
+				$data = $this->getAddonData( $data, 'webPage' );
+
 				return $data;
 			}
 
@@ -81,8 +82,10 @@ class WebPage extends Graphs\Graph {
 				}
 			}
 
-			$data['datePublished'] = mysql2date( DATE_W3C, $post->post_date_gmt, false );
-			$data['dateModified']  = mysql2date( DATE_W3C, $post->post_modified_gmt, false );
+			$data['datePublished'] = mysql2date( DATE_W3C, $post->post_date, false );
+			$data['dateModified']  = mysql2date( DATE_W3C, $post->post_modified, false );
+
+			$data = $this->getAddonData( $data, 'webPage' );
 
 			return $data;
 		}
@@ -90,6 +93,8 @@ class WebPage extends Graphs\Graph {
 		if ( is_front_page() ) {
 			$data['about'] = [ '@id' => trailingslashit( home_url() ) . '#' . aioseo()->options->searchAppearance->global->schema->siteRepresents ];
 		}
+
+		$data = $this->getAddonData( $data, 'webPage' );
 
 		return $data;
 	}

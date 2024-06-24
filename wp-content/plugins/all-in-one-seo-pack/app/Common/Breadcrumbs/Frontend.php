@@ -68,6 +68,16 @@ class Frontend {
 			if ( is_home() ) {
 				$type = 'blog';
 			}
+
+			// Support WC shop page.
+			if ( aioseo()->helpers->isWooCommerceShopPage() ) {
+				$type = 'wcShop';
+			}
+
+			// Support WC products.
+			if ( aioseo()->helpers->isWooCommerceProductPage() ) {
+				$type = 'wcProduct';
+			}
 		}
 
 		if ( is_date() ) {
@@ -149,7 +159,14 @@ class Frontend {
 	 * @return string|void       A html breadcrumb.
 	 */
 	public function display( $echo = true ) {
-		if ( ! aioseo()->options->breadcrumbs->enable || ! apply_filters( 'aioseo_breadcrumbs_output', true ) ) {
+		if (
+			in_array( 'breadcrumbsEnable', aioseo()->internalOptions->deprecatedOptions, true ) &&
+			! aioseo()->options->deprecated->breadcrumbs->enable
+		) {
+			return;
+		}
+
+		if ( ! apply_filters( 'aioseo_breadcrumbs_output', true ) ) {
 			return;
 		}
 

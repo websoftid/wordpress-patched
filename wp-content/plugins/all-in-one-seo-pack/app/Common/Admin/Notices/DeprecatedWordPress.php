@@ -106,7 +106,7 @@ class DeprecatedWordPress {
 
 		<?php
 		// In case this is on plugin activation.
-		if ( isset( $_GET['activate'] ) ) {
+		if ( isset( $_GET['activate'] ) ) { // phpcs:ignore HM.Security.NonceVerification.Recommended
 			unset( $_GET['activate'] );
 		}
 	}
@@ -150,7 +150,7 @@ class DeprecatedWordPress {
 	 *
 	 * @since 4.1.2
 	 *
-	 * @return WP_Response The successful response.
+	 * @return string The successful response.
 	 */
 	public function dismissNotice() {
 		// Early exit if we're not on a aioseo-dismiss-deprecated-wordpress-notice action.

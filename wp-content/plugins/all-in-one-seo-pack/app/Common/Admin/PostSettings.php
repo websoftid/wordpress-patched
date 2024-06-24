@@ -15,6 +15,15 @@ use AIOSEO\Plugin\Common\Models;
  */
 class PostSettings {
 	/**
+	 * The integrations instance.
+	 *
+	 * @since 4.4.3
+	 *
+	 * @var array[object]
+	 */
+	public $integrations;
+
+	/**
 	 * Initialize the admin.
 	 *
 	 * @since 4.0.0
@@ -80,7 +89,11 @@ class PostSettings {
 			aioseo()->core->assets->load( 'src/vue/standalone/link-format/main.js', [], aioseo()->helpers->getVueData( $page ) );
 		}
 
-		$screen = get_current_screen();
+		$screen = aioseo()->helpers->getCurrentScreen();
+		if ( empty( $screen->id ) ) {
+			return;
+		}
+
 		if ( 'attachment' === $screen->id ) {
 			wp_enqueue_media();
 		}
@@ -134,9 +147,12 @@ class PostSettings {
 	 * @return void
 	 */
 	public function addPostSettingsMetabox() {
-		$screen   = get_current_screen();
-		$postType = $screen->post_type;
+		$screen = aioseo()->helpers->getCurrentScreen();
+		if ( empty( $screen->post_type ) ) {
+			return;
+		}
 
+		$postType = $screen->post_type;
 		if ( $this->canAddPostSettingsMetabox( $postType ) ) {
 			// Translators: 1 - The plugin short name ("AIOSEO").
 			$aioseoMetaboxTitle = sprintf( esc_html__( '%1$s Settings', 'all-in-one-seo-pack' ), AIOSEO_PLUGIN_SHORT_NAME );
@@ -157,7 +173,6 @@ class PostSettings {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @param  WP_Post $post The current post.
 	 * @return void
 	 */
 	public function postSettingsMetabox() {
@@ -291,7 +306,7 @@ class PostSettings {
 		}
 
 		$posts = aioseo()->core->db->start( 'posts as p' )
-			->select( 'ap.seo_score, ap.keyphrases' )
+			->select( 'p.ID, ap.seo_score, ap.keyphrases' )
 			->leftJoin( 'aioseo_posts as ap', 'ap.post_id = p.ID' )
 			->where( 'p.post_status', 'publish' )
 			->where( 'p.post_type', $postType )
@@ -299,7 +314,7 @@ class PostSettings {
 			->result();
 
 		$overview = [
-			'total'                 => count( $posts ),
+			'total'                 => 0,
 			'needsImprovement'      => 0,
 			'okay'                  => 0,
 			'good'                  => 0,
@@ -307,7 +322,13 @@ class PostSettings {
 		];
 
 		foreach ( $posts as $post ) {
-			if ( empty( $post->keyphrases ) || strpos( $post->keyphrases, '{"focus":[]' ) === 0 ) {
+			if ( ! aioseo()->helpers->isPageAnalysisEligible( $post->ID ) ) {
+				continue;
+			}
+
+			$overview['total']++;
+
+			if ( empty( $post->keyphrases ) || strpos( $post->keyphrases, '{"focus":{"keyphrase":""' ) === 0 ) {
 				$overview['withoutFocusKeyphrase']++;
 
 				// We skip to the next since we will just consider posts with focus keyphrase in the counts.
@@ -339,9 +360,9 @@ class PostSettings {
 	 *
 	 * @since 4.2.0
 	 *
-	 * @param  array    $clauses Associative array of the clauses for the query.
-	 * @param  WP_Query $query   The WP_Query instance (passed by reference).
-	 * @return array             The clauses array updated.
+	 * @param  array     $clauses Associative array of the clauses for the query.
+	 * @param  \WP_Query $query   The WP_Query instance (passed by reference).
+	 * @return array              The clauses array updated.
 	 */
 	public function changeClausesToFilterPosts( $clauses, $query = null ) {
 		if ( ! is_admin() || ! $query->is_main_query() ) {
@@ -354,7 +375,7 @@ class PostSettings {
 		}
 
 		$whereClause        = '';
-		$noKeyphrasesClause = " (aioseo_p.keyphrases = '' OR aioseo_p.keyphrases IS NULL OR aioseo_p.keyphrases LIKE '{\"focus\":[]%') ";
+		$noKeyphrasesClause = "(aioseo_p.keyphrases = '' OR aioseo_p.keyphrases IS NULL OR aioseo_p.keyphrases LIKE '{\"focus\":{\"keyphrase\":\"\"%')";
 		switch ( $filter ) {
 			case 'withoutFocusKeyphrase':
 				$whereClause = " AND $noKeyphrasesClause ";

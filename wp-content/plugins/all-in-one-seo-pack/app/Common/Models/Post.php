@@ -29,9 +29,9 @@ class Post extends Model {
 	 * @var array
 	 */
 	protected $jsonFields = [
-		// 'keywords',
+		'keywords',
 		// 'keyphrases',
-		// 'page_analysis',
+		'page_analysis',
 		'schema',
 		// 'schema_type_options',
 		'images',
@@ -39,7 +39,8 @@ class Post extends Model {
 		'open_ai',
 		'options',
 		'local_seo',
-		'primary_term'
+		'primary_term',
+		'og_article_tags'
 	];
 
 	/**
@@ -70,6 +71,17 @@ class Post extends Model {
 		'robots_noodp',
 		'robots_notranslate',
 		'limit_modified_date',
+	];
+
+	/**
+	 * Fields that can be null when saved.
+	 *
+	 * @since 4.5.7
+	 *
+	 * @var array
+	 */
+	protected $nullFields = [
+		'priority'
 	];
 
 	/**
@@ -213,6 +225,17 @@ class Post extends Model {
 			if ( property_exists( $graph, 'id' ) && '#' !== substr( $graph->id, 0, 1 ) ) {
 				$graph->id = '#' . $graph->id;
 			}
+
+			// If the graph has an old rating value, we need to migrate it to the review.
+			if (
+				property_exists( $graph, 'id' ) &&
+				preg_match( '/(movie|software-application)/', $graph->id ) &&
+				property_exists( $graph->properties, 'rating' ) &&
+				property_exists( $graph->properties->rating, 'value' )
+			) {
+				$graph->properties->review->rating = $graph->properties->rating->value;
+				unset( $graph->properties->rating->value );
+			}
 		}
 
 		return $post;
@@ -262,10 +285,10 @@ class Post extends Model {
 		}
 
 		$thePost = self::getPost( $postId );
-		// Before setting the data, we check if the title/description are the same as the defaults and clear them if so.
-		$data = self::checkForDefaultFormat( $postId, $thePost, $data );
+		$data    = apply_filters( 'aioseo_save_post', $data, $thePost );
 
-		$thePost = apply_filters( 'aioseo_save_post', $thePost );
+		// Before setting the data, we check if the title/description are the same as the defaults and clear them if so.
+		$data    = self::checkForDefaultFormat( $postId, $thePost, $data );
 		$thePost = self::sanitizeAndSetDefaults( $postId, $thePost, $data );
 
 		// Update traditional post meta so that it can be used by multilingual plugins.
@@ -371,8 +394,8 @@ class Post extends Model {
 
 		foreach ( $data['analysis'] as &$analysis ) {
 			foreach ( $analysis as $key => $result ) {
-				// Remove unnecessary 'title' and 'description'.
-				foreach ( [ 'title', 'description' ] as $keyToRemove ) {
+				// Remove unnecessary data.
+				foreach ( [ 'title', 'description', 'highlightSentences' ] as $keyToRemove ) {
 					if ( isset( $analysis[ $key ][ $keyToRemove ] ) ) {
 						unset( $analysis[ $key ][ $keyToRemove ] );
 					}
@@ -393,17 +416,17 @@ class Post extends Model {
 	 * @param  array $data    The data.
 	 * @return Post           The Post object with data set.
 	 */
-	private static function sanitizeAndSetDefaults( $postId, $thePost, $data ) {
+	protected static function sanitizeAndSetDefaults( $postId, $thePost, $data ) {
 		// General
 		$thePost->post_id                     = $postId;
 		$thePost->title                       = ! empty( $data['title'] ) ? sanitize_text_field( $data['title'] ) : null;
 		$thePost->description                 = ! empty( $data['description'] ) ? sanitize_text_field( $data['description'] ) : null;
 		$thePost->canonical_url               = ! empty( $data['canonicalUrl'] ) ? esc_url_raw( $data['canonicalUrl'] ) : null;
-		$thePost->keywords                    = ! empty( $data['keywords'] ) ? sanitize_text_field( $data['keywords'] ) : null;
+		$thePost->keywords                    = ! empty( $data['keywords'] ) ? aioseo()->helpers->sanitize( $data['keywords'] ) : null;
 		$thePost->pillar_content              = isset( $data['pillar_content'] ) ? rest_sanitize_boolean( $data['pillar_content'] ) : 0;
 		// TruSEO
 		$thePost->keyphrases                  = ! empty( $data['keyphrases'] ) ? wp_json_encode( self::sanitizeKeyphrases( $data['keyphrases'] ) ) : null;
-		$thePost->page_analysis               = ! empty( $data['page_analysis'] ) ? wp_json_encode( self::sanitizePageAnalysis( $data['page_analysis'] ) ) : null;
+		$thePost->page_analysis               = ! empty( $data['page_analysis'] ) ? self::sanitizePageAnalysis( $data['page_analysis'] ) : null;
 		$thePost->seo_score                   = ! empty( $data['seo_score'] ) ? sanitize_text_field( $data['seo_score'] ) : 0;
 		// Sitemap
 		$thePost->priority                    = isset( $data['priority'] ) ? ( 'default' === sanitize_text_field( $data['priority'] ) ? null : (float) $data['priority'] ) : null;
@@ -418,7 +441,7 @@ class Post extends Model {
 		$thePost->robots_nosnippet            = isset( $data['nosnippet'] ) ? rest_sanitize_boolean( $data['nosnippet'] ) : 0;
 		$thePost->robots_noodp                = isset( $data['noodp'] ) ? rest_sanitize_boolean( $data['noodp'] ) : 0;
 		$thePost->robots_max_snippet          = ! empty( $data['maxSnippet'] ) ? (int) sanitize_text_field( $data['maxSnippet'] ) : -1;
-		$thePost->robots_max_videopreview     = ! empty( $data['maxVideoPreview'] ) ? (int) sanitize_text_field( $data['maxVideoPreview'] ) : -1;
+		$thePost->robots_max_videopreview     = isset( $data['maxVideoPreview'] ) && is_numeric( $data['maxVideoPreview'] ) ? (int) sanitize_text_field( $data['maxVideoPreview'] ) : -1;
 		$thePost->robots_max_imagepreview     = ! empty( $data['maxImagePreview'] ) ? sanitize_text_field( $data['maxImagePreview'] ) : 'large';
 		// Open Graph Meta
 		$thePost->og_title                    = ! empty( $data['og_title'] ) ? sanitize_text_field( $data['og_title'] ) : null;
@@ -432,7 +455,7 @@ class Post extends Model {
 		$thePost->og_image_custom_fields      = ! empty( $data['og_image_custom_fields'] ) ? sanitize_text_field( $data['og_image_custom_fields'] ) : null;
 		$thePost->og_video                    = ! empty( $data['og_video'] ) ? sanitize_text_field( $data['og_video'] ) : '';
 		$thePost->og_article_section          = ! empty( $data['og_article_section'] ) ? sanitize_text_field( $data['og_article_section'] ) : null;
-		$thePost->og_article_tags             = ! empty( $data['og_article_tags'] ) ? sanitize_text_field( $data['og_article_tags'] ) : null;
+		$thePost->og_article_tags             = ! empty( $data['og_article_tags'] ) ? aioseo()->helpers->sanitize( $data['og_article_tags'] ) : null;
 		// Twitter Meta
 		$thePost->twitter_title               = ! empty( $data['twitter_title'] ) ? sanitize_text_field( $data['twitter_title'] ) : null;
 		$thePost->twitter_description         = ! empty( $data['twitter_description'] ) ? sanitize_text_field( $data['twitter_description'] ) : null;
@@ -443,14 +466,10 @@ class Post extends Model {
 		$thePost->twitter_image_custom_url    = ! empty( $data['twitter_image_custom_url'] ) ? esc_url_raw( $data['twitter_image_custom_url'] ) : null;
 		$thePost->twitter_image_custom_fields = ! empty( $data['twitter_image_custom_fields'] ) ? sanitize_text_field( $data['twitter_image_custom_fields'] ) : null;
 		// Schema
-		$thePost->schema                      = ! empty( $data['schema'] )
-			? wp_json_encode( self::getDefaultSchemaOptions( $data['schema'] ) )
-			: wp_json_encode( self::getDefaultSchemaOptions() );
+		$thePost->schema                      = ! empty( $data['schema'] ) ? self::getDefaultSchemaOptions( $data['schema'] ) : null;
 		$thePost->local_seo                   = ! empty( $data['local_seo'] ) ? $data['local_seo'] : null;
 		$thePost->limit_modified_date         = isset( $data['limit_modified_date'] ) ? rest_sanitize_boolean( $data['limit_modified_date'] ) : 0;
-		$thePost->open_ai                     = ! empty( $data['open_ai'] )
-			? wp_json_encode( self::getDefaultOpenAiOptions( $data['open_ai'] ) )
-			: wp_json_encode( self::getDefaultOpenAiOptions() );
+		$thePost->open_ai                     = ! empty( $data['open_ai'] ) ? self::getDefaultOpenAiOptions( $data['open_ai'] ) : null;
 		$thePost->updated                     = gmdate( 'Y-m-d H:i:s' );
 		$thePost->primary_term                = ! empty( $data['primary_term'] ) ? $data['primary_term'] : null;
 
@@ -462,6 +481,13 @@ class Post extends Model {
 
 		if ( ! $thePost->exists() ) {
 			$thePost->created = gmdate( 'Y-m-d H:i:s' );
+		}
+
+		// Update defaults from addons.
+		foreach ( aioseo()->addons->getLoadedAddons() as $addon ) {
+			if ( isset( $addon->postModel ) && method_exists( $addon->postModel, 'sanitizeAndSetDefaults' ) ) {
+				$thePost = $addon->postModel->sanitizeAndSetDefaults( $postId, $thePost, $data );
+			}
 		}
 
 		return $thePost;
@@ -554,9 +580,10 @@ class Post extends Model {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @return object The default values.
+	 * @param  object|null $pageAnalysis The page analysis object.
+	 * @return object                    The default values.
 	 */
-	public static function getPageAnalysisDefaults() {
+	public static function getPageAnalysisDefaults( $pageAnalysis = null ) {
 		$defaults = [
 			'analysis' => [
 				'basic'       => [
@@ -583,7 +610,11 @@ class Post extends Model {
 			]
 		];
 
-		return json_decode( wp_json_encode( $defaults ) );
+		if ( empty( $pageAnalysis ) ) {
+			return json_decode( wp_json_encode( $defaults ) );
+		}
+
+		return $pageAnalysis;
 	}
 
 	/**
@@ -591,9 +622,9 @@ class Post extends Model {
 	 *
 	 * @since 4.2.5
 	 *
-	 * @param  string       $existingOptions The existing options in JSON.
-	 * @param  null|WP_Post $post            The post object.
-	 * @return string                        The existing options with defaults added in JSON.
+	 * @param  string        $existingOptions The existing options in JSON.
+	 * @param  null|\WP_Post $post            The post object.
+	 * @return object                         The existing options with defaults added in JSON.
 	 */
 	public static function getDefaultSchemaOptions( $existingOptions = '', $post = null ) {
 		$defaultGraphName = aioseo()->schema->getDefaultPostTypeGraph( $post );
@@ -722,9 +753,9 @@ class Post extends Model {
 	 * @since 4.3.2
 	 *
 	 * @param  array $existingOptions The existing options.
-	 * @return array                  The default options.
+	 * @return object                 The default options.
 	 */
-	public static function getDefaultOpenAiOptions( $existingOptions = '' ) {
+	public static function getDefaultOpenAiOptions( $existingOptions = [] ) {
 		$defaults = [
 			'title'       => [
 				'suggestions' => [],

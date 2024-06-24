@@ -31,7 +31,7 @@ class Twitter {
 		$userName = aioseo()->options->social->profiles->sameUsername->username;
 
 		return ( $userName && in_array( 'twitterUrl', aioseo()->options->social->profiles->sameUsername->included, true ) )
-			? 'https://twitter.com/' . $userName
+			? 'https://x.com/' . $userName
 			: '';
 	}
 
@@ -125,8 +125,8 @@ class Twitter {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @param  WP_Post|integer $post The post object or ID (optional).
-	 * @return string                The Twitter title.
+	 * @param  \WP_Post|integer $post The post object or ID (optional).
+	 * @return string                 The Twitter title.
 	 */
 	public function getTitle( $post = null ) {
 		if ( is_home() && 'posts' === get_option( 'show_on_front' ) ) {
@@ -155,8 +155,8 @@ class Twitter {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @param  WP_Post|integer $post The post object or ID (optional).
-	 * @return string                The Twitter description.
+	 * @param  \WP_Post|integer $post The post object or ID (optional).
+	 * @return string                 The Twitter description.
 	 */
 	public function getDescription( $post = null ) {
 		if ( is_home() && 'posts' === get_option( 'show_on_front' ) ) {
@@ -184,7 +184,7 @@ class Twitter {
 	 * Prepare twitter username for public display.
 	 *
 	 * We do things like strip out the URL, etc and return just (at)username.
-	 * At the moment, we'll check for 1 of 3 things... (at)username, username, and https://twitter.com/username.
+	 * At the moment, we'll check for 1 of 3 things... (at)username, username, and https://x.com/username.
 	 *
 	 * @since 4.0.0
 	 *
@@ -204,10 +204,12 @@ class Twitter {
 			} elseif ( '@' === $profile[0] && ! $includeAt ) {
 				$profile = ltrim( $profile, '@' );
 			}
-		} elseif ( strpos( $profile, 'twitter.com' ) ) {
+		}
+
+		if ( strpos( $profile, 'twitter.com' ) || strpos( $profile, 'x.com' ) ) {
 			$profile = esc_url( $profile );
 
-			// extract the twitter username from the url.
+			// Extract the twitter username from the URL.
 			$parsedTwitterProfile = wp_parse_url( $profile );
 
 			$path      = $parsedTwitterProfile['path'];
@@ -217,7 +219,9 @@ class Twitter {
 			if ( $profile ) {
 				if ( '@' !== $profile[0] && $includeAt ) {
 					$profile = '@' . $profile;
-				} elseif ( '@' === $profile[0] && ! $includeAt ) {
+				}
+
+				if ( '@' === $profile[0] && ! $includeAt ) {
 					$profile = ltrim( $profile, '@' );
 				}
 			}

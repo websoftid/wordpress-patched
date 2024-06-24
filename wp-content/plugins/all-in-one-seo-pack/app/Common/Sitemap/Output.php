@@ -47,7 +47,7 @@ class Output {
 		) . ' -->';
 
 		if ( 'rss' === aioseo()->sitemap->type ) {
-			$xslUrl = home_url() . '/default.xsl';
+			$xslUrl = home_url() . '/default-sitemap.xsl';
 
 			if ( ! is_multisite() ) {
 				$title       = get_bloginfo( 'name' );
@@ -61,12 +61,6 @@ class Output {
 
 			$ttl = apply_filters( 'aioseo_sitemap_rss_ttl', 60 );
 
-			// Yandex doesn't support some tags so we need to check the user agent.
-			$isYandexBot = false;
-			if ( preg_match( '#.*Yandex.*#', $_SERVER['HTTP_USER_AGENT'] ) ) {
-				$isYandexBot = true;
-			}
-
 			echo "\r\n\r\n<?xml-stylesheet type=\"text/xsl\" href=\"" . esc_url( $xslUrl ) . "\"?>\r\n";
 			include_once AIOSEO_DIR . '/app/Common/Views/sitemap/xml/rss.php';
 
@@ -74,7 +68,7 @@ class Output {
 		}
 
 		if ( 'root' === aioseo()->sitemap->indexName && aioseo()->sitemap->indexes ) {
-			$xslUrl = add_query_arg( 'sitemap', aioseo()->sitemap->indexName, home_url() . '/default.xsl' );
+			$xslUrl = add_query_arg( 'sitemap', aioseo()->sitemap->indexName, home_url() . '/default-sitemap.xsl' );
 
 			echo "\r\n\r\n<?xml-stylesheet type=\"text/xsl\" href=\"" . esc_url( $xslUrl ) . "\"?>\r\n";
 			include AIOSEO_DIR . '/app/Common/Views/sitemap/xml/root.php';
@@ -82,7 +76,7 @@ class Output {
 			return;
 		}
 
-		$xslUrl = add_query_arg( 'sitemap', aioseo()->sitemap->indexName, home_url() . '/default.xsl' );
+		$xslUrl = add_query_arg( 'sitemap', aioseo()->sitemap->indexName, home_url() . '/default-sitemap.xsl' );
 
 		echo "\r\n\r\n<?xml-stylesheet type=\"text/xsl\" href=\"" . esc_url( $xslUrl ) . "\"?>\r\n";
 		include AIOSEO_DIR . '/app/Common/Views/sitemap/xml/default.php';
@@ -94,13 +88,13 @@ class Output {
 	 * @since 4.0.0
 	 *
 	 * @param  string $value The tag value.
-	 * @param  string $wrap  Whether the value should we wrapped in a CDATA section.
+	 * @param  bool   $wrap  Whether the value should we wrapped in a CDATA section.
 	 * @return void
 	 */
 	public function escapeAndEcho( $value, $wrap = true ) {
-		$safeText = wp_check_invalid_utf8( $value, true );
-
-		if ( ! $safeText ) {
+		$safeText = is_string( $value ) ? wp_check_invalid_utf8( $value, true ) : $value;
+		$isZero   = is_numeric( $value ) ? 0 === (int) $value : false;
+		if ( ! $safeText && ! $isZero ) {
 			return;
 		}
 
@@ -125,9 +119,12 @@ class Output {
 			$safeText
 		);
 
+		$safeText = $safeText ? $safeText : ( $isZero ? $value : '' );
+
 		if ( ! $wrap ) {
 			return print( $safeText ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
+
 		printf( '<![CDATA[%1$s]]>', $safeText ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 

@@ -77,9 +77,9 @@ class LimitModifiedDate {
 	 *
 	 * @since 4.1.8
 	 *
-	 * @param  Object          $preparedPost The post data.
-	 * @param  WP_REST_Request $restRequest  The request.
-	 * @return Object                        The modified post data.
+	 * @param  object           $preparedPost The post data.
+	 * @param  \WP_REST_Request $restRequest  The request.
+	 * @return object                         The modified post data.
 	 */
 	public function addLimitModifiedDateValue( $preparedPost, $restRequest = null ) {
 		if ( 'PUT' !== $restRequest->get_method() ) {
@@ -111,7 +111,7 @@ class LimitModifiedDate {
 			return $sanitizedData;
 		}
 
-		$shouldReset = false;
+		static $shouldReset = false;
 
 		// Handle the REST API request from the Block Editor.
 		if ( aioseo()->helpers->isRestApiRequest() ) {
@@ -144,7 +144,14 @@ class LimitModifiedDate {
 			}
 		}
 
-		if ( $shouldReset ) {
+		foreach ( aioseo()->standalone->pageBuilderIntegrations as $pageBuilder ) {
+			if ( $pageBuilder->isBuiltWith( $unsanitizedData['ID'] ) && $pageBuilder->limitModifiedDate( $unsanitizedData['ID'] ) ) {
+				$shouldReset = true;
+				break;
+			}
+		}
+
+		if ( $shouldReset && isset( $unsanitizedData['post_modified'], $unsanitizedData['post_modified_gmt'] ) ) {
 			$sanitizedData['post_modified']     = $unsanitizedData['post_modified'];
 			$sanitizedData['post_modified_gmt'] = $unsanitizedData['post_modified_gmt'];
 		}
@@ -157,7 +164,7 @@ class LimitModifiedDate {
 	 *
 	 * @since 4.1.8
 	 *
-	 * @param  WP_Post $post The post object.
+	 * @param  \WP_Post $post The post object.
 	 * @return void
 	 */
 	public function classicEditorField( $post ) {
@@ -180,7 +187,7 @@ class LimitModifiedDate {
 	 * @param  string $postType The current post type.
 	 * @return bool             Whether the functionality is allowed.
 	 */
-	private function isAllowed( $postType = false ) {
+	private function isAllowed( $postType = '' ) {
 		if ( empty( $postType ) ) {
 			$postType = get_post_type();
 		}

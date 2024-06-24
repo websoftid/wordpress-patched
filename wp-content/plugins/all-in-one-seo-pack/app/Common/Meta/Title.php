@@ -75,9 +75,9 @@ class Title {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @param  WP_Post $post    The post object (optional).
-	 * @param  boolean $default Whether we want the default value, not the post one.
-	 * @return string           The page title.
+	 * @param  \WP_Post $post    The post object (optional).
+	 * @param  boolean  $default Whether we want the default value, not the post one.
+	 * @return string            The page title.
 	 */
 	public function getTitle( $post = null, $default = false ) {
 		if ( is_home() ) {
@@ -124,9 +124,9 @@ class Title {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @param  WP_Post|int $post    The post object or ID.
-	 * @param  boolean     $default Whether we want the default value, not the post one.
-	 * @return string               The post title.
+	 * @param  \WP_Post|int $post    The post object or ID.
+	 * @param  boolean      $default Whether we want the default value, not the post one.
+	 * @return string                The post title.
 	 */
 	public function getPostTitle( $post, $default = false ) {
 		$post = $post && is_object( $post ) ? $post : aioseo()->helpers->getPost( $post );
@@ -152,6 +152,12 @@ class Title {
 		// If this post is the static home page and we have no title, let's reset to the site name.
 		if ( empty( $title ) && 'page' === get_option( 'show_on_front' ) && (int) get_option( 'page_on_front' ) === $post->ID ) {
 			$title = aioseo()->helpers->decodeHtmlEntities( get_bloginfo( 'name' ) );
+		}
+
+		if ( empty( $title ) ) {
+			// Just return the WP default.
+			$title = get_the_title( $post->ID ) . ' - ' . get_bloginfo( 'name' );
+			$title = aioseo()->helpers->decodeHtmlEntities( $title );
 		}
 
 		$posts[ $post->ID ] = $title;
@@ -187,9 +193,9 @@ class Title {
 	 *
 	 * @since 4.0.6
 	 *
-	 * @param  WP_Term $term    The term object.
-	 * @param  boolean $default Whether we want the default value, not the post one.
-	 * @return string           The term title.
+	 * @param  \WP_Term $term    The term object.
+	 * @param  boolean  $default Whether we want the default value, not the post one.
+	 * @return string            The term title.
 	 */
 	public function getTermTitle( $term, $default = false ) {
 		if ( ! is_a( $term, 'WP_Term' ) ) {
@@ -206,7 +212,7 @@ class Title {
 		if ( ! $title && $dynamicOptions->searchAppearance->taxonomies->has( $term->taxonomy ) ) {
 			$newTitle = aioseo()->dynamicOptions->searchAppearance->taxonomies->{$term->taxonomy}->title;
 			$newTitle = preg_replace( '/#taxonomy_title/', aioseo()->helpers->escapeRegexReplacement( $term->name ), $newTitle );
-			$title    = $this->helpers->prepare( $newTitle, false, $default );
+			$title    = $this->helpers->prepare( $newTitle, $term->term_id, $default );
 		}
 
 		$terms[ $term->term_id ] = $title;

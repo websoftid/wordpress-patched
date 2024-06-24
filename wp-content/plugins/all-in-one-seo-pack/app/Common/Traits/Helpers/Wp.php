@@ -260,7 +260,7 @@ trait Wp {
 
 		$taxObjects = get_taxonomies( [], 'objects' );
 		foreach ( $taxObjects as $taxObject ) {
-			if ( empty( $taxObject->label ) || ! $this->isTaxonomyViewable( $taxObject ) ) {
+			if ( empty( $taxObject->label ) || ! is_taxonomy_viewable( $taxObject ) ) {
 				continue;
 			}
 
@@ -329,7 +329,8 @@ trait Wp {
 		foreach ( $roles as $role ) {
 			$rolesWhere[] = '(um.meta_key = \'' . aioseo()->core->db->db->prefix . 'capabilities\' AND um.meta_value LIKE \'%\"' . $role . '\"%\')';
 		}
-		$dbUsers = aioseo()->core->db->start( 'users as u' )
+		$usersTableName = aioseo()->core->db->db->users; // We get the table name from WPDB since multisites share the same table.
+		$dbUsers        = aioseo()->core->db->start( "$usersTableName as u", true )
 			->select( 'u.ID, u.display_name, u.user_nicename, u.user_email' )
 			->join( 'usermeta as um', 'u.ID = um.user_id' )
 			->whereRaw( '(' . implode( ' OR ', $rolesWhere ) . ')' )
@@ -492,14 +493,14 @@ trait Wp {
 	 * @since 4.1.4
 	 *
 	 * @param  int   $postId The post ID.
-	 * @return array $names  The category names.
+	 * @return array         The category names.
 	 */
 	public function getAllCategories( $postId = 0 ) {
 		$names      = [];
 		$categories = get_the_category( $postId );
 		if ( $categories && count( $categories ) ) {
 			foreach ( $categories as $category ) {
-				$names[] = aioseo()->helpers->internationalize( $category->cat_name );
+				$names[] = aioseo()->helpers->internationalize( $category->name );
 			}
 		}
 
@@ -663,7 +664,7 @@ trait Wp {
 	 *
 	 * @since 4.1.9
 	 *
-	 * @param  string $postType The name of the taxonomy.
+	 * @param  string $taxonomy The name of the taxonomy.
 	 * @return array            The capabilities.
 	 */
 	public function getTaxonomyCapabilities( $taxonomy ) {
@@ -764,23 +765,53 @@ trait Wp {
 	}
 
 	/**
-	 * Checks whether the taxonomy should be considered viewable.
-	 * This function is a copy of the WordPress core function is_taxonomy_viewable() which was introduced in WP 5.1.
+	 * Checks whether the post status should be considered viewable.
+	 * This function is a copy of the WordPress core function is_post_status_viewable() which was introduced in WP 5.7.
 	 *
-	 * @since 4.3.5.1
+	 * @since 4.5.0
 	 *
-	 * @param  string|WP_Taxonomy $taxonomy The taxonomy name or object.
-	 * @return bool                         Whether the taxonomy is viewable.
+	 * @param  string|\stdClass $postStatus The post status name or object.
+	 * @return bool                         Whether the post status is viewable.
 	 */
-	public function isTaxonomyViewable( $taxonomy ) {
-		if ( is_scalar( $taxonomy ) ) {
-			$taxonomy = get_taxonomy( $taxonomy );
-			if ( ! is_a( $taxonomy, 'WP_Taxonomy' ) ) {
+	public function isPostStatusViewable( $postStatus ) {
+		if ( is_scalar( $postStatus ) ) {
+			$postStatus = get_post_status_object( $postStatus );
+
+			if ( ! $postStatus ) {
 				return false;
 			}
 		}
 
-		return $taxonomy->publicly_queryable;
+		if (
+			! is_object( $postStatus ) ||
+			$postStatus->internal ||
+			$postStatus->protected
+		) {
+			return false;
+		}
+
+		return $postStatus->publicly_queryable || ( $postStatus->_builtin && $postStatus->public );
+	}
+
+	/**
+	 * Checks whether the given post is publicly viewable.
+	 * This function is a copy of the WordPress core function is_post_publicly_viewable() which was introduced in WP 5.7.
+	 *
+	 * @since 4.5.0
+	 *
+	 * @param  int|\WP_Post  $post Optional. Post ID or post object. Defaults to global $post.
+	 * @return boolean                      Whether the post is publicly viewable or not.
+	 */
+	public function isPostPubliclyViewable( $post = null ) {
+		$post = get_post( $post );
+		if ( empty( $post ) ) {
+			return false;
+		}
+
+		$postType   = get_post_type( $post );
+		$postStatus = get_post_status( $post );
+
+		return is_post_type_viewable( $postType ) && $this->isPostStatusViewable( $postStatus );
 	}
 
 	/**

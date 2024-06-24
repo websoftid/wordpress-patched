@@ -228,7 +228,7 @@ class Content {
 		foreach ( $posts as $post ) {
 			$entry = [
 				'loc'        => get_permalink( $post->ID ),
-				'lastmod'    => aioseo()->helpers->dateTimeToIso8601( $post->post_modified_gmt ),
+				'lastmod'    => aioseo()->helpers->dateTimeToIso8601( $this->getLastModified( $post ) ),
 				'changefreq' => aioseo()->sitemap->priority->frequency( 'postTypes', $post, $postType ),
 				'priority'   => aioseo()->sitemap->priority->priority( 'postTypes', $post, $postType ),
 			];
@@ -356,6 +356,7 @@ class Content {
 		$lastModified = aioseo()->core->db
 			->start( aioseo()->core->db->db->posts . ' as p', true )
 			->select( 'MAX(`p`.`post_modified_gmt`) as last_modified' )
+			->where( 'p.post_status', 'publish' )
 			->whereRaw( "
 			( `p`.`ID` IN
 				(
@@ -385,19 +386,35 @@ class Content {
 	public function addl( $shouldChunk = true ) {
 		$additionalPages = [];
 		if ( aioseo()->options->sitemap->general->additionalPages->enable ) {
-			$additionalPages = apply_filters( 'aioseo_sitemap_additional_pages', aioseo()->options->sitemap->general->additionalPages->pages );
+			$additionalPages = array_map( 'json_decode', aioseo()->options->sitemap->general->additionalPages->pages );
+			$additionalPages = array_filter( $additionalPages, function( $additionalPage ) {
+				return ! empty( $additionalPage->url );
+			} );
 		}
 
-		if ( 'posts' === get_option( 'show_on_front' ) || ! in_array( 'page', aioseo()->sitemap->helpers->includedPostTypes(), true ) ) {
+		$entries = [];
+		foreach ( $additionalPages as $additionalPage ) {
+			$entries[] = [
+				'loc'        => $additionalPage->url,
+				'lastmod'    => aioseo()->sitemap->helpers->lastModifiedAdditionalPage( $additionalPage ),
+				'changefreq' => $additionalPage->frequency->value,
+				'priority'   => $additionalPage->priority->value,
+				'isTimezone' => true
+			];
+		}
+
+		$postTypes             = aioseo()->sitemap->helpers->includedPostTypes();
+		$shouldIncludeHomepage = 'posts' === get_option( 'show_on_front' ) || ! in_array( 'page', $postTypes, true );
+		if ( $shouldIncludeHomepage ) {
 			$frontPageId  = (int) get_option( 'page_on_front' );
 			$frontPageUrl = aioseo()->helpers->localizedUrl( '/' );
 			$post         = aioseo()->helpers->getPost( $frontPageId );
 
 			$homepageEntry = [
 				'loc'        => aioseo()->helpers->maybeRemoveTrailingSlash( $frontPageUrl ),
-				'lastmod'    => $post ? aioseo()->helpers->dateTimeToIso8601( $post->post_modified_gmt ) : aioseo()->sitemap->helpers->lastModifiedPostTime(),
+				'lastmod'    => $post ? aioseo()->helpers->dateTimeToIso8601( $this->getLastModified( $post ) ) : aioseo()->sitemap->helpers->lastModifiedPostTime(),
 				'changefreq' => aioseo()->sitemap->priority->frequency( 'homePage' ),
-				'priority'   => aioseo()->sitemap->priority->priority( 'homePage' ),
+				'priority'   => aioseo()->sitemap->priority->priority( 'homePage' )
 			];
 
 			$translatedHomepages = aioseo()->helpers->wpmlHomePages();
@@ -410,37 +427,21 @@ class Content {
 				}
 			}
 
-			array_unshift( $additionalPages, $homepageEntry );
+			// Add homepage to the first position.
+			array_unshift( $entries, $homepageEntry );
 		}
 
-		if ( ! $additionalPages ) {
+		if ( aioseo()->options->sitemap->general->additionalPages->enable ) {
+			$entries = apply_filters( 'aioseo_sitemap_additional_pages', $entries );
+		}
+
+		if ( empty( $entries ) ) {
 			return [];
 		}
 
 		if ( aioseo()->options->sitemap->general->indexes && $shouldChunk ) {
-			$additionalPages = aioseo()->sitemap->helpers->chunkEntries( $additionalPages );
-			$additionalPages = $additionalPages[ aioseo()->sitemap->pageNumber ];
-		}
-
-		$entries = [];
-		foreach ( $additionalPages as $page ) {
-			if ( is_array( $page ) ) {
-				$entries[] = $page;
-				continue;
-			}
-
-			$additionalPage = json_decode( $page );
-			if ( empty( $additionalPage->url ) ) {
-				continue;
-			}
-
-			$entries[] = [
-				'loc'        => $additionalPage->url,
-				'lastmod'    => aioseo()->sitemap->helpers->lastModifiedAdditionalPage( $additionalPage ),
-				'isTimezone' => true,
-				'changefreq' => $additionalPage->frequency->value,
-				'priority'   => $additionalPage->priority->value
-			];
+			$entries = aioseo()->sitemap->helpers->chunkEntries( $entries );
+			$entries = $entries[ aioseo()->sitemap->pageNumber ];
 		}
 
 		return $entries;
@@ -473,16 +474,22 @@ class Content {
 			return [];
 		}
 
-		$authors = aioseo()->db->start( 'users as u' )
-			->select( 'u.ID as ID, u.user_nicename as nicename, MAX(p.post_modified_gmt) as lastModified' )
-			->join( 'posts as p', 'u.ID = p.post_author' )
-			->where( 'p.post_status', 'publish' )
-			->whereIn( 'p.post_type', aioseo()->sitemap->helpers->includedPostTypes() )
-			->groupBy( 'u.ID' )
-			->orderBy( 'lastModified DESC' )
-			->limit( aioseo()->sitemap->linksPerIndex, aioseo()->sitemap->pageNumber * aioseo()->sitemap->linksPerIndex )
-			->run()
-			->result();
+		// Allow users to filter the authors in case their sites use a membership plugin or have custom code that affect the authors on their site.
+		// e.g. there might be additional roles/conditions that need to be checked here.
+		$authors = apply_filters( 'aioseo_sitemap_authors', [] );
+		if ( empty( $authors ) ) {
+			$usersTableName = aioseo()->core->db->db->users; // We get the table name from WPDB since multisites share the same table.
+			$authors        = aioseo()->core->db->start( "$usersTableName as u", true )
+				->select( 'u.ID as ID, u.user_nicename as nicename, MAX(p.post_modified_gmt) as lastModified' )
+				->join( 'posts as p', 'u.ID = p.post_author' )
+				->where( 'p.post_status', 'publish' )
+				->whereIn( 'p.post_type', aioseo()->sitemap->helpers->getAuthorPostTypes() )
+				->groupBy( 'u.ID' )
+				->orderBy( 'lastModified DESC' )
+				->limit( aioseo()->sitemap->linksPerIndex, aioseo()->sitemap->pageNumber * aioseo()->sitemap->linksPerIndex )
+				->run()
+				->result();
+		}
 
 		if ( empty( $authors ) ) {
 			return [];
@@ -492,7 +499,7 @@ class Content {
 		foreach ( $authors as $authorData ) {
 			$nicename  = $authorData->nicename ? $authorData->nicename : null;
 			$entries[] = [
-				'loc'        => get_author_posts_url( $authorData->ID, $nicename ),
+				'loc'        => ! empty( $authorData->authorUrl ) ? $authorData->authorUrl : get_author_posts_url( $authorData->ID, $nicename ),
 				'lastmod'    => aioseo()->helpers->dateTimeToIso8601( $authorData->lastModified ),
 				'changefreq' => aioseo()->sitemap->priority->frequency( 'author' ),
 				'priority'   => aioseo()->sitemap->priority->priority( 'author' )
@@ -529,11 +536,12 @@ class Content {
 			return [];
 		}
 
-		$postsTable = aioseo()->db->db->posts;
-		$dates      = aioseo()->db->execute(
+		$postsTable = aioseo()->core->db->db->posts;
+		$dates      = aioseo()->core->db->execute(
 			"SELECT
 				YEAR(post_date) AS `year`,
 				MONTH(post_date) AS `month`,
+				post_date_gmt,
 				post_modified_gmt
 			FROM {$postsTable}
 			WHERE post_type = 'post' AND post_status = 'publish'
@@ -553,7 +561,7 @@ class Content {
 		$year    = '';
 		foreach ( $dates as $date ) {
 			$entry = [
-				'lastmod'    => aioseo()->helpers->dateTimeToIso8601( $date->post_modified_gmt ),
+				'lastmod'    => aioseo()->helpers->dateTimeToIso8601( $this->getLastModified( $date ) ),
 				'changefreq' => aioseo()->sitemap->priority->frequency( 'date' ),
 				'priority'   => aioseo()->sitemap->priority->priority( 'date' ),
 			];
@@ -594,7 +602,7 @@ class Content {
 				'guid'        => get_permalink( $post->ID ),
 				'title'       => get_the_title( $post ),
 				'description' => get_post_field( 'post_excerpt', $post->ID ),
-				'pubDate'     => aioseo()->helpers->dateTimeToRfc822( $post->post_modified_gmt )
+				'pubDate'     => aioseo()->helpers->dateTimeToRfc822( $this->getLastModified( $post ) )
 			];
 
 			$entries[] = apply_filters( 'aioseo_sitemap_post_rss', $entry, $post->ID, $post->post_type, 'post' );
@@ -605,5 +613,22 @@ class Content {
 		});
 
 		return apply_filters( 'aioseo_sitemap_rss', $entries );
+	}
+
+	/**
+	 * Returns the last modified date for a given post.
+	 *
+	 * @since 4.6.3
+	 *
+	 * @param  object $post The post object.
+	 *
+	 * @return string The last modified date.
+	 */
+	public function getLastModified( $post ) {
+		$publishDate      = $post->post_date_gmt;
+		$lastModifiedDate = $post->post_modified_gmt;
+
+		// Get the date which is the latest.
+		return $lastModifiedDate > $publishDate ? $lastModifiedDate : $publishDate;
 	}
 }

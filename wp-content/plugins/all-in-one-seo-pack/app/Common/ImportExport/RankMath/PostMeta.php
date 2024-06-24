@@ -47,7 +47,7 @@ class PostMeta {
 	 * @return void
 	 */
 	public function importPostMeta() {
-		$postsPerAction  = 100;
+		$postsPerAction  = apply_filters( 'aioseo_import_rank_math_posts_per_action', 100 );
 		$publicPostTypes = implode( "', '", aioseo()->helpers->getPublicPostTypes( true ) );
 		$timeStarted     = gmdate( 'Y-m-d H:i:s', aioseo()->core->cache->get( 'import_post_meta_rank_math' ) );
 
@@ -165,7 +165,7 @@ class PostMeta {
 						if ( ! empty( $value['max-snippet'] ) && intval( $value['max-snippet'] ) ) {
 							$meta['robots_max_snippet'] = intval( $value['max-snippet'] );
 						}
-						if ( ! empty( $value['max-video-preview'] ) && intval( $value['max-video-preview'] ) ) {
+						if ( isset( $value['max-video-preview'] ) && is_numeric( $value['max-video-preview'] ) ) {
 							$meta['robots_max_videopreview'] = intval( $value['max-video-preview'] );
 						}
 						if ( ! empty( $value['max-image-preview'] ) ) {

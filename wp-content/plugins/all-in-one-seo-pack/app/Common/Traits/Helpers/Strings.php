@@ -53,9 +53,9 @@ trait Strings {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @param  string $string     The string to convert.
-	 * @param  bool   $capitalize Whether or not to capitalize the first letter.
-	 * @return string             The converted string.
+	 * @param  string $string                   The string to convert.
+	 * @param  bool   $capitalizeFirstCharacter Whether to capitalize the first letter.
+	 * @return string                           The converted string.
 	 */
 	public function dashesToCamelCase( $string, $capitalizeFirstCharacter = false ) {
 		$string = str_replace( ' ', '', ucwords( str_replace( '-', ' ', $string ) ) );
@@ -74,7 +74,7 @@ trait Strings {
 	 * @param  string  $string             The string.
 	 * @param  int     $maxCharacters      The max. amount of characters.
 	 * @param  boolean $shouldHaveEllipsis Whether the string should have a trailing ellipsis (defaults to true).
-	 * @return string  $string             The string.
+	 * @return string                      The string.
 	 */
 	public function truncate( $string, $maxCharacters, $shouldHaveEllipsis = true ) {
 		$length       = strlen( $string );
@@ -355,11 +355,11 @@ trait Strings {
 	 * @return string       The comma separated values.
 	 */
 	public function jsonTagsToCommaSeparatedList( $tags ) {
-		$tags = json_decode( $tags );
+		$tags = is_string( $tags ) ? json_decode( $tags ) : $tags;
 
 		$values = [];
 		foreach ( $tags as $k => $tag ) {
-			$values[ $k ] = $tag->value;
+			$values[ $k ] = is_object( $tag ) ? $tag->value : $tag['value'];
 		}
 
 		return implode( ',', $values );
@@ -475,7 +475,7 @@ trait Strings {
 
 		$isValid = true;
 
-		if ( false === preg_match( $pattern, null ) ) {
+		if ( false === preg_match( $pattern, '' ) ) {
 			$isValid = false;
 		}
 

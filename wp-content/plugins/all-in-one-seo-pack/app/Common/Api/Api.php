@@ -36,7 +36,9 @@ class Api {
 			'post'                                        => [ 'callback' => [ 'PostsTerms', 'getPostData' ], 'access' => 'everyone' ],
 			'post/(?P<postId>[\d]+)/first-attached-image' => [ 'callback' => [ 'PostsTerms', 'getFirstAttachedImage' ], 'access' => 'aioseo_page_social_settings' ],
 			'user/(?P<userId>[\d]+)/image'                => [ 'callback' => [ 'User', 'getUserImage' ], 'access' => 'aioseo_page_social_settings' ],
-			'tags'                                        => [ 'callback' => [ 'Tags', 'getTags' ], 'access' => 'everyone' ]
+			'tags'                                        => [ 'callback' => [ 'Tags', 'getTags' ], 'access' => 'everyone' ],
+			'search-statistics/url/auth'                  => [ 'callback' => [ 'SearchStatistics', 'getAuthUrl' ], 'access' => [ 'aioseo_search_statistics_settings', 'aioseo_general_settings', 'aioseo_setup_wizard' ] ], // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+			'search-statistics/url/reauth'                => [ 'callback' => [ 'SearchStatistics', 'getReauthUrl' ], 'access' => [ 'aioseo_search_statistics_settings', 'aioseo_general_settings' ] ]
 		],
 		'POST'   => [
 			'htaccess'                                              => [ 'callback' => [ 'Tools', 'saveHtaccess' ], 'access' => 'aioseo_tools_settings' ],
@@ -53,8 +55,11 @@ class Api {
 			'post/(?P<postId>[\d]+)/disable-primary-term-education' => [ 'callback' => [ 'PostsTerms', 'disablePrimaryTermEducation' ], 'access' => 'aioseo_page_general_settings' ],
 			'post/(?P<postId>[\d]+)/disable-link-format-education'  => [ 'callback' => [ 'PostsTerms', 'disableLinkFormatEducation' ], 'access' => 'aioseo_page_general_settings' ],
 			'post/(?P<postId>[\d]+)/update-internal-link-count'     => [ 'callback' => [ 'PostsTerms', 'updateInternalLinkCount' ], 'access' => 'aioseo_page_general_settings' ],
-			'postscreen'                                            => [ 'callback' => [ 'PostsTerms', 'updatePostFromScreen' ], 'access' => 'aioseo_page_general_settings' ],
-			'termscreen'                                            => [ 'callback' => [ 'PostsTerms', 'updateTermFromScreen' ], 'access' => 'aioseo_page_general_settings' ],
+			'post/(?P<postId>[\d]+)/process-content'                => [ 'callback' => [ 'PostsTerms', 'processContent' ], 'access' => 'aioseo_page_general_settings' ],
+			'posts-list/load-details-column'                        => [ 'callback' => [ 'PostsTerms', 'loadPostDetailsColumn' ], 'access' => 'aioseo_page_general_settings' ],
+			'posts-list/update-details-column'                      => [ 'callback' => [ 'PostsTerms', 'updatePostDetailsColumn' ], 'access' => 'aioseo_page_general_settings' ],
+			'terms-list/load-details-column'                        => [ 'callback' => [ 'PostsTerms', 'loadTermDetailsColumn' ], 'access' => 'aioseo_page_general_settings' ],
+			'terms-list/update-details-column'                      => [ 'callback' => [ 'PostsTerms', 'updateTermDetailsColumn' ], 'access' => 'aioseo_page_general_settings' ],
 			'keyphrases'                                            => [ 'callback' => [ 'PostsTerms', 'updatePostKeyphrases' ], 'access' => 'aioseo_page_analysis' ],
 			'analyze'                                               => [ 'callback' => [ 'Analyze', 'analyzeSite' ], 'access' => 'aioseo_seo_analysis_settings' ],
 			'analyze-headline'                                      => [ 'callback' => [ 'Analyze', 'analyzeHeadline' ], 'access' => 'everyone' ],
@@ -87,6 +92,8 @@ class Api {
 			'plugins/install'                                       => [ 'callback' => [ 'Plugins', 'installPlugins' ], 'access' => [ 'install_plugins', 'aioseo_feature_manager_settings' ] ],
 			'plugins/upgrade'                                       => [ 'callback' => [ 'Plugins', 'upgradePlugins' ], 'access' => [ 'update_plugins', 'aioseo_feature_manager_settings' ] ],
 			'reset-settings'                                        => [ 'callback' => [ 'Settings', 'resetSettings' ], 'access' => 'aioseo_tools_settings' ],
+			'search-statistics/sitemap/delete'                      => [ 'callback' => [ 'SearchStatistics', 'deleteSitemap' ], 'access' => [ 'aioseo_search_statistics_settings', 'aioseo_general_settings' ] ], // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+			'search-statistics/sitemap/ignore'                      => [ 'callback' => [ 'SearchStatistics', 'ignoreSitemap' ], 'access' => [ 'aioseo_search_statistics_settings', 'aioseo_general_settings' ] ], // phpcs:ignore Generic.Files.LineLength.MaxExceeded
 			'settings/export'                                       => [ 'callback' => [ 'Settings', 'exportSettings' ], 'access' => 'aioseo_tools_settings' ],
 			'settings/hide-setup-wizard'                            => [ 'callback' => [ 'Settings', 'hideSetupWizard' ], 'access' => 'any' ],
 			'settings/hide-upgrade-bar'                             => [ 'callback' => [ 'Settings', 'hideUpgradeBar' ], 'access' => 'any' ],
@@ -119,10 +126,27 @@ class Api {
 			'integration/wpcode/snippets'                           => [
 				'callback' => [ 'WpCode', 'getSnippets', 'AIOSEO\\Plugin\\Common\\Api\\Integrations' ],
 				'access'   => 'aioseo_tools_settings'
-			]
+			],
+			'crawl-cleanup'                                         => [
+				'callback' => [ 'CrawlCleanup', 'fetchLogs', 'AIOSEO\\Plugin\\Common\\QueryArgs' ],
+				'access'   => [ 'aioseo_search_appearance_settings' ]
+			],
+			'crawl-cleanup/block'                                   => [
+				'callback' => [ 'CrawlCleanup', 'blockArg', 'AIOSEO\\Plugin\\Common\\QueryArgs' ],
+				'access'   => [ 'aioseo_search_appearance_settings' ]
+			],
+			'crawl-cleanup/delete-blocked'                          => [
+				'callback' => [ 'CrawlCleanup', 'deleteBlocked', 'AIOSEO\\Plugin\\Common\\QueryArgs' ],
+				'access'   => [ 'aioseo_search_appearance_settings' ]
+			],
+			'crawl-cleanup/delete-unblocked'                        => [
+				'callback' => [ 'CrawlCleanup', 'deleteLog', 'AIOSEO\\Plugin\\Common\\QueryArgs' ],
+				'access'   => [ 'aioseo_search_appearance_settings' ]
+			],
 		],
 		'DELETE' => [
-			'backup' => [ 'callback' => [ 'Tools', 'deleteBackup' ], 'access' => 'aioseo_tools_settings' ]
+			'backup'                 => [ 'callback' => [ 'Tools', 'deleteBackup' ], 'access' => 'aioseo_tools_settings' ],
+			'search-statistics/auth' => [ 'callback' => [ 'SearchStatistics', 'deleteAuth' ], 'access' => [ 'aioseo_search_statistics_settings', 'aioseo_general_settings' ] ]
 		]
 		// phpcs:enable WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
 	];
@@ -249,7 +273,7 @@ class Api {
 				// Any user is able to access the route.
 				return true;
 			default:
-				return current_user_can( apply_filters( 'aioseo_manage_seo', 'aioseo_manage_seo' ) );
+				return aioseo()->access->hasCapability( $routeData['access'] );
 		}
 	}
 

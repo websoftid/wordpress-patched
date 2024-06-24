@@ -205,7 +205,7 @@ class Rss {
 		$taxonomies = aioseo()->options->searchAppearance->advanced->crawlCleanup->feeds->taxonomies->included;
 		$term       = get_queried_object();
 		if (
-			$term &&
+			is_a( $term, 'WP_Term' ) &&
 			! aioseo()->options->searchAppearance->advanced->crawlCleanup->feeds->taxonomies->all &&
 			! in_array( $term->taxonomy, $taxonomies, true ) &&
 			(
@@ -424,9 +424,9 @@ class Rss {
 	 *
 	 * @since 4.2.1
 	 *
-	 * @param  array $args   An array of arguments.
-	 * @param  WP_Term $term The term.
-	 * @return array         An array of attributes.
+	 * @param  array $args    An array of arguments.
+	 * @param  \WP_Term $term The term.
+	 * @return array          An array of attributes.
 	 */
 	private function getTaxonomiesAttributes( $args, $term ) {
 		$title = null;

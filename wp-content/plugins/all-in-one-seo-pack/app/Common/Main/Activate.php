@@ -46,7 +46,7 @@ class Activate {
 		}
 
 		if ( $proDeactivatedLite ) {
-			aioseo()->core->cache->delete( 'pro_just_deactivated_lite', true );
+			aioseo()->core->cache->delete( 'pro_just_deactivated_lite' );
 			$this->activate( false );
 		}
 	}
@@ -110,7 +110,7 @@ class Activate {
 			return;
 		}
 
-		if ( isset( $_GET['activate-multi'] ) ) {
+		if ( isset( $_GET['activate-multi'] ) ) { // phpcs:ignore HM.Security.NonceVerification.Recommended
 			return;
 		}
 

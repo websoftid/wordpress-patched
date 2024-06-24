@@ -108,7 +108,7 @@ trait ThirdParty {
 			return is_shop();
 		}
 
-		$id = ! $id && ! empty( $_GET['post'] ) ? (int) wp_unslash( $_GET['post'] ) : (int) $id; // phpcs:ignore HM.Security.ValidatedSanitizedInput
+		$id = ! $id && ! empty( $_GET['post'] ) ? (int) wp_unslash( $_GET['post'] ) : (int) $id; // phpcs:ignore HM.Security.ValidatedSanitizedInput, HM.Security.NonceVerification.Recommended
 
 		return $id && wc_get_page_id( 'shop' ) === $id;
 	}
@@ -130,7 +130,7 @@ trait ThirdParty {
 			return is_cart();
 		}
 
-		$id = ! $id && ! empty( $_GET['post'] ) ? (int) wp_unslash( $_GET['post'] ) : (int) $id; // phpcs:ignore HM.Security.ValidatedSanitizedInput
+		$id = ! $id && ! empty( $_GET['post'] ) ? (int) wp_unslash( $_GET['post'] ) : (int) $id; // phpcs:ignore HM.Security.ValidatedSanitizedInput, HM.Security.NonceVerification.Recommended
 
 		return $id && wc_get_page_id( 'cart' ) === $id;
 	}
@@ -152,7 +152,7 @@ trait ThirdParty {
 			return is_checkout();
 		}
 
-		$id = ! $id && ! empty( $_GET['post'] ) ? (int) wp_unslash( $_GET['post'] ) : (int) $id; // phpcs:ignore HM.Security.ValidatedSanitizedInput
+		$id = ! $id && ! empty( $_GET['post'] ) ? (int) wp_unslash( $_GET['post'] ) : (int) $id; // phpcs:ignore HM.Security.ValidatedSanitizedInput, HM.Security.NonceVerification.Recommended
 
 		return $id && wc_get_page_id( 'checkout' ) === $id;
 	}
@@ -174,9 +174,45 @@ trait ThirdParty {
 			return is_account_page();
 		}
 
-		$id = ! $id && ! empty( $_GET['post'] ) ? (int) wp_unslash( $_GET['post'] ) : (int) $id; // phpcs:ignore HM.Security.ValidatedSanitizedInput
+		$id = ! $id && ! empty( $_GET['post'] ) ? (int) wp_unslash( $_GET['post'] ) : (int) $id; // phpcs:ignore HM.Security.ValidatedSanitizedInput, HM.Security.NonceVerification.Recommended
 
 		return $id && wc_get_page_id( 'myaccount' ) === $id;
+	}
+
+	/**
+	 * Checks whether the queried object is a WooCommerce product page.
+	 *
+	 * @since 4.5.5
+	 *
+	 * @return bool Whether the current page is a WooCommerce product page.
+	 */
+	public function isWooCommerceProductPage() {
+		if (
+			! $this->isWooCommerceActive() ||
+			! function_exists( 'is_product' )
+		) {
+			return false;
+		}
+
+		return is_product();
+	}
+
+	/**
+	 * Checks whether the queried object is a WooCommerce taxonomy page.
+	 *
+	 * @since 4.5.5
+	 *
+	 * @return bool Whether the current page is a WooCommerce taxonomy page.
+	 */
+	public function isWooCommerceTaxonomyPage() {
+		if (
+			! $this->isWooCommerceActive() ||
+			! function_exists( 'is_product_taxonomy' )
+		) {
+			return false;
+		}
+
+		return is_product_taxonomy();
 	}
 
 	/**
@@ -274,10 +310,10 @@ trait ThirdParty {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @param  int     $postId The post ID.
-	 * @return boolean         If the page is a BuddyPress page or not.
+	 * @param  int  $postId The post ID.
+	 * @return bool         If the page is a BuddyPress page or not.
 	 */
-	public function isBuddyPressPage( $postId = false ) {
+	public function isBuddyPressPage( $postId = 0 ) {
 		$bpPages = get_option( 'bp-pages' );
 
 		if ( empty( $bpPages ) ) {
@@ -316,9 +352,9 @@ trait ThirdParty {
 	 *
 	 * @since 4.0.6
 	 *
-	 * @param  WP_Post|int $post         The post.
-	 * @param  array       $allowedTypes A whitelist of ACF field types.
-	 * @return array                     An array of meta keys and values.
+	 * @param  \WP_Post|int $post  The post.
+	 * @param  array        $types A whitelist of ACF field types.
+	 * @return array               An array of meta keys and values.
 	 */
 	public function getAcfContent( $post = null, $types = [] ) {
 		$post = ( $post && is_object( $post ) ) ? $post : $this->getPost( $post );
@@ -340,7 +376,7 @@ trait ThirdParty {
 			'wysiwyg',
 			'image',
 			'gallery',
-			// 'link',
+			'link',
 			// 'taxonomy',
 		];
 
@@ -359,25 +395,40 @@ trait ThirdParty {
 		// Create an array with the field names and values with added HTML markup.
 		$acfFields = [];
 		foreach ( $fields as $field ) {
-			if ( 'url' === $field['type'] ) {
+			switch ( $field['type'] ) {
+				case 'url':
+					$value = make_clickable( $field['value'] ?? '' );
+					break;
+				case 'image':
+					// Image format options are array, URL (string), id (int).
+					$imageUrl = is_array( $field['value'] ) ? $field['value']['url'] : $field['value'];
+					$imageUrl = is_numeric( $imageUrl ) ? wp_get_attachment_image_url( $imageUrl ) : $imageUrl;
 
-				// Url field
-				$value = "<a href='{$field['value']}'>{$field['value']}</a>";
-			} elseif ( 'image' === $field['type'] ) {
+					$value = "<img src='$imageUrl' />";
+					break;
+				case 'gallery':
+					$imageUrl = $field['value'];
+					// The value of a gallery field should always be an array.
+					if ( is_array( $imageUrl ) ) {
+						$imageUrl = current( $imageUrl );
+					}
 
-				// Image format options are array, URL (string), id (int).
-				$imageUrl = is_array( $field['value'] ) ? $field['value']['url'] : $field['value'];
-				$imageUrl = is_numeric( $imageUrl ) ? wp_get_attachment_image_url( $imageUrl ) : $imageUrl;
+					// Image array format.
+					if ( is_array( $imageUrl ) && ! empty( $imageUrl['url'] ) ) {
+						$imageUrl = $imageUrl['url'];
+					}
 
-				$value = "<img src='{$imageUrl}'>";
-			} elseif ( 'gallery' === $field['type'] ) {
+					// Image ID format.
+					$imageUrl = is_numeric( $imageUrl ) ? wp_get_attachment_image_url( $imageUrl ) : $imageUrl;
 
-				// Image field
-				$value = "<img src='{$field['value'][0]['url']}'>";
-			} else {
-
-				// Other fields
-				$value = $field['value'];
+					$value = ! empty( $imageUrl ) ? "<img src='{$imageUrl}' />" : '';
+					break;
+				case 'link':
+					$value = make_clickable( $field['value']['url'] ?? $field['value'] ?? '' );
+					break;
+				default:
+					$value = $field['value'];
+					break;
 			}
 
 			if ( $value ) {
@@ -554,6 +605,7 @@ trait ThirdParty {
 
 	/**
 	 * Checks if the current page is an AMP page.
+	 * This function is only effective if called after the `wp` action.
 	 *
 	 * @since 4.2.3
 	 *
@@ -579,23 +631,50 @@ trait ThirdParty {
 	}
 
 	/**
+	 * Helper function for {@see isAmpPage()}.
 	 * Checks if the current page is an AMP page.
-	 * Helper function for isAmpPage(). Contains common logic that applies to both AMP and AMP for WP.
 	 *
 	 * @since 4.2.4
 	 *
 	 * @return bool Whether the current page is an AMP page.
 	 */
 	private function isAmpPageHelper() {
-		// Check if the AMP or AMP for WP plugin is active.
-		if ( ! function_exists( 'is_amp_endpoint' ) ) {
-			return false;
+		// First check for the existence of any AMP plugin functions. Bail early if none are found, and prevent false positives.
+		if (
+			! function_exists( 'amp_is_request' ) &&
+			! function_exists( 'is_amp_endpoint' ) &&
+			! function_exists( 'ampforwp_is_amp_endpoint' ) &&
+			! function_exists( 'is_amp_wp' )
+		) {
+			// If none of the AMP plugin functions are found, return false and allow compatibility with custom implementations.
+			return apply_filters( 'aioseo_is_amp_page', false );
 		}
 
-		global $wp;
+		// AMP plugin requires the `wp` action to be called to function properly, otherwise, it will throw warnings.
+		// https://github.com/awesomemotive/aioseo/issues/6056
+		if ( did_action( 'wp' ) ) {
+			// Check for the "AMP" plugin.
+			if ( function_exists( 'amp_is_request' ) ) {
+				return (bool) amp_is_request();
+			}
 
-		// This URL param is set when using plain permalinks.
-		return isset( $_GET['amp'] ) || preg_match( '/amp$/', untrailingslashit( $wp->request ) );
+			// Check for the "AMP" plugin (`is_amp_endpoint()` is deprecated).
+			if ( function_exists( 'is_amp_endpoint' ) ) {
+				return (bool) is_amp_endpoint();
+			}
+
+			// Check for the "AMP for WP – Accelerated Mobile Pages" plugin.
+			if ( function_exists( 'ampforwp_is_amp_endpoint' ) ) {
+				return (bool) ampforwp_is_amp_endpoint();
+			}
+
+			// Check for the "AMP WP" plugin.
+			if ( function_exists( 'is_amp_wp' ) ) {
+				return (bool) is_amp_wp();
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -612,5 +691,41 @@ trait ThirdParty {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Set a flag to indicate Divi whether it is processing internal content or not.
+	 *
+	 * @since 4.4.3
+	 *
+	 * @param  null|bool $flag The flag value.
+	 * @return null|bool       The previous flag value to reset it later.
+	 */
+	public function setDiviInternalRendering( $flag ) {
+		if ( ! defined( 'ET_BUILDER_VERSION' ) ) {
+			return null;
+		}
+
+		global $et_pb_rendering_column_content;
+
+		$originalValue                  = $et_pb_rendering_column_content;
+		$et_pb_rendering_column_content = $flag;
+
+		return $originalValue;
+	}
+
+	/**
+	 * Checks whether the current request is being done by a crawler from Yandex.
+	 *
+	 * @since 4.4.0
+	 *
+	 * @return bool Whether the current request is being done by a crawler from Yandex.
+	 */
+	public function isYandexUserAgent() {
+		if ( ! isset( $_SERVER['HTTP_USER_AGENT'] ) ) {
+			return false;
+		}
+
+		return preg_match( '#.*Yandex.*#', $_SERVER['HTTP_USER_AGENT'] );
 	}
 }

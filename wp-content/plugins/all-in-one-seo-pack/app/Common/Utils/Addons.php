@@ -33,6 +33,87 @@ class Addons {
 	protected $addonsUrl = 'https://licensing-cdn.aioseo.com/keys/lite/all-in-one-seo-pack-pro.json';
 
 	/**
+	 * The main Image SEO addon class.
+	 *
+	 * @since 4.4.2
+	 *
+	 * @var \AIOSEO\Plugin\Addon\ImageSeo\ImageSeo
+	 */
+	private $imageSeo = null;
+
+	/**
+	 * The main Index Now addon class.
+	 *
+	 * @since 4.4.2
+	 *
+	 * @var \AIOSEO\Plugin\Addon\IndexNow\IndexNow
+	 */
+	private $indexNow = null;
+
+	/**
+	 * The main Local Business addon class.
+	 *
+	 * @since 4.4.2
+	 *
+	 * @var \AIOSEO\Plugin\Addon\LocalBusiness\LocalBusiness
+	 */
+	private $localBusiness = null;
+
+	/**
+	 * The main News Sitemap addon class.
+	 *
+	 * @since 4.4.2
+	 *
+	 * @var \AIOSEO\Plugin\Addon\NewsSitemap\NewsSitemap
+	 */
+	private $newsSitemap = null;
+
+	/**
+	 * The main Redirects addon class.
+	 *
+	 * @since 4.4.2
+	 *
+	 * @var \AIOSEO\Plugin\Addon\Redirects\Redirects
+	 */
+	private $redirects = null;
+
+	/**
+	 * The main REST API addon class.
+	 *
+	 * @since 4.4.2
+	 *
+	 * @var \AIOSEO\Plugin\Addon\RestApi\RestApi
+	 */
+	private $restApi = null;
+
+	/**
+	 * The main Video Sitemap addon class.
+	 *
+	 * @since 4.4.2
+	 *
+	 * @var \AIOSEO\Plugin\Addon\VideoSitemap\VideoSitemap
+	 */
+	private $videoSitemap = null;
+
+	/**
+	 * The main Link Assistant addon class.
+	 *
+	 * @since 4.4.2
+	 *
+	 * @var \AIOSEO\Plugin\Addon\LinkAssistant\LinkAssistant
+	 */
+	private $linkAssistant = null;
+
+	/**
+	 * The main EEAT addon class.
+	 *
+	 * @since 4.5.4
+	 *
+	 * @var \AIOSEO\Plugin\Addon\LinkAssistant\LinkAssistant
+	 */
+	private $eeat = null;
+
+	/**
 	 * Returns our addons.
 	 *
 	 * @since 4.0.0
@@ -59,6 +140,10 @@ class Addons {
 
 		$installedPlugins = array_keys( get_plugins() );
 		foreach ( $addons as $key => $addon ) {
+			if ( ! is_object( $addon ) ) {
+				continue;
+			}
+
 			$addons[ $key ]->basename          = $this->getAddonBasename( $addon->sku );
 			$addons[ $key ]->installed         = in_array( $this->getAddonBasename( $addon->sku ), $installedPlugins, true );
 			$addons[ $key ]->isActive          = is_plugin_active( $addons[ $key ]->basename );
@@ -129,6 +214,10 @@ class Addons {
 
 		$addons = $this->getAddons();
 		foreach ( $addons as $addon ) {
+			if ( ! is_object( $addon ) ) {
+				continue;
+			}
+
 			if ( $addon->isActive ) {
 				$unlicensed['addons'][] = $addon;
 			}
@@ -210,6 +299,24 @@ class Addons {
 		}
 
 		return [];
+	}
+
+	/**
+	 * Returns a list of addon SKUs.
+	 *
+	 * @since 4.5.6
+	 *
+	 * @return array The addon SKUs.
+	 */
+	public function getAddonSkus() {
+		$addons = $this->getAddons();
+		if ( empty( $addons ) ) {
+			return [];
+		}
+
+		return array_map( function( $addon ) {
+			return $addon->sku;
+		}, $addons );
 	}
 
 	/**
@@ -497,6 +604,38 @@ class Addons {
 	protected function getDefaultAddons() {
 		return json_decode( wp_json_encode( [
 			[
+				'sku'                => 'aioseo-eeat',
+				'name'               => 'Author SEO (E-E-A-T)',
+				'version'            => '1.0.0',
+				'image'              => null,
+				'icon'               => 'svg-eeat',
+				'levels'             => [
+					'plus',
+					'pro',
+					'elite',
+				],
+				'currentLevels'      => [
+					'plus',
+					'pro',
+					'elite'
+				],
+				'requiresUpgrade'    => true,
+				'description'        => '<p>Optimize your site for Google\'s E-E-A-T ranking factor by proving your writer\'s expertise through author schema markup and new UI elements.</p>',
+				'descriptionVersion' => 0,
+				'productUrl'         => 'https://aioseo.com/author-seo-eeat/',
+				'learnMoreUrl'       => 'https://aioseo.com/author-seo-eeat/',
+				'manageUrl'          => 'https://route#aioseo-search-appearance:author-seo',
+				'basename'           => 'aioseo-eeat/aioseo-eeat.php',
+				'installed'          => false,
+				'isActive'           => false,
+				'canInstall'         => false,
+				'canActivate'        => false,
+				'canUpdate'          => false,
+				'capability'         => $this->getManageCapability( 'aioseo-eeat' ),
+				'minimumVersion'     => '0.0.0',
+				'hasMinimumVersion'  => false
+			],
+			[
 				'sku'                => 'aioseo-redirects',
 				'name'               => 'Redirection Manager',
 				'version'            => '1.0.0',
@@ -517,7 +656,7 @@ class Addons {
 				'descriptionVersion' => 0,
 				'productUrl'         => 'https://aioseo.com/features/redirection-manager/',
 				'learnMoreUrl'       => 'https://aioseo.com/features/redirection-manager/',
-				'manageUrl'          => 'https://route#aioseo-redirects',
+				'manageUrl'          => 'https://route#aioseo-redirects:redirects',
 				'basename'           => 'aioseo-redirects/aioseo-redirects.php',
 				'installed'          => false,
 				'isActive'           => false,
@@ -548,7 +687,7 @@ class Addons {
 				'descriptionVersion' => 0,
 				'productUrl'         => 'https://aioseo.com/feature/internal-link-assistant/',
 				'learnMoreUrl'       => 'https://aioseo.com/feature/internal-link-assistant/',
-				'manageUrl'          => 'https://route#aioseo-link-assistant',
+				'manageUrl'          => 'https://route#aioseo-link-assistant:overview',
 				'basename'           => 'aioseo-link-assistant/aioseo-link-assistant.php',
 				'installed'          => false,
 				'isActive'           => false,
@@ -774,4 +913,29 @@ class Addons {
 	 * @return void
 	 */
 	public function registerUpdateCheck() {}
+
+	/**
+	 * Updates a given addon or plugin.
+	 *
+	 * @since 4.4.3
+	 *
+	 * @param  string $name    The addon name/sku.
+	 * @param  bool   $network Whether we are in a network environment.
+	 * @return bool            Whether the installation was succesful.
+	 */
+	public function upgradeAddon( $name, $network ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
+		return false;
+	}
+
+	/**
+	 * Get the download URL for the given addon.
+	 *
+	 * @since 4.4.3
+	 *
+	 * @param  string $sku The addon sku.
+	 * @return string      The download url for the addon.
+	 */
+	public function getDownloadUrl( $sku ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
+		return '';
+	}
 }

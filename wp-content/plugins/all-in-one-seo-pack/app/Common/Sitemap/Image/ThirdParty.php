@@ -17,7 +17,7 @@ class ThirdParty {
 	 *
 	 * @since 4.2.2
 	 *
-	 * @var WP_Post
+	 * @var \WP_Post
 	 */
 	private $post;
 
@@ -100,8 +100,8 @@ class ThirdParty {
 	 *
 	 * @since 4.2.2
 	 *
-	 * @param WP_Post $post              The post object.
-	 * @param string  $parsedPostContent The parsed post content.
+	 * @param \WP_Post $post              The post object.
+	 * @param string   $parsedPostContent The parsed post content.
 	 */
 	public function __construct( $post, $parsedPostContent ) {
 		$this->post              = $post;
@@ -120,7 +120,8 @@ class ThirdParty {
 			'acf',
 			'divi',
 			'nextGen',
-			'wooCommerce'
+			'wooCommerce',
+			'kadenceBlocks'
 		];
 
 		foreach ( $integrations as $integration ) {
@@ -275,7 +276,7 @@ class ThirdParty {
 
 		// For this specific check, we only want to parse blocks and do not want to run shortcodes because some NextGen blocks (e.g. Mosaic) are parsed into shortcodes.
 		// And after parsing the shortcodes, the attributes we're looking for are gone.
-		$contentWithBlocksParsed = function_exists( 'do_blocks' ) ? do_blocks( $this->post->post_content ) : $this->post->post_content; // phpcs:disable AIOSEO.WpFunctionUse.NewFunctions
+		$contentWithBlocksParsed = do_blocks( $this->post->post_content );
 
 		$imageIds = [];
 		preg_match_all( '/\[ngg.*src="galleries" ids="(.*?)".*\]/i', $contentWithBlocksParsed, $shortcodes );
@@ -323,5 +324,26 @@ class ThirdParty {
 
 		$productImageIds = explode( ',', $productImageIds );
 		$this->images    = array_merge( $this->images, $productImageIds );
+	}
+
+	/**
+	 * Extracts the image IDs of Kadence Block galleries.
+	 *
+	 * @since 4.4.5
+	 *
+	 * @return void
+	 */
+	private function kadenceBlocks() {
+		if ( ! defined( 'KADENCE_BLOCKS_VERSION' ) ) {
+			return [];
+		}
+
+		$blocks = parse_blocks( $this->post->post_content );
+
+		foreach ( $blocks as $block ) {
+			if ( 'kadence/advancedgallery' === $block['blockName'] && ! empty( $block['attrs']['ids'] ) ) {
+				$this->images = array_merge( $this->images, $block['attrs']['ids'] );
+			}
+		}
 	}
 }

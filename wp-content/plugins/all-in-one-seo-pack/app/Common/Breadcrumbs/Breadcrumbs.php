@@ -15,7 +15,7 @@ namespace AIOSEO\Plugin\Common\Breadcrumbs {
 		 *
 		 * @since 4.1.1
 		 *
-		 * @var AIOSEO\Plugin\Common\Breadcrumbs\Frontend
+		 * @var \AIOSEO\Plugin\Common\Breadcrumbs\Frontend|\AIOSEO\Plugin\Pro\Breadcrumbs\Frontend
 		 */
 		public $frontend;
 
@@ -24,7 +24,7 @@ namespace AIOSEO\Plugin\Common\Breadcrumbs {
 		 *
 		 * @since 4.1.1
 		 *
-		 * @var AIOSEO\Plugin\Common\Breadcrumbs\Shortcode
+		 * @var Shortcode
 		 */
 		public $shortcode;
 
@@ -33,7 +33,7 @@ namespace AIOSEO\Plugin\Common\Breadcrumbs {
 		 *
 		 * @since 4.1.1
 		 *
-		 * @var AIOSEO\Plugin\Common\Breadcrumbs\Block
+		 * @var Block
 		 */
 		public $block;
 
@@ -42,7 +42,7 @@ namespace AIOSEO\Plugin\Common\Breadcrumbs {
 		 *
 		 * @since 4.1.1
 		 *
-		 * @var AIOSEO\Plugin\Common\Breadcrumbs\Tags
+		 * @var Tags
 		 */
 		public $tags;
 
@@ -117,6 +117,9 @@ namespace AIOSEO\Plugin\Common\Breadcrumbs {
 			// Set a home page in the beginning of the breadcrumb.
 			$this->addCrumbs( $this->maybeGetHomePageCrumb( $type, $reference ) );
 
+			// Woocommerce shop page support.
+			$this->addCrumbs( $this->maybeGetWooCommerceShopCrumb() );
+
 			// Blog home.
 			if (
 				aioseo()->options->breadcrumbs->showBlogHome &&
@@ -163,6 +166,12 @@ namespace AIOSEO\Plugin\Common\Breadcrumbs {
 					break;
 				case 'preview':
 					$this->addCrumbs( $this->getPreviewCrumb( $reference ) );
+					break;
+				case 'wcProduct':
+					$this->addCrumbs( $this->getPostTaxonomyCrumbs( $reference ) );
+					$this->addCrumbs( $this->getPostParentCrumbs( $reference ) );
+					$this->addCrumbs( $this->getPostCrumb( $reference ) );
+					break;
 			}
 
 			// Paged crumb.
@@ -175,6 +184,7 @@ namespace AIOSEO\Plugin\Common\Breadcrumbs {
 				array_pop( $this->breadcrumbs );
 			}
 
+			// Remove empty crumbs.
 			$this->breadcrumbs = array_filter( $this->breadcrumbs );
 
 			return $this->breadcrumbs;
@@ -190,7 +200,7 @@ namespace AIOSEO\Plugin\Common\Breadcrumbs {
 		 * @return array             A crumb.
 		 */
 		public function getPrefixCrumb( $type, $reference ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
-			if ( empty( aioseo()->options->breadcrumbs->breadcrumbPrefix ) ) {
+			if ( 0 === strlen( aioseo()->options->breadcrumbs->breadcrumbPrefix ) ) {
 				return [];
 			}
 
@@ -494,7 +504,14 @@ namespace AIOSEO\Plugin\Common\Breadcrumbs {
 		public function getHomePageCrumb() {
 			$homePageId = aioseo()->helpers->getHomePageId();
 
-			$label = ( 0 < strlen( aioseo()->options->breadcrumbs->homepageLabel ) ) ? aioseo()->options->breadcrumbs->homepageLabel : get_the_title( $homePageId );
+			$label = '';
+			if ( $homePageId ) {
+				$label = get_the_title( $homePageId );
+			}
+
+			if ( 0 < strlen( aioseo()->options->breadcrumbs->homepageLabel ) ) {
+				$label = aioseo()->options->breadcrumbs->homepageLabel;
+			}
 
 			// Label fallback.
 			if ( empty( $label ) ) {
@@ -523,6 +540,57 @@ namespace AIOSEO\Plugin\Common\Breadcrumbs {
 		}
 
 		/**
+		 * Maybe add the shop crumb to products and product categories.
+		 *
+		 * @since 4.5.5
+		 *
+		 * @return array The shop crumb.
+		 */
+		public function maybeGetWooCommerceShopCrumb() {
+			$crumb = [];
+			if (
+				aioseo()->helpers->isWooCommerceShopPage() ||
+				aioseo()->helpers->isWooCommerceProductPage() ||
+				aioseo()->helpers->isWooCommerceTaxonomyPage()
+			) {
+				$crumb = $this->getWooCommerceShopCrumb();
+			}
+
+			return $crumb;
+		}
+
+		/**
+		 * Gets the shop crumb.
+		 * @see WC_Breadcrumb::prepend_shop_page()
+		 *
+		 * @since 4.5.5
+		 *
+		 * @return array The shop crumb.
+		 */
+		public function getWooCommerceShopCrumb() {
+			$crumb = [];
+
+			if ( ! function_exists( 'wc_get_page_id' ) ) {
+				return $crumb;
+			}
+
+			$shopPageId = wc_get_page_id( 'shop' );
+			$shopPage   = get_post( $shopPageId );
+
+			// WC checks if the permalink contains the shop page in the URI, but we prefer to
+			// always show the shop page as the first crumb if it exists and it's not the home page.
+			if (
+				$shopPageId &&
+				$shopPage &&
+				aioseo()->helpers->getHomePageId() !== $shopPageId
+			) {
+				$crumb = $this->makeCrumb( get_the_title( $shopPage ), get_permalink( $shopPage ), 'wcShop' );
+			}
+
+			return $crumb;
+		}
+
+		/**
 		 * Gets a post's term hierarchy for a list of taxonomies selecting the one that has a lengthier hierarchy.
 		 *
 		 * @since 4.1.1
@@ -543,7 +611,7 @@ namespace AIOSEO\Plugin\Common\Breadcrumbs {
 				$primaryTerm = aioseo()->standalone->primaryTerm->getPrimaryTerm( $post->ID, $taxonomy );
 				$terms       = wp_get_object_terms( $post->ID, $taxonomy );
 				// Use the first taxonomy with terms.
-				if ( empty( $terms ) ) {
+				if ( empty( $terms ) || is_wp_error( $terms ) ) {
 					continue;
 				}
 

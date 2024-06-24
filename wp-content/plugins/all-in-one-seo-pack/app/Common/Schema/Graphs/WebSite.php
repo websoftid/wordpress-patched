@@ -25,17 +25,15 @@ class WebSite extends Graph {
 			'@type'         => 'WebSite',
 			'@id'           => $homeUrl . '#website',
 			'url'           => $homeUrl,
-			'name'          => aioseo()->options->searchAppearance->global->schema->websiteName
-				? aioseo()->options->searchAppearance->global->schema->websiteName
-				: aioseo()->helpers->decodeHtmlEntities( get_bloginfo( 'name' ) ),
-			'alternateName' => aioseo()->options->searchAppearance->global->schema->websiteAlternateName,
+			'name'          => aioseo()->helpers->getWebsiteName(),
+			'alternateName' => aioseo()->tags->replaceTags( aioseo()->options->searchAppearance->global->schema->websiteAlternateName ),
 			'description'   => aioseo()->helpers->decodeHtmlEntities( get_bloginfo( 'description' ) ),
 			'inLanguage'    => aioseo()->helpers->currentLanguageCodeBCP47(),
 			'publisher'     => [ '@id' => $homeUrl . '#' . aioseo()->options->searchAppearance->global->schema->siteRepresents ]
 		];
 
 		if ( is_front_page() && aioseo()->options->searchAppearance->advanced->sitelinks ) {
-			$data['potentialAction'] = [
+			$defaultSearchAction = [
 				'@type'       => 'SearchAction',
 				'target'      => [
 					'@type'       => 'EntryPoint',
@@ -43,6 +41,21 @@ class WebSite extends Graph {
 				],
 				'query-input' => 'required name=search_term_string',
 			];
+
+			$data['potentialAction'] = $defaultSearchAction;
+
+			if ( aioseo()->helpers->isYandexUserAgent() ) {
+				// Yandex requires a different, older format. We'll output both so Google doesn't throw errors
+				// in case this version of the page gets cached.
+				$data['potentialAction'] = [
+					$defaultSearchAction,
+					[
+						'@type'  => 'SearchAction',
+						'target' => $homeUrl . '?s={search_term_string}',
+						'query'  => 'required'
+					]
+				];
+			}
 		}
 
 		return $data;

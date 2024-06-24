@@ -29,8 +29,8 @@ class Breadcrumb {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @param  WP_Post $post The post object.
-	 * @return array         The breadcrumb trail.
+	 * @param  \WP_Post $post The post object.
+	 * @return array          The breadcrumb trail.
 	 */
 	public function post( $post ) {
 		// Check if page is the static homepage.
@@ -50,8 +50,8 @@ class Breadcrumb {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @param  WP_Post $post        The post object.
-	 * @return array   $breadcrumbs The breadcrumb trail.
+	 * @param  \WP_Post $post The post object.
+	 * @return array          The breadcrumb trail.
 	 */
 	private function postHierarchical( $post ) {
 		$breadcrumbs = [];
@@ -83,8 +83,8 @@ class Breadcrumb {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @param  WP_Post $post        The post object.
-	 * @return array   $breadcrumbs The breadcrumb trail.
+	 * @param  \WP_Post $post The post object.
+	 * @return array          The breadcrumb trail.
 	 */
 	private function postNonHierarchical( $post ) {
 		global $wp_query;
@@ -108,7 +108,7 @@ class Breadcrumb {
 
 		$breadcrumbs = [];
 		$dateName    = null;
-		$timestamp   = strtotime( $post->post_date_gmt );
+		$timestamp   = strtotime( $post->post_date );
 		foreach ( $pairs as $tag => $object ) {
 			// Escape the delimiter.
 			$escObject = aioseo()->helpers->escapeRegex( $object );
@@ -196,8 +196,8 @@ class Breadcrumb {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @param  WP_Term $term The term object.
-	 * @return array         The breadcrumb trail.
+	 * @param  \WP_Term $term The term object.
+	 * @return array          The breadcrumb trail.
 	 */
 	public function term( $term ) {
 		$breadcrumbs = [];
@@ -213,7 +213,7 @@ class Breadcrumb {
 			);
 
 			if ( $term->parent ) {
-				$term = get_term( $term->parent );
+				$term = get_term( $term->parent, $term->taxonomy );
 			} else {
 				$term = false;
 			}
@@ -227,7 +227,7 @@ class Breadcrumb {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @return array $breadcrumbs The breadcrumb trail.
+	 * @return array The breadcrumb trail.
 	 */
 	public function date() {
 		global $wp_query;
@@ -298,7 +298,7 @@ class Breadcrumb {
 	 * @since 4.0.0
 	 *
 	 * @param  array $breadcrumbs The breadcrumb trail.
-	 * @return array $breadcrumbs The modified breadcrumb trail.
+	 * @return array              The modified breadcrumb trail.
 	 */
 	public function setPositions( $breadcrumbs = [] ) {
 		// If the array isn't two-dimensional, then we need to wrap it in another array before continuing.
@@ -332,7 +332,7 @@ class Breadcrumb {
 	 *
 	 * @since 4.2.5
 	 *
-	 * @return string $graph The graph name.
+	 * @return string The graph name.
 	 */
 	private function getPostWebPageGraph() {
 		foreach ( aioseo()->schema->graphs as $graphName ) {

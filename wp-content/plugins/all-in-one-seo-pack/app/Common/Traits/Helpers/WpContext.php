@@ -18,7 +18,7 @@ trait WpContext {
 	 *
 	 * @since 4.3.0
 	 *
-	 * @var WP_Query
+	 * @var \WP_Query
 	 */
 	public $originalQuery;
 
@@ -27,7 +27,7 @@ trait WpContext {
 	 *
 	 * @since 4.3.0
 	 *
-	 * @var WP_Post
+	 * @var \WP_Post
 	 */
 	public $originalPost;
 
@@ -36,7 +36,7 @@ trait WpContext {
 	 *
 	 * @since 4.1.1
 	 *
-	 * @return WP_Post|null The home page.
+	 * @return \WP_Post|null The home page.
 	 */
 	public function getHomePage() {
 		$homePageId = $this->getHomePageId();
@@ -49,7 +49,7 @@ trait WpContext {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @return integer|null The home page ID.
+	 * @return int|null The home page ID.
 	 */
 	public function getHomePageId() {
 		$pageShowOnFront = ( 'page' === get_option( 'show_on_front' ) );
@@ -63,7 +63,7 @@ trait WpContext {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @return WP_Post|null The blog page.
+	 * @return \WP_Post|null The blog page.
 	 */
 	public function getBlogPage() {
 		$blogPageId = $this->getBlogPageId();
@@ -125,7 +125,9 @@ trait WpContext {
 
 		$post = aioseo()->helpers->getPost( $post );
 
-		return ( 'page' === get_option( 'show_on_front' ) && ! empty( $post->ID ) && (int) get_option( 'page_on_front' ) === $post->ID );
+		$isHomePage = ( 'page' === get_option( 'show_on_front' ) && ! empty( $post->ID ) && (int) get_option( 'page_on_front' ) === $post->ID );
+
+		return $isHomePage;
 	}
 
 	/**
@@ -146,8 +148,20 @@ trait WpContext {
 	 *
 	 * @return bool Whether the current page is the static posts page.
 	 */
-	public function isStaticPostsPage() {
-		return is_home() && ( 0 !== (int) get_option( 'page_for_posts' ) );
+	public function isStaticPostsPage( $post = null ) {
+		static $isStaticPostsPage = null;
+		if ( null !== $isStaticPostsPage ) {
+			return $isStaticPostsPage;
+		}
+
+		$post = aioseo()->helpers->getPost( $post );
+
+		$isStaticPostsPage = (
+			( is_home() && ( 0 !== (int) get_option( 'page_for_posts' ) ) ) ||
+			( ! empty( $post->ID ) && (int) get_option( 'page_for_posts' ) === $post->ID )
+		);
+
+		return $isStaticPostsPage;
 	}
 
 	/**
@@ -166,8 +180,8 @@ trait WpContext {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @param  WP_Post|int  $postId The post ID.
-	 * @return WP_Post|null         The post object.
+	 * @param  \WP_Post|int|bool $postId The post ID.
+	 * @return \WP_Post|null             The post object.
 	 */
 	public function getPost( $postId = false ) {
 		$postId = is_a( $postId, 'WP_Post' ) ? $postId->ID : $postId;
@@ -196,6 +210,9 @@ trait WpContext {
 		if ( ! $postId && $learnPressLesson ) {
 			$postId = $learnPressLesson;
 		}
+
+		// Allow other plugins to filter the post ID e.g. for a special archive page.
+		$postId = apply_filters( 'aioseo_get_post_id', $postId );
 
 		// We need to check these conditions and cannot always return get_post() because we'll return the first post on archive pages (dynamic homepage, term pages, etc.).
 		if (
@@ -227,8 +244,8 @@ trait WpContext {
 	 *
 	 * @since 4.1.5
 	 *
-	 * @param  WP_Post|int $post The post (optional).
-	 * @return string            The post content.
+	 * @param  \WP_Post|int $post The post (optional).
+	 * @return string             The post content.
 	 */
 	public function getPostContent( $post = null ) {
 		$post = is_a( $post, 'WP_Post' ) ? $post : $this->getPost( $post );
@@ -238,7 +255,16 @@ trait WpContext {
 			return $content[ $post->ID ];
 		}
 
-		$content[ $post->ID ] = $this->theContent( $post->post_content );
+		// We need to process the content for page builders.
+		$postContent = $post->post_content;
+		$pageBuilder = aioseo()->helpers->getPostPageBuilderName( $post->ID );
+		if ( ! empty( $pageBuilder ) ) {
+			$postContent = aioseo()->standalone->pageBuilderIntegrations[ $pageBuilder ]->processContent( $post->ID, $postContent );
+		}
+
+		$postContent = is_string( $postContent ) ? $postContent : '';
+
+		$content[ $post->ID ] = $this->theContent( $postContent );
 
 		if ( apply_filters( 'aioseo_description_include_custom_fields', true, $post ) ) {
 			$content[ $post->ID ] .= $this->theContent( $this->getPostCustomFieldsContent( $post ) );
@@ -252,8 +278,8 @@ trait WpContext {
 	 *
 	 * @since 4.2.7
 	 *
-	 * @param  WP_Post|int $post A post object or ID.
-	 * @return string            The content.
+	 * @param  \WP_Post|int $post A post object or ID.
+	 * @return string             The content.
 	 */
 	public function getPostCustomFieldsContent( $post = null ) {
 		$post = is_a( $post, 'WP_Post' ) ? $post : $this->getPost( $post );
@@ -287,10 +313,18 @@ trait WpContext {
 			return $postContent;
 		}
 
+		// Because do_blocks() and do_shortcodes() can trigger conflicts, we need to clone these objects and restore them afterwards.
+		// We need to clone deep to sever pointers/references because these have nested object properties.
+		global $wp_query, $post;
+		$this->originalQuery = $this->deepClone( $wp_query );
+		$this->originalPost  = is_a( $post, 'WP_Post' ) ? $this->deepClone( $post ) : null;
+
 		// The order of the function calls below is intentional and should NOT change.
-		$postContent = function_exists( 'do_blocks' ) ? do_blocks( $postContent ) : $postContent; // phpcs:ignore AIOSEO.WpFunctionUse.NewFunctions.do_blocksFound
+		$postContent = do_blocks( $postContent );
 		$postContent = wpautop( $postContent );
 		$postContent = $this->doShortcodes( $postContent );
+
+		$this->restoreWpQuery();
 
 		return $postContent;
 	}
@@ -300,8 +334,8 @@ trait WpContext {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @param  WP_Post|int $post The post (optional).
-	 * @return string            The description.
+	 * @param  \WP_Post|int $post The post (optional).
+	 * @return string             The description.
 	 */
 	public function getDescriptionFromContent( $post = null ) {
 		$post = is_a( $post, 'WP_Post' ) ? $post : $this->getPost( $post );
@@ -331,9 +365,9 @@ trait WpContext {
 	 *
 	 * @since 4.0.6
 	 *
-	 * @param  WP_Post|int $post The post.
-	 * @param  array       $keys The post meta_keys to check for values.
-	 * @return string            The custom field content.
+	 * @param  \WP_Post|int $post The post.
+	 * @param  array        $keys The post meta_keys to check for values.
+	 * @return string             The custom field content.
 	 */
 	public function getCustomFieldsContent( $post = null, $keys = [] ) {
 		$post = is_a( $post, 'WP_Post' ) ? $post : $this->getPost( $post );
@@ -344,17 +378,14 @@ trait WpContext {
 		foreach ( $keys as $key ) {
 			// Try ACF.
 			if ( isset( $acfFields[ $key ] ) ) {
-				$customFieldContent .= "{$acfFields[$key]} ";
+				$customFieldContent .= "$acfFields[$key] ";
 				continue;
 			}
 
 			// Fallback to post meta.
 			$value = get_post_meta( $post->ID, $key, true );
-			if ( $value ) {
-				if ( ! is_string( $value ) ) {
-					$value = strval( $value );
-				}
-				$customFieldContent .= "{$value} ";
+			if ( $value && is_scalar( $value ) ) {
+				$customFieldContent .= $value . ' ';
 			}
 		}
 
@@ -369,7 +400,7 @@ trait WpContext {
 	 * @param  int  $postId The post ID.
 	 * @return bool         If the page is special or not.
 	 */
-	public function isSpecialPage( $postId = false ) {
+	public function isSpecialPage( $postId = 0 ) {
 		if (
 			(int) get_option( 'page_for_posts' ) === (int) $postId ||
 			(int) get_option( 'wp_page_for_privacy_policy' ) === (int) $postId ||
@@ -380,6 +411,65 @@ trait WpContext {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Returns whether a post is eligible for being analyzed by TruSeo.
+	 *
+	 * @since 4.6.1
+	 *
+	 * @param  int  $postId Post ID.
+	 * @return bool         Whether a post is eligible for being analyzed by TruSeo.
+	 */
+	public function isPageAnalysisEligible( $postId ) {
+		if ( ! aioseo()->options->advanced->truSeo ) {
+			return false;
+		}
+
+		static $eligible = [];
+		if ( isset( $eligible[ $postId ] ) ) {
+			return $eligible[ $postId ];
+		}
+
+		$wpPost = $this->getPost( $postId );
+		if ( ! $wpPost ) {
+			return false;
+		}
+
+		$postType       = get_post_type_object( $wpPost->post_type );
+		$dynamicOptions = aioseo()->dynamicOptions->noConflict();
+		$showMetabox    = $dynamicOptions->searchAppearance->postTypes->has( $wpPost->post_type, false ) && $dynamicOptions->{$wpPost->post_type}->advanced->showMetaBox;
+		if (
+			$this->isSpecialPage( $wpPost->ID ) ||
+			! $showMetabox ||
+			empty( $postType->public )
+		) {
+			$eligible[ $postId ] = false;
+
+			return false;
+		}
+
+		$allowPostTypes = [];
+		foreach ( aioseo()->helpers->getPublicPostTypes() as $pt ) {
+			$excludedPostTypes = [ 'attachment', 'aioseo-location' ];
+			if ( class_exists( 'bbPress' ) ) {
+				$excludedPostTypes = array_merge( $excludedPostTypes, [ 'forum', 'topic', 'reply' ] );
+			}
+
+			if ( ! in_array( $pt['name'], $excludedPostTypes, true ) ) {
+				$allowPostTypes[] = $pt['name'];
+			}
+		}
+
+		if ( ! in_array( $wpPost->post_type, $allowPostTypes, true ) ) {
+			$eligible[ $postId ] = false;
+
+			return false;
+		}
+
+		$eligible[ $postId ] = true;
+
+		return true;
 	}
 
 	/**
@@ -412,9 +502,16 @@ trait WpContext {
 	 * @return int|false The page number or false if we're not on a comment page.
 	 */
 	public function getCommentPageNumber() {
-		$cpage = get_query_var( 'cpage' );
+		$cpage = get_query_var( 'cpage', null );
+		if ( $this->isBlockTheme() ) {
+			global $wp_query;
 
-		return ! empty( $cpage ) ? (int) $cpage : false;
+			// For block themes we can't rely on `get_query_var()` because of {@see build_comment_query_vars_from_block()},
+			// so we need to check the query directly.
+			$cpage = $wp_query->query['cpage'] ?? null;
+		}
+
+		return isset( $cpage ) ? (int) $cpage : false;
 	}
 
 	/**
@@ -422,9 +519,9 @@ trait WpContext {
 	 *
 	 * @since 4.0.5
 	 *
-	 * @param  WP_Post $post                The Post object to check.
-	 * @param  array   $allowedPostStatuses Allowed post statuses.
-	 * @return bool                         True if valid, false if not.
+	 * @param  \WP_Post $post                The Post object to check.
+	 * @param  array    $allowedPostStatuses Allowed post statuses.
+	 * @return bool                          True if valid, false if not.
 	 */
 	public function isValidPost( $post, $allowedPostStatuses = [ 'publish' ] ) {
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
@@ -710,7 +807,8 @@ trait WpContext {
 	 * @return bool Login or register page.
 	 */
 	public function isWpLoginPage() {
-		$self = ! empty( $_SERVER['PHP_SELF'] ) ? wp_unslash( $_SERVER['PHP_SELF'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		// We can't sanitize the filename using sanitize_file_name() here because it will cause issues with custom login pages and certain plugins/themes where this function is not defined.
+		$self = ! empty( $_SERVER['PHP_SELF'] ) ? wp_unslash( $_SERVER['PHP_SELF'] ) : ''; // phpcs:ignore HM.Security.ValidatedSanitizedInput.InputNotSanitized
 		if ( preg_match( '/wp-login\.php$|wp-register\.php$/', $self ) ) {
 			return true;
 		}
@@ -771,13 +869,15 @@ trait WpContext {
 	 *
 	 * @since 4.3.0
 	 *
-	 * @param  \WP_Post $post The post object.
+	 * @param  \WP_Post|int $wpPost The post object or ID.
 	 * @return void
 	 */
 	public function setWpQueryPost( $wpPost ) {
+		$wpPost = is_a( $wpPost, 'WP_Post' ) ? $wpPost : get_post( $wpPost );
+
 		global $wp_query, $post;
-		$this->originalQuery = clone $wp_query;
-		$this->originalPost  = $post;
+		$this->originalQuery = $this->deepClone( $wp_query );
+		$this->originalPost  = is_a( $post, 'WP_Post' ) ? $this->deepClone( $post ) : null;
 
 		$wp_query->posts                 = [ $wpPost ];
 		$wp_query->post                  = $wpPost;
@@ -795,36 +895,6 @@ trait WpContext {
 	}
 
 	/**
-	 * Sets the given term as the queried object of the main query.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param  \WP_Term $term The term object.
-	 * @return void
-	 */
-	public function setWpQueryTerm( $term ) {
-		global $wp_query;
-		$this->originalQuery = clone $wp_query;
-
-		$term->term_id = $term->id;
-
-		$wp_query->get_queried_object_id = (int) $term->id;
-		$wp_query->queried_object        = $term;
-		$wp_query->is_tax                = true;
-
-		switch ( $term->taxonomy ) {
-			case 'category':
-				$wp_query->is_category = true;
-				break;
-			case 'post_tag':
-				$wp_query->is_tag = true;
-				break;
-			default:
-				break;
-		}
-	}
-
-	/**
 	 * Restores the main query back to the original query.
 	 *
 	 * @since 4.3.0
@@ -832,18 +902,67 @@ trait WpContext {
 	 * @return void
 	 */
 	public function restoreWpQuery() {
-		if ( null === $this->originalQuery ) {
-			return;
+		global $wp_query, $post;
+		if ( is_a( $this->originalQuery, 'WP_Query' ) ) {
+			// Loop over all properties and replace the ones that have changed.
+			// We want to avoid replacing the entire object because it can cause issues with other plugins.
+			foreach ( $this->originalQuery as $key => $value ) {
+				if ( $value !== $wp_query->{$key} ) {
+					$wp_query->{$key} = $value;
+				}
+			}
 		}
 
-		global $wp_query, $post;
-		$wp_query = clone $this->originalQuery;
-
-		if ( null !== $this->originalPost ) {
-			$post = $this->originalPost;
+		if ( is_a( $this->originalPost, 'WP_Post' ) ) {
+			foreach ( $this->originalPost as $key => $value ) {
+				if ( $value !== $post->{$key} ) {
+					$post->{$key} = $value;
+				}
+			}
 		}
 
 		$this->originalQuery = null;
-		$this->originalPost = null;
+		$this->originalPost  = null;
+	}
+
+	/**
+	 * Gets the list of theme features.
+	 *
+	 * @since 4.4.9
+	 *
+	 * @return array List of theme features.
+	 */
+	public function getThemeFeatures() {
+		global $_wp_theme_features;
+
+		return isset( $_wp_theme_features ) && is_array( $_wp_theme_features ) ? $_wp_theme_features : [];
+	}
+
+	/**
+	 * Returns whether the active theme is a block-based theme or not.
+	 *
+	 * @since 4.5.3
+	 *
+	 * @return bool Whether the active theme is a block-based theme or not.
+	 */
+	public function isBlockTheme() {
+		if ( function_exists( 'wp_is_block_theme' ) ) {
+			return wp_is_block_theme(); // phpcs:ignore AIOSEO.WpFunctionUse.NewFunctions.wp_is_block_themeFound
+		}
+
+		return false;
+	}
+
+	/**
+	 * Retrieves the website name.
+	 *
+	 * @since 4.6.1
+	 *
+	 * @return string The website name.
+	 */
+	public function getWebsiteName() {
+		return aioseo()->options->searchAppearance->global->schema->websiteName
+			? aioseo()->tags->replaceTags( aioseo()->options->searchAppearance->global->schema->websiteName )
+			: aioseo()->helpers->decodeHtmlEntities( get_bloginfo( 'name' ) );
 	}
 }

@@ -254,8 +254,8 @@ class Helpers {
 	 * @return bool             Whether or not there is an indexed post.
 	 */
 	private function checkForIndexedPost( $postType ) {
-		$posts = aioseo()->core->db
-			->start( aioseo()->core->db->db->posts . ' as p', true )
+		$db    = aioseo()->core->db->noConflict();
+		$posts = $db->start( aioseo()->core->db->db->posts . ' as p', true )
 			->select( 'p.ID' )
 			->join( 'aioseo_posts as ap', '`ap`.`post_id` = `p`.`ID`' )
 			->where( 'p.post_status', 'attachment' === $postType ? 'inherit' : 'publish' )
@@ -352,7 +352,7 @@ class Helpers {
 	 * @return string The excluded IDs.
 	 */
 	public function excludedPosts() {
-		return $this->excludedObjects( 'excludePosts' );
+		return $this->excludedObjectIds( 'excludePosts' );
 	}
 
 	/**
@@ -363,7 +363,7 @@ class Helpers {
 	 * @return string The excluded IDs.
 	 */
 	public function excludedTerms() {
-		return $this->excludedObjects( 'excludeTerms' );
+		return $this->excludedObjectIds( 'excludeTerms' );
 	}
 
 	/**
@@ -371,12 +371,13 @@ class Helpers {
 	 *
 	 * Helper method for excludedPosts() and excludedTerms().
 	 *
-	 * @since 4.0.0
+	 * @since   4.0.0
+	 * @version 4.4.7 Improved method name.
 	 *
 	 * @param  string $option The option name.
 	 * @return string         The excluded IDs.
 	 */
-	private function excludedObjects( $option ) {
+	private function excludedObjectIds( $option ) {
 		$type = aioseo()->sitemap->type;
 		// The RSS Sitemap needs to exclude whatever is excluded in the general sitemap.
 		if ( 'rss' === $type ) {
@@ -399,11 +400,11 @@ class Helpers {
 				if ( 'excludeTerms' === $option ) {
 					$objectTypes = aioseo()->sitemap->helpers->includedTaxonomies();
 					$objectTypes = array_map( function( $taxonomy ) {
-						return "tax{$taxonomy}";
+						return "tax_{$taxonomy}";
 					}, $objectTypes );
 				}
 
-				$dbNoConflict = aioseo()->db->noConflict();
+				$dbNoConflict = aioseo()->core->db->noConflict();
 				$rows         = $dbNoConflict->start( 'icl_translations' )
 					->select( 'element_id' )
 					->whereIn( 'element_type', $objectTypes )
@@ -424,7 +425,8 @@ class Helpers {
 		$excluded  = array_merge( $hiddenObjectIds, aioseo()->options->sitemap->{$type}->advancedSettings->{$option} );
 
 		if (
-			( ! $advanced || empty( $excluded ) ) &&
+			! $advanced &&
+			empty( $excluded ) &&
 			! $hasFilter
 		) {
 			return '';
@@ -457,7 +459,8 @@ class Helpers {
 	/**
 	 * Returns the URLs of all active sitemaps.
 	 *
-	 * @since 4.0.0
+	 * @since   4.0.0
+	 * @version 4.6.2 Removed the prefix from the list of URLs.
 	 *
 	 * @return array $urls The sitemap URLs.
 	 */
@@ -480,11 +483,51 @@ class Helpers {
 			$urls[] = $this->getUrl( 'rss' );
 		}
 
+		return $urls;
+	}
+
+	/**
+	 * Returns the URLs of all active sitemaps with the 'Sitemap: ' prefix.
+	 *
+	 * @since 4.6.2
+	 *
+	 * @return array $urls The sitemap URLs.
+	 */
+	public function getSitemapUrlsPrefixed() {
+		$urls = $this->getSitemapUrls();
+
 		foreach ( $urls as &$url ) {
 			$url = 'Sitemap: ' . $url;
 		}
 
 		return $urls;
+	}
+
+	/**
+	 * Extracts existing sitemap URLs from the robots.txt file.
+	 * We need this in case users have existing sitemap directives added to their robots.txt file.
+	 *
+	 * @since   4.0.10
+	 * @version 4.4.9
+	 *
+	 * @return array The sitemap URLs.
+	 */
+	public function extractSitemapUrlsFromRobotsTxt() {
+		// First, we need to remove our filter, so that it doesn't run unintentionally.
+		remove_filter( 'robots_txt', [ aioseo()->robotsTxt, 'buildRules' ], 10000 );
+		$robotsTxt = apply_filters( 'robots_txt', '', true );
+		add_filter( 'robots_txt', [ aioseo()->robotsTxt, 'buildRules' ], 10000 );
+
+		if ( ! $robotsTxt ) {
+			return [];
+		}
+
+		$lines = explode( "\n", $robotsTxt );
+		if ( ! is_array( $lines ) || ! count( $lines ) ) {
+			return [];
+		}
+
+		return aioseo()->robotsTxt->extractSitemapUrls( $robotsTxt );
 	}
 
 	/**
@@ -527,5 +570,19 @@ class Helpers {
 		$shouldExclude = aioseo()->options->sitemap->general->advancedSettings->enable && aioseo()->options->sitemap->general->advancedSettings->excludeImages;
 
 		return apply_filters( 'aioseo_sitemap_exclude_images', $shouldExclude );
+	}
+
+	/**
+	 * Returns the post types to check against for the author sitemap.
+	 *
+	 * @since 4.4.4
+	 *
+	 * @return array The post types.
+	 */
+	public function getAuthorPostTypes() {
+		// By default, WP only considers posts for author archives, but users can include additional post types.
+		$postTypes = [ 'post' ];
+
+		return apply_filters( 'aioseo_sitemap_author_post_types', $postTypes );
 	}
 }

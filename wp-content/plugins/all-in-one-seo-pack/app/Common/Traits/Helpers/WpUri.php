@@ -84,15 +84,18 @@ trait WpUri {
 	 * @return string $url The canonical URL.
 	 */
 	public function canonicalUrl() {
-		static $url = null;
-		if ( null !== $url ) {
-			return $url;
+		$queriedObject = get_queried_object();
+		$hash          = md5( wp_json_encode( $queriedObject ?? [] ) );
+
+		static $url = [];
+		if ( isset( $url[ $hash ] ) ) {
+			return $url[ $hash ];
 		}
 
 		if ( is_404() || is_search() ) {
-			$url = apply_filters( 'aioseo_canonical_url', '' );
+			$url[ $hash ] = apply_filters( 'aioseo_canonical_url', '' );
 
-			return $url;
+			return $url[ $hash ];
 		}
 
 		$metaData = [];
@@ -102,47 +105,56 @@ trait WpUri {
 		}
 
 		if ( is_category() || is_tag() || is_tax() ) {
-			$metaData = aioseo()->meta->metaData->getMetaData( get_queried_object() );
+			$metaData     = aioseo()->meta->metaData->getMetaData( $queriedObject );
+			$url[ $hash ] = get_term_link( $queriedObject, $queriedObject->taxonomy ?? '' );
 		}
 
 		if ( $metaData && ! empty( $metaData->canonical_url ) ) {
-			$url = apply_filters( 'aioseo_canonical_url', $this->makeUrlAbsolute( $metaData->canonical_url ) );
+			$url[ $hash ] = apply_filters( 'aioseo_canonical_url', $this->makeUrlAbsolute( $metaData->canonical_url ) );
 
-			return $url;
+			return $url[ $hash ];
 		}
 
-		$url                      = $this->getUrl( true );
-		$noPaginationForCanonical = aioseo()->options->searchAppearance->advanced->noPaginationForCanonical;
-		$pageNumber               = $this->getPageNumber();
-		if ( $noPaginationForCanonical ) {
+		if ( empty( $url[ $hash ] ) || is_wp_error( $url[ $hash ] ) ) {
+			$url[ $hash ] = $this->getUrl( true );
+		}
+
+		$pageNumber = $this->getPageNumber();
+		if (
+			in_array( 'noPaginationForCanonical', aioseo()->internalOptions->deprecatedOptions, true ) &&
+			aioseo()->options->deprecated->searchAppearance->advanced->noPaginationForCanonical
+		) {
 			global $wp_rewrite;
 			if ( 1 < $pageNumber ) {
 				if ( $wp_rewrite->using_permalinks() ) {
 					// Replace /page/3 and /page/3/.
-					$url = preg_replace( "@(?<=/)page/$pageNumber(/|)$@", '', $url );
+					$url[ $hash ] = preg_replace( "@(?<=/)page/$pageNumber(/|)$@", '', $url[ $hash ] );
 					// Replace /3 and /3/.
-					$url = preg_replace( "@(?<=/)$pageNumber(/|)$@", '', $url );
+					$url[ $hash ] = preg_replace( "@(?<=/)$pageNumber(/|)$@", '', $url[ $hash ] );
 				} else {
 					// Replace /?page_id=457&paged=1 and /?page_id=457&page=1.
-					$url = aioseo()->helpers->urlRemoveQueryParameter( $url, [ 'page', 'paged' ] );
+					$url[ $hash ] = aioseo()->helpers->urlRemoveQueryParameter( $url[ $hash ], [ 'page', 'paged' ] );
 				}
 			}
 
 			// Comment pages.
-			$url = preg_replace( '/(?<=\/)comment-page-\d+\/*(#comments)*$/', '', $url );
+			$url[ $hash ] = preg_replace( '/(?<=\/)comment-page-\d+\/*(#comments)*$/', '', $url[ $hash ] );
 		}
 
-		$url = $this->maybeRemoveTrailingSlash( $url );
+		$url[ $hash ] = $this->maybeRemoveTrailingSlash( $url[ $hash ] );
 
 		// Get rid of /amp at the end of the URL.
-		if ( ! apply_filters( 'aioseo_disable_canonical_url_amp', false ) ) {
-			$url = preg_replace( '/\/amp$/', '', $url );
-			$url = preg_replace( '/\/amp\/$/', '/', $url );
+		if (
+			aioseo()->helpers->isAmpPage() &&
+			! apply_filters( 'aioseo_disable_canonical_url_amp', false )
+		) {
+			$url[ $hash ] = preg_replace( '/\/amp$/', '', $url[ $hash ] );
+			$url[ $hash ] = preg_replace( '/\/amp\/$/', '/', $url[ $hash ] );
 		}
 
-		$url = apply_filters( 'aioseo_canonical_url', $url );
+		$url[ $hash ] = apply_filters( 'aioseo_canonical_url', $url[ $hash ] );
 
-		return $url;
+		return $url[ $hash ];
 	}
 
 	/**
@@ -246,7 +258,7 @@ trait WpUri {
 	* @param  string       $path     The path.
 	* @param  string       $output   The output type. OBJECT, ARRAY_A, or ARRAY_N.
 	* @param  string|array $postType The post type(s) to check against.
-	* @return Object|false           The post or false on failure.
+	* @return object|false           The post or false on failure.
 	*/
 	public function getPostByPath( $path, $output = OBJECT, $postType = 'page' ) {
 		$lastChanged = wp_cache_get_last_changed( 'aioseo_posts_by_path' );
@@ -421,5 +433,49 @@ trait WpUri {
 		return ! empty( $parsedHomeUrl['host'] ) && ! empty( $parsedUrlToCheck['host'] )
 			? $parsedHomeUrl['host'] === $parsedUrlToCheck['host']
 			: false;
+	}
+
+	/**
+	 * Helper for the rest url.
+	 *
+	 * @since 4.4.9
+	 *
+	 * @return string
+	 */
+	public function getRestUrl() {
+		$restUrl = get_rest_url();
+
+		if ( aioseo()->helpers->isWpmlActive() ) {
+			global $sitepress;
+
+			// Replace the rest url 'all' language prefix so our rest calls don't fail.
+			if (
+				is_object( $sitepress ) &&
+				method_exists( $sitepress, 'get_current_language' ) &&
+				method_exists( $sitepress, 'get_default_language' ) &&
+				'all' === $sitepress->get_current_language()
+			) {
+				$restUrl = str_replace(
+					get_home_url( null, '/all/' ),
+					get_home_url( null, '/' . $sitepress->get_default_language() . '/' ),
+					$restUrl
+				);
+			}
+		}
+
+		return $restUrl;
+	}
+
+	/**
+	 * Exclude the home path from a full path.
+	 *
+	 * @since   1.2.3 Moved from aioseo-redirects.
+	 * @version 4.5.8
+	 *
+	 * @param  string $path The original path.
+	 * @return string       The path without WP's home path.
+	 */
+	public function excludeHomePath( $path ) {
+		return preg_replace( '@^' . $this->getHomePath() . '@', '/', $path );
 	}
 }

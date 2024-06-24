@@ -21,8 +21,9 @@ trait SocialProfiles {
 	 */
 	private $baseUrls = [
 		'facebookPageUrl' => 'https://facebook.com/',
-		'twitterUrl'      => 'https://twitter.com/',
+		'twitterUrl'      => 'https://x.com/',
 		'instagramUrl'    => 'https://instagram.com/',
+		'tiktokUrl'       => 'https://tiktok.com/@',
 		'pinterestUrl'    => 'https://pinterest.com/',
 		'youtubeUrl'      => 'https://youtube.com/',
 		'linkedinUrl'     => 'https://linkedin.com/in/',
@@ -30,7 +31,8 @@ trait SocialProfiles {
 		'yelpPageUrl'     => 'https://yelp.com/biz/',
 		'soundCloudUrl'   => 'https://soundcloud.com/',
 		'wikipediaUrl'    => 'https://en.wikipedia.org/wiki/',
-		'myspaceUrl'      => 'https://myspace.com/'
+		'myspaceUrl'      => 'https://myspace.com/',
+		'wordPressUrl'    => 'https://profiles.wordpress.org/',
 	];
 
 	/**
@@ -45,6 +47,7 @@ trait SocialProfiles {
 			'facebookPageUrl' => aioseo()->options->social->profiles->urls->facebookPageUrl,
 			'twitterUrl'      => aioseo()->options->social->profiles->urls->twitterUrl,
 			'instagramUrl'    => aioseo()->options->social->profiles->urls->instagramUrl,
+			'tiktokUrl'       => aioseo()->options->social->profiles->urls->tiktokUrl,
 			'pinterestUrl'    => aioseo()->options->social->profiles->urls->pinterestUrl,
 			'youtubeUrl'      => aioseo()->options->social->profiles->urls->youtubeUrl,
 			'linkedinUrl'     => aioseo()->options->social->profiles->urls->linkedinUrl,
@@ -52,7 +55,8 @@ trait SocialProfiles {
 			'yelpPageUrl'     => aioseo()->options->social->profiles->urls->yelpPageUrl,
 			'soundCloudUrl'   => aioseo()->options->social->profiles->urls->soundCloudUrl,
 			'wikipediaUrl'    => aioseo()->options->social->profiles->urls->wikipediaUrl,
-			'myspaceUrl'      => aioseo()->options->social->profiles->urls->myspaceUrl
+			'myspaceUrl'      => aioseo()->options->social->profiles->urls->myspaceUrl,
+			'wordPressUrl'    => aioseo()->options->social->profiles->urls->wordPressUrl,
 		];
 
 		if ( aioseo()->options->social->profiles->sameUsername->enable ) {
