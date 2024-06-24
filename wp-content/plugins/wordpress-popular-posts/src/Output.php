@@ -153,7 +153,45 @@ class Output {
      */
     public function get_output()
     {
-        $this->output = "\n" . ( WP_DEBUG ? '<!-- WordPress Popular Posts v' . WPP_VERSION . ( $this->admin_options['tools']['cache']['active'] ? ' - cached' : '' ) . ' -->' : '' ) . "\n" . $this->output;
+        $this->output = ( WP_DEBUG ? "\n" . '<!-- WordPress Popular Posts v' . WPP_VERSION . ( $this->admin_options['tools']['cache']['active'] ? ' - cached' : '' ) . ' -->' . "\n" : '' ) . $this->output;
+
+        // Attempt to close open tags
+        $this->output = force_balance_tags($this->output);
+
+        if ( extension_loaded('mbstring') && function_exists('mb_encode_numericentity') ) {
+            // Process special characters
+            $html = htmlspecialchars_decode(mb_encode_numericentity(htmlentities(trim($this->output), ENT_QUOTES, 'UTF-8'), [0x80, 0x10FFFF, 0, ~0], 'UTF-8'));
+
+            // Remove empty tags
+            $clean_html = '';
+            $html = '<!DOCTYPE html><html><head><meta charset="UTF-8" /></head><body>' . $html . '</body></html>';
+
+            $dom = new \DOMDocument();
+            $dom->loadHTML($html, LIBXML_NOERROR | LIBXML_NOWARNING | LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+            $xpath = new \DOMXPath($dom);
+
+            while ( ($node_list = $xpath->query('//*[not(*) and not(@*) and not(text()[normalize-space()])]')) && $node_list->length ) {
+                foreach ($node_list as $node) {
+                    $node->parentNode->removeChild($node);
+                }
+            }
+
+            $body = $dom->getElementsByTagName('body')->item(0);
+
+            foreach( $body->childNodes as $node ) {
+                $clean_html .= $dom->saveHTML($node);
+            }
+
+            $this->output = trim($clean_html);
+        } else {
+            if ( defined('WP_DEBUG') && WP_DEBUG ) {
+                trigger_error('WordPress Popular Posts - looks like PHP\'s mbstring extension isn\'t enabled on this site. Please enable it for the plugin to be able to properly format your popular post list.', E_USER_WARNING);
+            }
+        }
+
+        // Sanitize HTML
+        $this->output = Helper::sanitize_html($this->output, $this->public_options);
+
         return $this->output;
     }
 
@@ -188,7 +226,7 @@ class Output {
                     $theme_stylesheet = $this->themer->get_theme($this->public_options['theme']['name'])['path'] . '/style.css';
                 }
 
-                $theme_css_rules = wp_strip_all_tags(file_get_contents($theme_stylesheet), true);
+                $theme_css_rules = wp_strip_all_tags(file_get_contents($theme_stylesheet), true); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- We're loading a local file
                 $additional_styles = '';
 
                 if ( has_filter('wpp_additional_theme_styles') ) {
@@ -365,7 +403,12 @@ class Output {
         $post_meta_separator = esc_html(apply_filters('wpp_post_meta_separator', ' | '));
         $post_meta = join($post_meta_separator, $meta_arr);
 
-        $prettify_numbers = apply_filters('wpp_pretiffy_numbers', true);
+        $prettify_numbers = apply_filters('wpp_prettify_numbers', true);
+
+        /** Legacy, should be removed */
+        if ( has_filter('wpp_pretiffy_numbers') ) {
+            $prettify_numbers = apply_filters('wpp_pretiffy_numbers', true);
+        }
 
         // Build custom HTML output
         if ( $this->public_options['markup']['custom_html'] ) {
@@ -636,7 +679,7 @@ class Output {
                     __('%s ago', 'wordpress-popular-posts'),
                     human_time_diff(
                         strtotime($post_object->date),
-                        current_time('timestamp')
+                        Helper::timestamp()
                     )
                 );
             } else {
@@ -795,7 +838,12 @@ class Output {
     {
         $stats = [];
 
-        $prettify_numbers = apply_filters('wpp_pretiffy_numbers', true);
+        $prettify_numbers = apply_filters('wpp_prettify_numbers', true);
+
+        /* Legacy, should be removed */
+        if ( has_filter('wpp_pretiffy_numbers') ) {
+            $prettify_numbers = apply_filters('wpp_pretiffy_numbers', true);
+        }
 
         // comments
         if ( $this->public_options['stats_tag']['comment_count'] ) {

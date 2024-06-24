@@ -107,11 +107,11 @@ class Image {
      * @param   int         $post_id        Post ID
      * @param   array       $size           Image size (width & height)
      * @param   string      $source         Image source
-     * @param   bool        $crop           Whether to crop the image or not
+     * @param   bool|array  $crop           Whether to crop the image or not, and if so how
      * @param   string      $build          Whether to build the image or get an existing one
      * @return  string
      */
-    public function get(int $post_id, array $size, string $source, bool $crop = true, ?string $build = 'manual')
+    public function get(int $post_id, array $size, string $source, $crop = true, ?string $build = 'manual') /** @TODO: starting PHP 8.0 $crop can be declared as mixed $crop */
     {
         // Bail, $post_id is not an integer
         if ( ! is_numeric($post_id) ) {
@@ -156,6 +156,7 @@ class Image {
             );
 
             return $this->render(
+                $post_id,
                 $cached,
                 $size,
                 is_array($classes) ? implode(' ', $classes) : 'wpp-thumbnail wpp_' . $source,
@@ -325,6 +326,7 @@ class Image {
         );
 
         return $this->render(
+            $post_id,
             $thumb_url,
             $size,
             is_array($classes) ? implode(' ', $classes) : 'wpp-thumbnail wpp_' . $source,
@@ -689,7 +691,7 @@ class Image {
                 }
 
                 // Valid image, save it
-                if ( in_array($image_type, [IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG]) ) {
+                if ( in_array($image_type, [IMAGETYPE_GIF, IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_WEBP]) ) {
                     // move file to Uploads
                     if ( @rename($tmp, $full_image_path) ) {
                         // borrowed from WP - set correct file permissions
@@ -803,7 +805,7 @@ class Image {
              */
             $quality = apply_filters('wpp_thumbnail_compression_quality', null);
 
-            if ( ! ctype_digit($quality) ) {
+            if ( ! ctype_digit( (string) $quality) ) {
                 $quality = null; // Fallback to core's default
             }
 
@@ -859,6 +861,7 @@ class Image {
      *
      * @since   3.0.0
      * @access  public
+     * @param   int         $post_id        The post/page ID
      * @param   string      $src            Image URL
      * @param   array       $dimension      Image's width and height
      * @param   string      $class          CSS class
@@ -866,7 +869,7 @@ class Image {
      * @param   string      $error          Error, if the image could not be created
      * @return  string
      */
-    public function render(string $src, array $size, string $class, string $alt = '', string $error = '')
+    public function render(int $post_id, string $src, array $size, string $class, string $alt = '', string $error = '')
     {
         $img_tag = '';
 
@@ -886,7 +889,7 @@ class Image {
 
         $img_tag .= '<img ' . $src . ' width="' . esc_attr($size[0]) . '" height="' . esc_attr($size[1]) . '" alt="' . esc_attr($alt) . '" class="' . esc_attr($class) . '" decoding="async" ' . $lazyload . ' />';
 
-        return apply_filters('wpp_render_image', $img_tag);
+        return apply_filters('wpp_render_image', $img_tag, $post_id);
     }
 
     /**

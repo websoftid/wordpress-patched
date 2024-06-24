@@ -33,6 +33,7 @@ if ( 'tools' == $current ) {
                                 </div>
 
                                 <input id="upload_thumb_button" type="button" class="button" value="<?php esc_attr_e('Change thumbnail', 'wordpress-popular-posts'); ?>">
+                                <input id="reset_thumb_button" type="button" class="button" value="<?php esc_attr_e('Reset thumbnail', 'wordpress-popular-posts'); ?>">
                                 <input type="hidden" id="upload_thumb_src" name="upload_thumb_src" value="">
 
                                 <p class="description"><?php esc_html_e('This image will be displayed when no thumbnail is available', 'wordpress-popular-posts'); ?>.</p>
@@ -138,7 +139,7 @@ if ( 'tools' == $current ) {
                                 </td>
                             </tr>
                             <tr valign="top">
-                                <th scope="row"><label for="ajax"><?php esc_html_e('Ajaxify widget', 'wordpress-popular-posts'); ?>:</label></th>
+                                <th scope="row"><label for="ajax"><?php esc_html_e('Load popular posts list via AJAX', 'wordpress-popular-posts'); ?>:</label></th>
                                 <td>
                                     <select name="ajax" id="ajax">
                                         <option <?php if (! $this->config['tools']['ajax']) { ?>selected="selected"<?php } ?> value="0"><?php esc_html_e('Disabled', 'wordpress-popular-posts'); ?></option>
@@ -201,7 +202,7 @@ if ( 'tools' == $current ) {
                                 <td>
                                     <input name="sample_rate" type="text" id="sample_rate" value="<?php echo ( isset($this->config['tools']['sampling']['rate']) ) ? (int) $this->config['tools']['sampling']['rate'] : 100; ?>" class="small-text">
                                     <br />
-                                    <p class="description"><?php echo sprintf(__('A sampling rate of %d is recommended for large / high traffic sites. For lower traffic sites, you should lower the value', 'wordpress-popular-posts'), 100); ?>.</p>
+                                    <p class="description"><?php echo sprintf(esc_html__('A sampling rate of %d is recommended for large / high traffic sites. For lower traffic sites, you should lower the value.', 'wordpress-popular-posts'), 100); ?></p>
                                 </td>
                             </tr>
                             <tr valign="top">

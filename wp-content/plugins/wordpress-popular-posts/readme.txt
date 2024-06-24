@@ -1,11 +1,11 @@
 === WordPress Popular Posts ===
 Contributors: hcabrera
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=hcabrerab%40gmail%2ecom&lc=GB&item_name=WordPress%20Popular%20Posts%20Plugin&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG_global%2egif%3aNonHosted
+Donate link: https://ko-fi.com/cabrerahector
 Tags: popular, posts, widget, popularity, top
 Requires at least: 5.3
-Tested up to: 6.2.2
+Tested up to: 6.4.3
 Requires PHP: 7.2
-Stable tag: 6.1.3
+Stable tag: 6.4.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -36,23 +36,23 @@ WordPress Popular Posts is a highly customizable widget that displays your most 
 * **Localization** - [Translate WPP into your own language](https://github.com/cabrerahector/wordpress-popular-posts/wiki/5.-FAQ#i-want-to-translate-your-plugin-into-my-language--help-you-update-a-translation-what-do-i-need-to-do).
 * **[WP-PostRatings](https://wordpress.org/plugins/wp-postratings/) support** - Show your visitors how your readers are rating your posts!
 
-= PSA: do not use the classic WordPress Popular Posts widget with the new Widgets screen! =
+= PSA: The classic WordPress Popular Posts widget is going away! =
 
 The classic WordPress Popular Posts widget doesn't work very well / at all with the new Widgets screen introduced with WordPress 5.8.
 
-This new Widgets screen expects WordPress blocks instead of regular WordPress widgets. If you're using the WordPress Popular Posts widget on your block-based Widgets screen please consider replacing it with the [WordPress Popular Posts block](https://cabrerahector.com/wordpress/wordpress-popular-posts-5-3-improved-php-8-support-retina-display-support-and-more/#block-editor-support) instead - it has the same features as the "classic" widget and will likely end up replacing it entirely in the future.
+This new Widgets screen expects WordPress blocks instead of regular WordPress widgets. If you're using the classic WordPress Popular Posts widget on your block-based Widgets screen please replace it with the [WordPress Popular Posts block](https://cabrerahector.com/wordpress/wordpress-popular-posts-5-3-improved-php-8-support-retina-display-support-and-more/#block-editor-support) instead - it has the same features and functionality as the "classic" widget so you won't be missing anything at all.
 
 Bjorn from wplearninglab.com was kind enough to create a video explaining how to use the new block for all of you visual learners:
 
 [youtube https://www.youtube.com/watch?v=mtzk6yNEaFs]
 
-If for some reason you prefer using the "classic" WordPress Popular Posts widget with WordPress 5.8 and beyond please install the [Classic Widgets](https://wordpress.org/plugins/classic-widgets/) plugin.
+If you cannot (or do not want to) use WordPress blocks on your website then please replace your classic widget with the [[wpp] shortcode](https://github.com/cabrerahector/wordpress-popular-posts/wiki/1.-Using-WPP-on-posts-&-pages#the-wpp-shortcode).
 
 = Support the Project! =
 
 If you'd like to support my work and efforts to creating and maintaining more open source projects your donations and messages of support mean a lot!
 
-[Ko-fi](https://ko-fi.com/cabrerahector) | [Buy me a coffee](https://www.buymeacoffee.com/cabrerahector) | [PayPal Me](https://paypal.me/cabrerahector)
+[Buy me a coffee](https://ko-fi.com/cabrerahector) | [PayPal](https://www.paypal.com/paypalme/cabrerahector)
 
 **WordPress Popular Posts** is now also on [GitHub](https://github.com/cabrerahector/wordpress-popular-posts)!
 
@@ -90,7 +90,7 @@ That's it!
 
 WordPress Popular Posts can be used in three different ways:
 
-1. As a [widget](https://wordpress.org/support/article/wordpress-widgets/): simply drag and drop it into your theme's sidebar and configure it or, if you're using the [Block Editor](https://wordpress.org/support/article/wordpress-editor/), you can also add it to your posts and pages.
+1. If you're using the [Block Editor](https://wordpress.org/support/article/wordpress-editor/) you can insert a WordPress Popular Posts block on your sidebar and even anywhere within your posts and pages.
 2. As a template tag: you can place it anywhere on your theme with [`wpp_get_mostpopular()`](https://github.com/cabrerahector/wordpress-popular-posts/wiki/2.-Template-tags#wpp_get_mostpopular).
 3. Via [shortcode](https://github.com/cabrerahector/wordpress-popular-posts/wiki/1.-Using-WPP-on-posts-&-pages), so you can embed it inside a post or a page.
 
@@ -102,12 +102,102 @@ The FAQ section has been moved [here](https://github.com/cabrerahector/wordpress
 
 == Screenshots ==
 
-1. The WordPress Popular Posts Widget.
-2. The WordPress Popular Posts Widget on theme's sidebar.
+1. The WordPress Popular Posts block.
+2. The WordPress Popular Posts block on theme's sidebar.
 3. Dashboard widget.
 4. Statistics panel.
 
 == Changelog ==
+
+= 6.4.2 =
+
+- Fixes default thumbnail resetting to the stock "No Thumbnail" image (props to aalmans!)
+- Fixes filtering by category / taxonomy when using Polylang (props to mlepore and wpfed!)
+- Updates dependencies.
+
+[Release notes](https://cabrerahector.com/wordpress/wordpress-popular-posts-6-4-shortcode-enhancements-new-rest-api-endpoints/#6.4.2)
+
+= 6.4.1 =
+
+- Adds support for webp images.
+- Minor fixes / improvements.
+
+[Release notes](https://cabrerahector.com/wordpress/wordpress-popular-posts-6-4-shortcode-enhancements-new-rest-api-endpoints/#6.4.1)
+
+= 6.4.0 =
+
+**If you're using a caching plugin on your website it's highly recommended to clear its cache after installing / updating to this version.**
+
+- Fixes a fatal issue caused by the views_count shortcode when providing an invalid time range.
+- The views_count shortcode can now render a "prettified" version of the views count (eg. 6.2k instead of 6,265).
+- The wpp shortcode has now a "toggle" to enable/disable AJAX loading.
+- Adds /views REST API endpoints.
+- Fixes fatal error that can happen when themes define image sizes using the array format for the crop parameter.
+- Fixes fatal error that can happen while the plugin is deleting its own transients.
+- Other minor fixes / improvements.
+
+[Release notes](https://cabrerahector.com/wordpress/wordpress-popular-posts-6-4-shortcode-enhancements-new-rest-api-endpoints/)
+
+= 6.3.4 =
+
+**If you're using a caching plugin on your website, clearing its cache after installing / updating to this version is highly recommended.**
+
+- Patches issue affecting non-HTML5 friendly WordPress themes after the WP 6.4 update.
+- Adds a button to reset the default thumbnail.
+- Minor fixes and improvements.
+
+[Release notes](https://cabrerahector.com/wordpress/wordpress-popular-posts-6-3-new-shortcode-to-display-views-count-php-8-compatibility-improvements/#6.3.4)
+
+= 6.3.3 =
+
+- Security enhancements (props to the Patchstack team!)
+- Updates dependencies.
+
+[Release notes](https://cabrerahector.com/wordpress/wordpress-popular-posts-6-3-new-shortcode-to-display-views-count-php-8-compatibility-improvements/#6.3.3)
+
+= 6.3.2 =
+
+- Fixes a PHP notice coming from the [wpp] shortcode.
+- Removes legacy AJAX code from the plugin.
+
+[Release notes](https://cabrerahector.com/wordpress/wordpress-popular-posts-6-3-new-shortcode-to-display-views-count-php-8-compatibility-improvements/#6.3.2)
+
+= 6.3.1 =
+
+**If you're using a caching plugin on your website, clearing its cache after installing / updating to this version is highly recommended.**
+
+- Improves compatibility with newer versions of PHP 8 (thanks ispreview and dimal for the heads-up!)
+- Introduces new shortcode to render views count (see [Release notes](https://cabrerahector.com/wordpress/wordpress-popular-posts-6-3-new-shortcode-to-display-views-count-php-8-compatibility-improvements/) for more details).
+- Shares post_id value with render_image filter hook for more flexibility.
+- Fixes a fatal error when the PHP extension mbstring is not installed.
+- Updates wpp.min.js.
+
+[Release notes](https://cabrerahector.com/wordpress/wordpress-popular-posts-6-3-new-shortcode-to-display-views-count-php-8-compatibility-improvements/)
+
+= 6.2.1 =
+
+- Fixes an issue where the [wpp] shortcode would get stuck at the loading animation.
+
+= 6.2.0 =
+
+**If you're using a caching plugin on your website, clearing its cache after installing / updating to this version is highly recommended.**
+
+- The [wpp] shortcode has now the ability to load itself via AJAX.
+- Fixes an issue where for certain server configurations the popular posts list would output garbled text.
+- Fixes an issue where PHP would throw notices due to the usage of HTML5 tags.
+
+[Release notes](https://cabrerahector.com/wordpress/wordpress-popular-posts-6-2-shortcode-is-now-page-caching-friendly-other-minor-fixes/)
+
+= 6.1.4 =
+
+**If you're using a caching plugin on your website, clearing its cache after installing / updating to this version is highly recommended.**
+
+- Fixes an issue where the [[wpp]](https://github.com/cabrerahector/wordpress-popular-posts/wiki/1.-Using-WPP-on-posts-&-pages#the-wpp-shortcode) shortcode might output empty paragraphs under certain conditions.
+- Reverts "uglification" of wpp.min.js which caused popular post list(s) not to load under certain conditions.
+- Widget's deprecation notice has been reworded for clarity.
+- Updates dependencies + minor code cleanup.
+
+[Release notes](https://cabrerahector.com/wordpress/wordpress-popular-posts-6-1-0-improved-php-8-1-support-plus-minor-enhancements/#6.1.4)
 
 = 6.1.3 =
 
@@ -146,63 +236,6 @@ The FAQ section has been moved [here](https://github.com/cabrerahector/wordpress
 
 [Release notes](https://cabrerahector.com/wordpress/wordpress-popular-posts-6-1-0-improved-php-8-1-support-plus-minor-enhancements/)
 
-= 6.0.5 =
-
-- Fixes yet another issue where excerpts may output broken HTML under certain conditions (thanks dxylott54!)
-- Updates .pot file.
-
-[Release notes](https://cabrerahector.com/wordpress/wordpress-popular-posts-6-0-php-5-support-dropped-minimum-supported-wordpress-changed/#6.0.5)
-
-= 6.0.4 =
-
-- Block: improves logic when toggling certain settings.
-- Block: adds back option to show post rating.
-- get_views() is now compatible with Polylang/WPML.
-- Updates dependencies.
-- Updates .pot file.
-
-[Release notes](https://cabrerahector.com/wordpress/wordpress-popular-posts-6-0-php-5-support-dropped-minimum-supported-wordpress-changed/#6.0.4)
-
-= 6.0.3 =
-
-- WPCS updates.
-- Fixes an issue where excerpts may output broken HTML under certain conditions (thanks ozboss1!)
-
-[Release notes](https://cabrerahector.com/wordpress/wordpress-popular-posts-6-0-php-5-support-dropped-minimum-supported-wordpress-changed/#6.0.3)
-
-= 6.0.2 =
-
-- Fixes issue with Stats dashboard not loading for Linux users (thanks agbuere!)
-
-[Release notes](https://cabrerahector.com/wordpress/wordpress-popular-posts-6-0-php-5-support-dropped-minimum-supported-wordpress-changed/#6.0.2)
-
-= 6.0.1 =
-
-- Security improvements.
-- Fixes fatal error in Image class (thanks Senri Miura!)
-- Fixes fatal error in "classic" widget when using widget themes (thanks Finn Jackson!)
-- Updates ChartJS to version 3.8.0.
-- Small improvements / fixes.
-
-[Release notes](https://cabrerahector.com/wordpress/wordpress-popular-posts-6-0-php-5-support-dropped-minimum-supported-wordpress-changed/#minor-updates-and-hotfixes)
-
-= 6.0.0 =
-
-**This release introduces a couple of major changes so please review before updating.**
-
-- Minimum required PHP version is now 7.2.
-- Minimum required WordPress version is now 5.3.
-- Breaking change: this version removes code that has been deprecated for a long time. See the release notes for more details.
-- Widget block: fixes an issue where the length of the title when set via theme was being ignored.
-- Widget block: fixes bug with thumbnail not rendering under certain circumstances (thanks the9mm!)
-- Admin: the Statistics screen will now by default only lists posts. See the release notes for more details.
-- Admin: only users with `edit_others_posts` capability (usually Editors and Administrators) will be able to access certain areas of WPP's dashboard.
-- Admin: makes sure to escape params from `add_query_arg()`.
-- Fixes an issue where widget themes stored in child theme's folder would not be recognized by the plugin.
-- Small improvements / fixes.
-
-[Release notes](https://cabrerahector.com/wordpress/wordpress-popular-posts-6-0-php-5-support-dropped-minimum-supported-wordpress-changed/)
-
 [Full Changelog](https://github.com/cabrerahector/wordpress-popular-posts/blob/master/changelog.md)
 
 == Credits ==
@@ -210,5 +243,5 @@ The FAQ section has been moved [here](https://github.com/cabrerahector/wordpress
 * Flame graphic by freevector/Vecteezy.com.
 
 == Upgrade Notice ==
-= 5.5.1 =
-If you're using a caching plugin flushing its cache after upgrading to this version is highly recommended.
+= 6.4.0 =
+If you're using a caching plugin on your website it's highly recommended to clear its cache after installing / updating to this version.
